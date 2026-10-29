@@ -1,19 +1,20 @@
 package server.olimpo.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import server.olimpo.dto.request.CreatePaymentRequest;
 import server.olimpo.dto.response.PaymentResponse;
+import server.olimpo.dto.response.PageResponse;
 import server.olimpo.entity.Membership;
 import server.olimpo.entity.Payment;
 import server.olimpo.enums.PaymentMethod;
 import server.olimpo.exception.ResourceNotFoundException;
 import server.olimpo.repository.MembershipRepository;
 import server.olimpo.repository.PaymentRepository;
+import server.olimpo.util.Pagination;
 
 import java.math.BigDecimal;
-import java.util.List;
-
 @Service
 public class PaymentService {
 
@@ -26,10 +27,10 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public List<PaymentResponse> getPaymentsByClient(Long clientId) {
-        return paymentRepository.findByClientIdOrderByPaymentDateDesc(clientId).stream()
-                .map(this::toResponse)
-                .toList();
+    public PageResponse<PaymentResponse> getPaymentsByClient(Long clientId, String search,
+                                                              Pageable pageable) {
+        return PageResponse.from(paymentRepository.searchByClientId(
+                clientId, Pagination.normalizeSearch(search), pageable).map(this::toResponse));
     }
 
     @Transactional

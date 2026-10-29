@@ -1,11 +1,13 @@
 package server.olimpo.service;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import server.olimpo.dto.request.CreateMembershipRequest;
 import server.olimpo.dto.request.RenewMembershipRequest;
 import server.olimpo.dto.response.MembershipResponse;
+import server.olimpo.dto.response.PageResponse;
 import server.olimpo.entity.Membership;
 import server.olimpo.entity.Payment;
 import server.olimpo.enums.MembershipStatus;
@@ -16,11 +18,10 @@ import server.olimpo.exception.ResourceNotFoundException;
 import server.olimpo.repository.ClientRepository;
 import server.olimpo.repository.MembershipRepository;
 import server.olimpo.repository.PaymentRepository;
+import server.olimpo.util.Pagination;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-
 @Service
 public class MembershipService {
 
@@ -114,11 +115,12 @@ public class MembershipService {
         return toResponse(membership);
     }
 
-    public List<MembershipResponse> getMembershipsByClient(Long clientId, Authentication authentication) {
+    public PageResponse<MembershipResponse> getMembershipsByClient(Long clientId, String search,
+                                                                     Pageable pageable,
+                                                                     Authentication authentication) {
         clientService.assertCanAccessClient(clientId, authentication);
-        return membershipRepository.findByClientIdOrderByCreatedAtDesc(clientId).stream()
-                .map(this::toResponse)
-                .toList();
+        return PageResponse.from(membershipRepository.searchByClientId(
+                clientId, Pagination.normalizeSearch(search), pageable).map(this::toResponse));
     }
 
     private void registerPayment(Membership membership, BigDecimal amount, String method, String reference) {

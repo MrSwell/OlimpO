@@ -2,12 +2,15 @@ package server.olimpo.service;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import server.olimpo.dto.request.CreateRoutineAssignmentRequest;
 import server.olimpo.dto.request.CreateRoutineRequest;
 import server.olimpo.dto.response.RoutineAssignmentResponse;
 import server.olimpo.dto.response.RoutineResponse;
+import server.olimpo.dto.response.PageResponse;
 import server.olimpo.entity.Client;
 import server.olimpo.entity.Routine;
 import server.olimpo.entity.RoutineAssignment;
@@ -22,10 +25,14 @@ import server.olimpo.repository.RoutineAssignmentRepository;
 import server.olimpo.repository.RoutineRepository;
 import server.olimpo.repository.TrainerRepository;
 import server.olimpo.repository.UserRepository;
+import server.olimpo.util.Pagination;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class RoutineService {
@@ -79,11 +86,28 @@ public class RoutineService {
     }
 
     @Transactional(readOnly = true)
-    public List<RoutineResponse> getAllRoutines(String type) {
-        List<Routine> routines = (type == null || type.isBlank())
-                ? routineRepository.findAll()
-                : routineRepository.findByType(validateType(type));
-        return routines.stream().map(this::toResponse).toList();
+    public PageResponse<RoutineResponse> getAllRoutines(String type, String search, Pageable pageable) {
+        String normalizedType = type == null || type.isBlank() ? null : validateType(type);
+        Page<Routine> routines = routineRepository.searchRoutines(normalizedType,
+                Pagination.normalizeSearch(search), pageable);
+        List<Long> trainerIds = routines.getContent().stream()
+                .map(Routine::getTrainerId)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
+        Map<Long, Trainer> trainersById = trainerRepository.findAllById(trainerIds).stream()
+                .collect(Collectors.toMap(Trainer::getId, Function.identity()));
+        List<Long> userIds = trainersById.values().stream().map(Trainer::getUserId).distinct().toList();
+        Map<Long, User> usersById = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+        Map<Long, String> trainerNames = trainersById.values().stream()
+                .filter(trainer -> usersById.containsKey(trainer.getUserId()))
+                .collect(Collectors.toMap(Trainer::getId, trainer -> {
+                    User user = usersById.get(trainer.getUserId());
+                    return user.getFirstName() + " " + user.getLastName();
+                }));
+        return PageResponse.from(routines.map(routine ->
+                toResponse(routine, trainerNames.get(routine.getTrainerId()))));
     }
 
     @Transactional(readOnly = true)
@@ -115,16 +139,18 @@ public class RoutineService {
 
     /** Assignment history of one routine (staff only). */
     @Transactional(readOnly = true)
-    public List<RoutineAssignmentResponse> getRoutineAssignments(Long routineId) {
+    public PageResponse<RoutineAssignmentResponse> getRoutineAssignments(Long routineId, String search,
+                                                                          Pageable pageable) {
         getRoutineEntity(routineId);
-        return assignmentRepository.findByRoutineIdOrderByAssignmentDateDesc(routineId).stream()
-                .map(this::toAssignmentResponse)
-                .toList();
+        return toAssignmentPage(assignmentRepository.searchAssignments(routineId, null,
+                Pagination.normalizeSearch(search), pageable));
     }
 
     /** Assigned routines of one client: staff can see all; CLIENT only its own. */
     @Transactional(readOnly = true)
-    public List<RoutineAssignmentResponse> getClientAssignments(Long clientId, Authentication authentication) {
+    public PageResponse<RoutineAssignmentResponse> getClientAssignments(Long clientId, String search,
+                                                                          Pageable pageable,
+                                                                          Authentication authentication) {
         boolean isViewStaff = authentication != null && authentication.getAuthorities().stream().anyMatch(a -> {
             String authority = a.getAuthority();
             return authority.equals("ROLE_ADMIN") || authority.equals("ROLE_TRAINER_MANAGER")
@@ -139,9 +165,32 @@ public class RoutineService {
         if (clientRepository.findById(clientId).isEmpty()) {
             throw new ResourceNotFoundException("Client not found with id: " + clientId);
         }
-        return assignmentRepository.findByClientIdOrderByAssignmentDateDesc(clientId).stream()
-                .map(this::toAssignmentResponse)
-                .toList();
+        return toAssignmentPage(assignmentRepository.searchAssignments(null, clientId,
+                Pagination.normalizeSearch(search), pageable));
+    }
+
+    private PageResponse<RoutineAssignmentResponse> toAssignmentPage(Page<RoutineAssignment> assignments) {
+        List<Long> routineIds = assignments.getContent().stream()
+                .map(RoutineAssignment::getRoutineId).distinct().toList();
+        List<Long> clientIds = assignments.getContent().stream()
+                .map(RoutineAssignment::getClientId).distinct().toList();
+        Map<Long, Routine> routinesById = routineRepository.findAllById(routineIds).stream()
+                .collect(Collectors.toMap(Routine::getId, Function.identity()));
+        Map<Long, Client> clientsById = clientRepository.findAllById(clientIds).stream()
+                .collect(Collectors.toMap(Client::getId, Function.identity()));
+        List<Long> userIds = clientsById.values().stream().map(Client::getUserId).distinct().toList();
+        Map<Long, User> usersById = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+
+        return PageResponse.from(assignments.map(assignment -> {
+            Routine routine = routinesById.get(assignment.getRoutineId());
+            Client client = clientsById.get(assignment.getClientId());
+            User user = client == null ? null : usersById.get(client.getUserId());
+            String clientName = user == null ? null : user.getFirstName() + " " + user.getLastName();
+            return new RoutineAssignmentResponse(assignment.getId(), assignment.getRoutineId(),
+                    routine == null ? null : routine.getName(), assignment.getClientId(), clientName,
+                    assignment.getAssignmentDate(), assignment.getStatus());
+        }));
     }
 
     private void assertCanManageRoutines(Authentication authentication) {
@@ -223,16 +272,14 @@ public class RoutineService {
     }
 
     private RoutineResponse toResponse(Routine routine) {
-        String trainerName = null;
-        if (routine.getTrainerId() != null) {
-            Trainer trainer = trainerRepository.findById(routine.getTrainerId()).orElse(null);
-            if (trainer != null) {
-                User user = userRepository.findById(trainer.getUserId()).orElse(null);
-                if (user != null) {
-                    trainerName = user.getFirstName() + " " + user.getLastName();
-                }
-            }
-        }
+        String trainerName = routine.getTrainerId() == null ? null : trainerRepository.findById(routine.getTrainerId())
+                .flatMap(trainer -> userRepository.findById(trainer.getUserId()))
+                .map(user -> user.getFirstName() + " " + user.getLastName())
+                .orElse(null);
+        return toResponse(routine, trainerName);
+    }
+
+    private RoutineResponse toResponse(Routine routine, String trainerName) {
         return new RoutineResponse(routine.getId(), routine.getTrainerId(), trainerName,
                 routine.getName(), routine.getType(), routine.getDescription(), routine.getPrice());
     }

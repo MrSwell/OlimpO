@@ -1,12 +1,14 @@
 package server.olimpo.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import server.olimpo.dto.request.CreateInventoryItemRequest;
 import server.olimpo.dto.request.InventoryMovementRequest;
 import server.olimpo.dto.request.UpdateInventoryItemRequest;
 import server.olimpo.dto.response.InventoryItemResponse;
 import server.olimpo.dto.response.InventoryMovementResponse;
+import server.olimpo.dto.response.PageResponse;
 import server.olimpo.entity.InventoryItem;
 import server.olimpo.entity.InventoryMovement;
 import server.olimpo.enums.InventoryMovementType;
@@ -14,8 +16,7 @@ import server.olimpo.exception.BusinessException;
 import server.olimpo.exception.ResourceNotFoundException;
 import server.olimpo.repository.InventoryItemRepository;
 import server.olimpo.repository.InventoryMovementRepository;
-
-import java.util.List;
+import server.olimpo.util.Pagination;
 
 @Service
 public class InventoryService {
@@ -47,7 +48,7 @@ public class InventoryService {
 
     @Transactional
     public InventoryItemResponse updateItem(Long id, UpdateInventoryItemRequest request) {
-        InventoryItem item = itemRepository.findById(id)
+        InventoryItem item = itemRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventory item not found with id: " + id));
 
         validateQuantities(request.quantity(), request.minStock());
@@ -60,8 +61,10 @@ public class InventoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<InventoryItemResponse> getAllItems() {
-        return itemRepository.findAll().stream().map(this::toResponse).toList();
+    public PageResponse<InventoryItemResponse> getAllItems(String search, boolean lowStockOnly,
+                                                            Pageable pageable) {
+        return PageResponse.from(itemRepository.searchItems(lowStockOnly,
+                Pagination.normalizeSearch(search), pageable).map(this::toResponse));
     }
 
     @Transactional(readOnly = true)
@@ -71,16 +74,15 @@ public class InventoryService {
 
     /** Alert: items at or below their minimum stock threshold. */
     @Transactional(readOnly = true)
-    public List<InventoryItemResponse> getLowStockItems() {
-        return itemRepository.findLowStockItems().stream()
-                .map(this::toResponse)
-                .toList();
+    public PageResponse<InventoryItemResponse> getLowStockItems(String search, Pageable pageable) {
+        return getAllItems(search, true, pageable);
     }
 
     @Transactional
     public InventoryMovementResponse registerMovement(Long itemId, InventoryMovementRequest request) {
         String type = validateType(request.type());
-        InventoryItem item = getItemEntity(itemId);
+        InventoryItem item = itemRepository.findByIdForUpdate(itemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Inventory item not found with id: " + itemId));
 
         if (InventoryMovementType.OUTBOUND.name().equals(type)) {
             if (item.getQuantity() < request.quantity()) {
@@ -89,6 +91,9 @@ public class InventoryService {
             }
             item.setQuantity(item.getQuantity() - request.quantity());
         } else {
+            if (request.quantity() > Integer.MAX_VALUE - item.getQuantity()) {
+                throw new BusinessException("Stock quantity exceeds the maximum supported value");
+            }
             item.setQuantity(item.getQuantity() + request.quantity());
         }
         itemRepository.save(item);
@@ -103,11 +108,11 @@ public class InventoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<InventoryMovementResponse> getMovementHistory(Long itemId) {
+    public PageResponse<InventoryMovementResponse> getMovementHistory(Long itemId, String search,
+                                                                      Pageable pageable) {
         getItemEntity(itemId);
-        return movementRepository.findByItemIdOrderByMovementDateDesc(itemId).stream()
-                .map(this::toResponse)
-                .toList();
+        return PageResponse.from(movementRepository.searchByItemId(itemId,
+                Pagination.normalizeSearch(search), pageable).map(this::toResponse));
     }
 
     private InventoryItem getItemEntity(Long id) {

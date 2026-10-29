@@ -11,6 +11,7 @@ Target: the Olimpo backend running locally http://localhost:8080.
 3. Content-Type for every request with a body: `application/json; charset=utf-8`.
 4. Requests are **sent sequentially** in the order below, because later steps depend on ids created earlier (capture `.id` from responses into variables).
 5. Error format is always the same JSON shape: `{"status","error","message"}` — assert on it when testing error paths. Do NOT assert on stack traces/nested internals (never present by design).
+6. Collection endpoints use `page` (zero-based, default `0`), `size` (default `20`, maximum `100`) and optional `search`; successful responses have `content`, `page`, `size`, `totalElements` and `totalPages`. Existing filters such as `status` and `type` can be combined with pagination. Search runs in the database before the page is fetched.
 
 ## 1. Seeded accounts
 
@@ -41,7 +42,7 @@ Target: the Olimpo backend running locally http://localhost:8080.
 | B2 | POST /users (duplicate email of B1) | same body | 409 |
 | B3 | POST /users with `roles:["CLIENT"]` | via /users | 400 (`cannot be assigned via user management`) |
 | B4 | POST /users with `roles:["OTRA"]` | | 400 (`Invalid role`) |
-| B5 | GET /users | — | 200 list (only ADMIN may call) |
+| B5 | GET /users?page=0&size=2&search=admin | — | 200 page object with content + pagination metadata (only ADMIN may call) |
 | B6 | GET /users as RECEPCIONIST | — | 403 |
 | B7 | PATCH /users/{id}/roles ADMIN doing it | `{"roles":["TRAINER"]}` | 200, roles replaced |
 | B8 | PATCH /users/{id}/roles as RECEPCIONIST | — | 403 |
@@ -70,14 +71,14 @@ Target: the Olimpo backend running locally http://localhost:8080.
 | D2 | POST /inventory/items/{id}/movements `{"type":"INBOUND","quantity":40}` | | 201 |
 | D3 | POST /inventory/items/{id}/movements `{"type":"OUTBOUND","quantity":100}` | | 409 (`Insufficient stock`) |
 | D4 | POST /inventory/items/{id}/movements `{"type":"STOLEN","quantity":1}` | | 400 (`Invalid movement type`) |
-| D5 | GET /inventory/items/low-stock | | 200 |
+| D5 | GET /inventory/items/low-stock?page=0&size=20 | | 200 page object |
 | D6 | PATCH /inventory/items/{id} `{"name":"Whey protein 1kg","quantity":20,"minStock":4}` | | 200, `lowStock=false` |
-| D7 | GET /inventory/items/{id}/movements | | 200 (history, newest first) |
+| D7 | GET /inventory/items/{id}/movements?page=0&size=20 | | 200 page object (history, newest first) |
 | D8 | POST /inventory/items as RECEPCIONIST | — | 403 (rule: sometimes she is absent) |
 | D9 | POST /machines `{"name":" smith machine","brand":"NordicTrack","serialNumber":"NT-X1-9"}` | | 201, `status=AVAILABLE` |
 | D10 | POST /machines again with same serial | | 409 |
 | D11 | PATCH /machines/{id} `{"name":"Smith machine","brand":"NordicTrack","serialNumber":"NT-X1-9","status":"MAINTENANCE"}` | | 200 |
-| D12 | GET /machines?status=MAINTENANCE | — | 200 filtered list |
+| D12 | GET /machines?status=MAINTENANCE&page=0&size=20&search=smith | — | 200 page object filtered by status and text |
 | D13 | PATCH /machines/{id} `status:"ROTA"` | | 400 |
 
 ### Module E — Trainer schedules (dayOfWeek: 1=Sunday … 7=Saturday)
@@ -103,14 +104,22 @@ Target: the Olimpo backend running locally http://localhost:8080.
 | F4 | POST /routines CUSTOM without price | | 400 |
 | F5 | POST /routines `type:"PREMIUM"` | | 400 |
 | F6 | POST /routines CUSTOM as trainer (no trainerId) | | 201 with own trainerId |
-| F7 | GET /routines?type=CUSTOM | — | 200 |
+| F7 | GET /routines?type=CUSTOM&page=0&size=20&search=plan | — | 200 page object filtered by type and text |
 | F8 | POST /routines/{id}/assignments `{"clientId":1}` | | 201, `status=ACTIVE`, `assignmentDate=today` |
 | F9 | POST /routines/{id}/assignments `{"clientId":9999}` | | 404 |
 | F10 | POST /routines/{id}/assignments `{"clientId":1,"status":"FINALIZADA"}` | | 400 |
-| F11 | GET /routines/{id}/assignments | | 200 (ADMIN/TRAINER/recepcionist ok) |
-| F12 | GET /clients/1/routines as cliente1 | — | 200 own list |
+| F11 | GET /routines/{id}/assignments?page=0&size=20 | | 200 page object (ADMIN/TRAINER/recepcionist ok) |
+| F12 | GET /clients/1/routines?page=0&size=20 as cliente1 | — | 200 page object, own assignments |
 | F13 | GET /clients/1/routines as cliente2 | — | 403 |
 | F14 | POST /routines as CLIENT | — | 403 |
+
+### Pagination and search checks
+| # | Request | Expect |
+|---|---------|--------|
+| P1 | GET /clients?page=0&size=1&search=cliente1 as ADMIN | 200, at most one `content` item and populated metadata |
+| P2 | GET /clients?page=0&size=101 as ADMIN | 400, unified error JSON |
+| P3 | GET /clients?page=-1 as ADMIN | 400, unified error JSON |
+| P4 | GET /clients/1/payments?page=0&size=20&search=NEQUI as cliente1 | 200 page object; other clients remain inaccessible |
 
 ### Module G — Error-shape checks (cross-cutting)
 | # | Request | Expect | Asserts |

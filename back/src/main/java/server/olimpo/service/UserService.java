@@ -1,11 +1,13 @@
 package server.olimpo.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import server.olimpo.dto.request.CreateUserRequest;
 import server.olimpo.dto.request.UpdateUserRolesRequest;
 import server.olimpo.dto.response.UserResponse;
+import server.olimpo.dto.response.PageResponse;
 import server.olimpo.entity.Trainer;
 import server.olimpo.entity.User;
 import server.olimpo.enums.UserStatus;
@@ -13,11 +15,15 @@ import server.olimpo.exception.BusinessException;
 import server.olimpo.exception.ResourceNotFoundException;
 import server.olimpo.repository.TrainerRepository;
 import server.olimpo.repository.UserRepository;
+import server.olimpo.util.Pagination;
 
 import java.util.HashSet;
+import java.util.Collection;
+import java.util.Map;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -62,10 +68,17 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponse> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(user -> toResponse(user, userRepository.findRoleNamesByUserId(user.getId())))
-                .toList();
+    public PageResponse<UserResponse> getAllUsers(String search, Pageable pageable) {
+        var users = userRepository.searchUsers(Pagination.normalizeSearch(search), pageable);
+        Collection<Long> userIds = users.getContent().stream().map(User::getId).toList();
+        Map<Long, List<String>> rolesByUserId = userIds.isEmpty()
+                ? Map.of()
+                : userRepository.findRoleNamesByUserIds(userIds).stream()
+                .collect(Collectors.groupingBy(UserRepository.UserRoleNameProjection::getUserId,
+                        Collectors.mapping(UserRepository.UserRoleNameProjection::getRoleName,
+                                Collectors.toList())));
+        return PageResponse.from(users.map(user ->
+                toResponse(user, rolesByUserId.getOrDefault(user.getId(), List.of()))));
     }
 
     @Transactional(readOnly = true)

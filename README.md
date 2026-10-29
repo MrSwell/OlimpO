@@ -97,15 +97,25 @@ Nunca se filtran stacktraces, SQL ni detalles internos; el detalle queda solo en
 | Módulo | Ruta base | Acciones |
 |--------|-----------|----------|
 | **Auth** | `/api/v1/auth` | `POST /login`, `POST /refresh`, `GET /me` |
-| **Users** | `/api/v1/users` | `POST`, `GET` (solo ADMIN), `GET /{id}`, `PATCH /{id}/roles` |
-| **Clients** | `/api/v1/clients` | `POST`, `GET`, `GET /{id}`, `GET /{id}/memberships`, `GET /{id}/routines` |
+| **Users** | `/api/v1/users` | `POST`, `GET` paginado (solo ADMIN), `GET /{id}`, `PATCH /{id}/roles` |
+| **Clients** | `/api/v1/clients` | `POST`, `GET` paginado, `GET /{id}`, `GET /{id}/memberships` y `/payments` paginados, `GET /{id}/routines` paginado |
 | **Memberships** | `/api/v1/memberships` | `POST`, `GET /active`, `PATCH /{id}/renew` |
-| **Payments** | `/api/v1/payments` | `POST` |
-| **Inventory** | `/api/v1/inventory/items` | `POST`, `GET`, `GET /low-stock`, `GET /{id}`, `PATCH /{id}`, `POST /{id}/movements`, `GET /{id}/movements` |
-| **Machines** | `/api/v1/machines` | `POST`, `GET ?status=`, `GET /{id}`, `PATCH /{id}` |
+| **Payments** | `/api/v1/payments` | `POST`; historial paginado en `/api/v1/clients/{id}/payments` |
+| **Inventory** | `/api/v1/inventory/items` | `POST`, `GET` y `/low-stock` paginados, `GET /{id}`, `PATCH /{id}`, `POST /{id}/movements`, historial paginado en `GET /{id}/movements` |
+| **Machines** | `/api/v1/machines` | `POST`, `GET ?status=&search=&page=&size=` paginado, `GET /{id}`, `PATCH /{id}` |
 | **Schedules** | `/api/v1/trainers/{trainerId}/schedules` | `GET`, `POST` (reemplaza toda la semana) |
-| **Routines** | `/api/v1/routines` | `GET ?type=`, `POST`, `GET /{id}`, `POST /{id}/assignments`, `GET /{id}/assignments` |
-| | | `GET /api/v1/clients/{clientId}/routines` |
+| **Routines** | `/api/v1/routines` | `GET ?type=&search=&page=&size=` paginado, `POST`, `GET /{id}`, `POST /{id}/assignments`, `GET /{id}/assignments` paginado |
+| | | `GET /api/v1/clients/{clientId}/routines` paginado |
+
+### Carga por tramos y búsqueda
+
+Los endpoints de colecciones aceptan `page` (base cero, por defecto `0`), `size` (por defecto `20`, máximo `100`) y `search` opcional. Responden con `content`, `page`, `size`, `totalElements` y `totalPages`; la búsqueda y el recorte de página se ejecutan en MySQL. Los filtros actuales, como `status` de máquinas y `type` de rutinas, se pueden combinar con esos parámetros.
+
+```http
+GET /api/v1/clients?page=0&size=20&search=ana
+```
+
+La malla del entrenador conserva una respuesta de lista: está acotada a un plan semanal completo y el `POST` reemplaza ese plan como una unidad.
 
 Ver **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** para la matriz completa de quién puede acceder a cada una y los diagramas de flujo del código.
 

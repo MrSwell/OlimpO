@@ -2,6 +2,7 @@ package server.olimpo.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,9 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import server.olimpo.dto.request.CreateMachineRequest;
 import server.olimpo.dto.request.UpdateMachineRequest;
 import server.olimpo.dto.response.MachineResponse;
+import server.olimpo.dto.response.PageResponse;
 import server.olimpo.service.MachineService;
-
-import java.util.List;
+import server.olimpo.util.Pagination;
 
 @RestController
 @RequestMapping("/api/v1/machines")
@@ -37,9 +38,13 @@ public class MachineController {
     }
 
     @GetMapping
-    public List<MachineResponse> getAllMachines(
-            @RequestParam(required = false, name = "status") String status) {
-        return machineService.getAllMachines(status);
+    public PageResponse<MachineResponse> getAllMachines(
+            @RequestParam(required = false, name = "status") String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search) {
+        return machineService.getAllMachines(status, search,
+                Pagination.request(page, size, Sort.by(Sort.Order.asc("name"), Sort.Order.asc("id"))));
     }
 
     @GetMapping("/{id}")

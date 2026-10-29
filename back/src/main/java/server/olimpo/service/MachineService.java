@@ -1,17 +1,18 @@
 package server.olimpo.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import server.olimpo.dto.request.CreateMachineRequest;
 import server.olimpo.dto.request.UpdateMachineRequest;
 import server.olimpo.dto.response.MachineResponse;
+import server.olimpo.dto.response.PageResponse;
 import server.olimpo.entity.Machine;
 import server.olimpo.enums.MachineStatus;
 import server.olimpo.exception.BusinessException;
 import server.olimpo.exception.ResourceNotFoundException;
 import server.olimpo.repository.MachineRepository;
-
-import java.util.List;
+import server.olimpo.util.Pagination;
 
 @Service
 public class MachineService {
@@ -68,14 +69,10 @@ public class MachineService {
     }
 
     @Transactional(readOnly = true)
-    public List<MachineResponse> getAllMachines(String status) {
-        if (status == null || status.isBlank()) {
-            return machineRepository.findAll().stream().map(this::toResponse).toList();
-        }
-        String normalized = validateStatus(status);
-        return machineRepository.findByStatus(normalized).stream()
-                .map(this::toResponse)
-                .toList();
+    public PageResponse<MachineResponse> getAllMachines(String status, String search, Pageable pageable) {
+        String normalizedStatus = status == null || status.isBlank() ? null : validateStatus(status);
+        return PageResponse.from(machineRepository.searchMachines(normalizedStatus,
+                Pagination.normalizeSearch(search), pageable).map(this::toResponse));
     }
 
     @Transactional(readOnly = true)

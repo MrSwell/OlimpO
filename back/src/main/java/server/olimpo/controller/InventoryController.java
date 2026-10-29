@@ -2,6 +2,7 @@ package server.olimpo.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import server.olimpo.dto.request.CreateInventoryItemRequest;
@@ -16,9 +18,9 @@ import server.olimpo.dto.request.InventoryMovementRequest;
 import server.olimpo.dto.request.UpdateInventoryItemRequest;
 import server.olimpo.dto.response.InventoryItemResponse;
 import server.olimpo.dto.response.InventoryMovementResponse;
+import server.olimpo.dto.response.PageResponse;
 import server.olimpo.service.InventoryService;
-
-import java.util.List;
+import server.olimpo.util.Pagination;
 
 /**
  * Inventory management. Roles: ADMIN, TRAINER_MANAGER, TRAINER.
@@ -43,13 +45,21 @@ public class InventoryController {
     }
 
     @GetMapping
-    public List<InventoryItemResponse> getAllItems() {
-        return inventoryService.getAllItems();
+    public PageResponse<InventoryItemResponse> getAllItems(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search) {
+        return inventoryService.getAllItems(search, false,
+                Pagination.request(page, size, Sort.by(Sort.Order.asc("name"), Sort.Order.asc("id"))));
     }
 
     @GetMapping("/low-stock")
-    public List<InventoryItemResponse> getLowStockItems() {
-        return inventoryService.getLowStockItems();
+    public PageResponse<InventoryItemResponse> getLowStockItems(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search) {
+        return inventoryService.getLowStockItems(search,
+                Pagination.request(page, size, Sort.by(Sort.Order.asc("name"), Sort.Order.asc("id"))));
     }
 
     @GetMapping("/{id}")
@@ -70,7 +80,13 @@ public class InventoryController {
     }
 
     @GetMapping("/{id}/movements")
-    public List<InventoryMovementResponse> getMovementHistory(@PathVariable Long id) {
-        return inventoryService.getMovementHistory(id);
+    public PageResponse<InventoryMovementResponse> getMovementHistory(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search) {
+        return inventoryService.getMovementHistory(id, search,
+                Pagination.request(page, size,
+                        Sort.by(Sort.Order.desc("movementDate"), Sort.Order.desc("id"))));
     }
 }

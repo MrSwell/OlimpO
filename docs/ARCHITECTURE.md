@@ -156,25 +156,31 @@ Formato único: `{"status": <int>, "error": <tipo>, "message": <texto seguro>}`.
 
 ## 5. Matriz de acceso por ruta
 
+Las rutas de colecciones indicadas como **paginadas** aceptan `page` (base cero, default `0`), `size` (default `20`, máximo `100`) y `search` opcional. Devuelven un objeto con `content`, `page`, `size`, `totalElements` y `totalPages`. Búsquedas/filtros se aplican en la consulta de base de datos antes de obtener cada página.
+
 | Ruta | Métodos | Roles permitidos |
 |------|---------|------------------|
 | `/api/v1/auth/login` | POST | público |
 | `/api/v1/auth/refresh`, `/me` | POST/GET | cualquiera autenticado |
 | `/api/v1/users` (POST) | POST | ADMIN, RECEPCIONIST, TRAINER_MANAGER, TRAINER |
-| `/api/v1/users` (list) | GET | **solo ADMIN** |
+| `/api/v1/users` (list, paginada; search por email, nombre, apellido o teléfono) | GET | **solo ADMIN** |
 | `/api/v1/users/{id}` | GET | solo ADMIN |
 | `/api/v1/users/{id}/roles` | PATCH | solo ADMIN |
-| `/api/v1/clients` | POST/GET | ADMIN, RECEPCIONIST |
+| `/api/v1/clients` (GET paginada; search por identidad/contacto/documento) | POST/GET | ADMIN, RECEPCIONIST |
 | `/api/v1/clients/{id}` | GET | ADMIN, RECEPCIONIST, CLIENT (solo el propio) |
-| `/api/v1/clients/{id}/memberships` | GET | ADMIN, RECEPCIONIST, CLIENT (solo el propio) |
-| `/api/v1/clients/{id}/routines` | GET | ADMIN, TRAINER_MANAGER, TRAINER, RECEPCIONIST, CLIENT (solo el propio) |
+| `/api/v1/clients/{id}/memberships` (paginada) | GET | ADMIN, RECEPCIONIST, CLIENT (solo el propio) |
+| `/api/v1/clients/{id}/payments` (paginada) | GET | ADMIN, RECEPCIONIST, CLIENT (solo el propio) |
+| `/api/v1/clients/{id}/routines` (paginada) | GET | ADMIN, TRAINER_MANAGER, TRAINER, RECEPCIONIST, CLIENT (solo el propio) |
 | `/api/v1/memberships` / `/active` / `{id}/renew` | PATCH/POST/GET | ADMIN, RECEPCIONIST (active también CLIENT) |
 | `/api/v1/payments` | POST | ADMIN, RECEPCIONIST |
-| `/api/v1/inventory/items/**` | todos | ADMIN, TRAINER_MANAGER, TRAINER |
-| `/api/v1/machines/**` | todos | ADMIN, TRAINER_MANAGER, TRAINER |
-| `/api/v1/trainers/{id}/schedules` | GET/POST | ADMIN, TRAINER_MANAGER (cualquiera), TRAINER (solo la propia) |
-| `/api/v1/routines` (GET catálogo) | GET | cualquiera autenticado |
+| `/api/v1/inventory/items` y `/low-stock` (paginadas) | GET | ADMIN, TRAINER_MANAGER, TRAINER |
+| `/api/v1/inventory/items/{id}/movements` (paginada) | GET | ADMIN, TRAINER_MANAGER, TRAINER |
+| `/api/v1/inventory/items/**` | resto | ADMIN, TRAINER_MANAGER, TRAINER |
+| `/api/v1/machines` (paginada; status + search) | GET | ADMIN, TRAINER_MANAGER, TRAINER |
+| `/api/v1/machines/**` | resto | ADMIN, TRAINER_MANAGER, TRAINER |
+| `/api/v1/trainers/{id}/schedules` | GET/POST | ADMIN, TRAINER_MANAGER (cualquiera), TRAINER (solo la propia); lista semanal acotada |
+| `/api/v1/routines` (GET catálogo paginado; type + search) | GET | cualquiera autenticado |
 | `/api/v1/routines` (POST), `/{id}/assignments` | POST | ADMIN, TRAINER_MANAGER, TRAINER |
-| `/api/v1/routines/{id}/assignments` | GET | ADMIN, TRAINER_MANAGER, TRAINER, RECEPCIONIST |
+| `/api/v1/routines/{id}/assignments` (paginada) | GET | ADMIN, TRAINER_MANAGER, TRAINER, RECEPCIONIST |
 
 > Nota histórica del equipo: **RECEPCIONIST queda fuera del inventario** porque "a veces no está la recepcionista" y el staff deportivo lo gestiona.

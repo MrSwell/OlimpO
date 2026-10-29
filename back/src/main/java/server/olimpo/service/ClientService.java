@@ -3,10 +3,12 @@ package server.olimpo.service;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import server.olimpo.dto.request.CreateClientRequest;
 import server.olimpo.dto.response.ClientResponse;
+import server.olimpo.dto.response.PageResponse;
 import server.olimpo.entity.Client;
 import server.olimpo.entity.User;
 import server.olimpo.enums.UserStatus;
@@ -14,8 +16,11 @@ import server.olimpo.exception.BusinessException;
 import server.olimpo.exception.ResourceNotFoundException;
 import server.olimpo.repository.ClientRepository;
 import server.olimpo.repository.UserRepository;
+import server.olimpo.util.Pagination;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ClientService {
@@ -71,15 +76,19 @@ public class ClientService {
     }
 
     @Transactional(readOnly = true)
-    public List<ClientResponse> getAllClients() {
-        return clientRepository.findAll().stream()
-                .map(client -> {
-                    User user = userRepository.findById(client.getUserId())
-                            .orElseThrow(() -> new ResourceNotFoundException(
-                                    "User not found for client id: " + client.getId()));
-                    return toResponse(client, user);
-                })
-                .toList();
+    public PageResponse<ClientResponse> getAllClients(String search, Pageable pageable) {
+        var clients = clientRepository.searchClients(Pagination.normalizeSearch(search), pageable);
+        List<Long> userIds = clients.getContent().stream().map(Client::getUserId).toList();
+        Map<Long, User> usersById = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
+        return PageResponse.from(clients.map(client -> {
+            User user = usersById.get(client.getUserId());
+            if (user == null) {
+                throw new ResourceNotFoundException("User not found for client id: " + client.getId());
+            }
+            return toResponse(client, user);
+        }));
+
     }
 
     @Transactional(readOnly = true)
