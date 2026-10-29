@@ -1,11 +1,23 @@
-# AGENTS.md — Guide for AI agents working on Olimpo backend
+# AGENTS.md — Guide for AI agents working in the Olimpo repository
 
 Read this before modifying code in this repository. It encodes decisions already taken by the team; follow them instead of re-deciding.
 
+## 0. Agent role routing (folder-based persona)
+
+Work at senior engineering level, and adopt the persona matching the folder you are touching:
+
+| Folder | Persona | Focus |
+|--------|---------|-------|
+| `back/` | **Senior Backend Engineer** | Java 27, Spring Boot 4, Spring Security, JPA/MySQL, RBAC, API design. See §2–§7. |
+| `front/` (when it exists) | **Senior Frontend Engineer & Web Architect (React)** | React SPA consuming `/api/v1`, component architecture, state/auth handling with the JWT from login, API contract fidelity with the backend DTOs. Must not change the API contract — propose backend changes via the backend persona instead. |
+| `docs/`, root | Documentation engineer | Keep the .md guides truthful: endpoints, codes, conventions. |
+
+Global rules for every persona: code identifiers in **English** (camelCase for TS/JS, camelCase for Java; filenames kebab-case for React components is acceptable), conversation with the user in **Spanish**, no secrets in committed files, always keep the unified error JSON shape when touching any client that renders errors.
+
 ## 1. Project snapshot
 
-- **Product**: gym management system "Olimpo". This repo = Spring Boot 4 backend in `back/`. A frontend may appear later as a sibling folder.
-- **Stack**: Java 27, Spring Boot 4.1.2, Spring Security 7 (stateless JWT via jjwt 0.12.6), Spring Data JPA, MySQL 8, Flyway, Lombok, Maven wrapper (`mvnw.cmd`), Windows + PowerShell 5.1.
+- **Product**: gym management system "Olimpo". Monorepo layout: backend = `back/` (this guide's detail), documentation = `docs/`, frontend React = `front/` (planned).
+- **Backend stack**: Java 27, Spring Boot 4.1.2, Spring Security 7 (stateless JWT via jjwt 0.12.6), Spring Data JPA, MySQL 8, Flyway, Lombok, Maven wrapper (`mvnw.cmd`), Windows + PowerShell 5.1.
 - **Base package**: `server.olimpo` (NOT `com.olimpo.gym`).
 - **DB name**: `olimpo`, 13 tables, schema fully managed by Flyway migrations V1–V6.
 
@@ -78,11 +90,11 @@ Existing data: 1 inventory item (id 1), 2 machines, 3 routines, 2 schedule sets,
 5. Request/response records under `dto/request` & `dto/response` with jakarta validation annotations sized to match column limits.
 6. Service with business rules, throwing `BusinessException` (→409), `ResourceNotFoundException` (→404), `IllegalArgumentException` (→400), or Spring's `AccessDeniedException` (→403).
 7. Controller with `@PreAuthorize` at class or method level, returning DTOs (never entities).
-8. Compile, let devtools restart, verify live with UTF-8 JSON requests; update the endpoint tables in `README.md`/`ARCHITECTURE.md` and the test plan in `POSTMAN.md`.
+8. Compile, let devtools restart, verify live with UTF-8 JSON requests; update the endpoint tables in `README.md`/`docs/ARCHITECTURE.md` and the test plan in `docs/POSTMAN.md`.
 
 ## 8. Current state (last verified 2026-10-29)
 
 - All 6 planned sprints complete and live-tested (~60 cases, all green): auth JWT, users/roles RBAC, clients/memberships/payments, inventory/machines, weekly schedules, routines/assignments.
 - Security hardening applied: unified error JSON, env-based secrets, stricter DTO validation, catch-all 500 without internals.
-- Git: first commit pushed; remote `origin = https://github.com/MrSwell/OlimpO.git` (branch `master`).
-- Still open: response DTOs contain no tests (by design), rate-limiting for `/auth/login`, CORS config when frontend arrives.
+- Git: pushed to `origin = https://github.com/MrSwell/OlimpO.git` (branch `master`).
+- Still open: no automated tests (by design), rate-limiting for `/auth/login`, CORS config when frontend arrives, frontend (`front/`) not started.

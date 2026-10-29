@@ -1,10 +1,22 @@
-# 🏛️ Olimpo — Backend
+# 🏛️ Olimpo — Sistema de gestión de gimnasio
 
-Sistema web de gestión de gimnasio: usuarios con roles, membresías y pagos, inventario con alertas de stock, malla horaria de entrenadores y rutinas de entrenamiento.
+Monorepo del sistema web de gestión de gimnasio: usuarios con roles, membresías y pagos, inventario con alertas de stock, malla horaria de entrenadores y rutinas de entrenamiento.
 
-> **Header de la API**: todas las rutas responden JSON bajo `/api/v1/**`.
+## Estructura del repositorio
 
-## Stack
+```
+OlimpO/
+├── back/      # Backend Spring Boot 4 (Java 27 + MySQL 8) — API /api/v1
+├── docs/      # Documentación técnica y planes de prueba
+│   ├── ARCHITECTURE.md   # Diagramas de flujo, módulos, acceso por ruta
+│   └── POSTMAN.md        # Plan de pruebas (~90 casos) para la IA de Postman
+├── front/     # Futuro frontend (React) — por crear
+└── AGENTS.md  # Convenciones y persona del agente según carpeta
+```
+
+> **Header de la API**: todas las rutas del backend responden JSON bajo `/api/v1/**`.
+
+## Stack del backend
 
 | Capa | Tecnología |
 |------|------------|
@@ -15,10 +27,10 @@ Sistema web de gestión de gimnasio: usuarios con roles, membresías y pagos, in
 | Migraciones | Flyway (baseline en V5, futuras = V7+) |
 | Build | Maven wrapper (`mvnw.cmd`) |
 
-## Estructura del proyecto
+## Estructura del proyecto (back/)
 
 ```
-server.olimpo
+back/src/main/java/server.olimpo
 ├── config/            # SecurityConfig, AdminUserInitializer (seed dev)
 ├── controller/        # Endpoints REST /api/v1/**
 ├── dto/
@@ -33,10 +45,10 @@ server.olimpo
 └── service/           # Reglas de negocio por módulo
 ```
 
-## Puesta en marcha
+## Puesta en marcha (back/)
 
-1. **MySQL 8** corriendo en `127.0.0.1:3306` con base `olimpo` creada a partir de las migraciones (`src/main/resources/db/migration/V1…V6`).
-2. Copia `.env.example` → `.env` y completa credenciales:
+1. **MySQL 8** corriendo en `127.0.0.1:3306` con base `olimpo` creada a partir de las migraciones (`back/src/main/resources/db/migration/V1…V6`).
+2. En `back/`, copia `.env.example` → `.env` y completa credenciales:
 
    ```properties
    DB_USERNAME=root
@@ -46,9 +58,10 @@ server.olimpo
    SHOW_SQL=true
    ```
 
-3. Arranca:
+3. Arranca (desde `back/`):
 
    ```powershell
+   cd back
    $env:JAVA_HOME = "C:\Program Files\Java\jdk-27"
    .\mvnw.cmd spring-boot:run
    ```
@@ -94,7 +107,7 @@ Nunca se filtran stacktraces, SQL ni detalles internos; el detalle queda solo en
 | **Routines** | `/api/v1/routines` | `GET ?type=`, `POST`, `GET /{id}`, `POST /{id}/assignments`, `GET /{id}/assignments` |
 | | | `GET /api/v1/clients/{clientId}/routines` |
 
-Ver **[ARCHITECTURE.md](ARCHITECTURE.md)** para la matriz completa de quién puede acceder a cada una.
+Ver **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** para la matriz completa de quién puede acceder a cada una y los diagramas de flujo del código.
 
 ## Roles y política de acceso
 
@@ -110,10 +123,10 @@ Ver **[ARCHITECTURE.md](ARCHITECTURE.md)** para la matriz completa de quién pue
 
 - Identificadores del código en **inglés y camelCase** (`trainerId`, `lowStock`, `dayOfWeek`).
 - Días de la semana: **1 = domingo … 7 = sábado** (convención MySQL `DAYOFWEEK`).
-- Diagrama de flujo completo: **[ARCHITECTURE.md](ARCHITECTURE.md)**.
-- Instrucciones para otros agentes/IA: **[AGENTS.md](AGENTS.md)**.
-- Plan de pruebas para Postman: **[POSTMAN.md](POSTMAN.md)**.
+- Diagrama de flujo completo: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+- Instrucciones para agentes de IA (incluye el rol según carpeta: senior backend en `back/`, senior frontend React en `front/`): **[AGENTS.md](AGENTS.md)**.
+- Plan de pruebas para Postman: **[docs/POSTMAN.md](docs/POSTMAN.md)**.
 
 ## Pruebas
 
-Se probaron los 6 sprints (auth, usuarios, clientes/membresías/pagos, inventario/máquinas, horarios, rutinas) por API REST viva (~60 casos). Test automatizado no incluido aún (decisión: añadir `JUnit/MockMvc` cuando se solicite).
+Se probaron los 6 sprints (auth, usuarios, clientes/membresías/pagos, inventario/máquinas, horarios, rutinas) por API REST viva (~60 casos). Test automatizado no incluido aún (decisión: añadir `JUnit/MockMvc` cuando se solicite). El plan repetible está en **[docs/POSTMAN.md](docs/POSTMAN.md)**.
