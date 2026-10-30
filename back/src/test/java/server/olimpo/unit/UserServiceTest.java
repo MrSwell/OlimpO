@@ -9,6 +9,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import server.olimpo.dto.request.CreateUserRequest;
 import server.olimpo.dto.request.UpdateUserRolesRequest;
@@ -53,6 +57,15 @@ class UserServiceTest {
         return new CreateUserRequest("new@olimpo.com", "secret1", "Nueva", "Persona", "3001112233", roles);
     }
 
+    private Authentication auth(String email, String role) {
+        return new UsernamePasswordAuthenticationToken(email, null,
+                List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+    }
+
+    private Authentication adminAuth() {
+        return auth("admin@olimpo.com", "ADMIN");
+    }
+
     @Test
     @DisplayName("S2: creates user with encoded password and assigned roles")
     void createUserSuccess() {
@@ -65,7 +78,7 @@ class UserServiceTest {
         });
         when(userRepository.findRoleIdByName("RECEPCIONIST")).thenReturn(Optional.of(2));
 
-        UserResponse response = service().createUser(request(List.of("RECEPCIONIST")));
+        UserResponse response = service().createUser(request(List.of("RECEPCIONIST")), adminAuth());
 
         assertEquals(10L, response.id());
         assertEquals(List.of("RECEPCIONIST"), response.roles());
@@ -94,7 +107,7 @@ class UserServiceTest {
             return t;
         });
 
-        service().createUser(request(List.of("TRAINER")));
+        service().createUser(request(List.of("TRAINER")), adminAuth());
 
         ArgumentCaptor<Trainer> captor = ArgumentCaptor.forClass(Trainer.class);
         verify(trainerRepository).save(captor.capture());
@@ -107,7 +120,7 @@ class UserServiceTest {
         when(userRepository.existsByEmail("new@olimpo.com")).thenReturn(true);
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> service().createUser(request(List.of("ADMIN"))));
+                () -> service().createUser(request(List.of("ADMIN")), adminAuth()));
 
         assertTrue(ex.getMessage().contains("already exists"));
         verify(userRepository, never()).save(any());
@@ -117,17 +130,49 @@ class UserServiceTest {
     @DisplayName("S2: role CLIENT cannot be assigned via user management")
     void clientRoleRejected() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> service().createUser(request(List.of("CLIENT"))));
+                () -> service().createUser(request(List.of("CLIENT")), adminAuth()));
         assertTrue(ex.getMessage().contains("CLIENT cannot be assigned"));
+    }
+
+    @Test
+    @DisplayName("S2: only ADMIN may assign the ADMIN role (privilege-escalation guard)")
+    void nonAdminCannotAssignAdminRole() {
+        AccessDeniedException ex = assertThrows(AccessDeniedException.class,
+                () -> service().createUser(request(List.of("ADMIN")),
+                        auth("recepcionista@olimpo.com", "RECEPCIONIST")));
+
+        assertTrue(ex.getMessage().contains("Only ADMIN"));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("S2: ADMIN can mint an ADMIN account")
+    void adminCanAssignAdminRole() {
+        when(userRepository.existsByEmail("new@olimpo.com")).thenReturn(false);
+        when(passwordEncoder.encode(any())).thenReturn("H");
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            u.setId(12L);
+            return u;
+        });
+        when(userRepository.findRoleIdByName("ADMIN")).thenReturn(Optional.of(1));
+
+        UserResponse response = service().createUser(request(List.of("ADMIN")), adminAuth());
+
+        assertEquals(12L, response.id());
+        assertEquals(List.of("ADMIN"), response.roles());
+        verify(userRepository).insertUserRole(12L, 1);
     }
 
     @Test
     @DisplayName("Invalid role and duplicated role are rejected")
     void invalidAndDuplicateRolesRejected() {
-        assertThrows(IllegalArgumentException.class, () -> service().createUser(request(List.of("COACH"))));
         assertThrows(IllegalArgumentException.class,
-                () -> service().createUser(request(List.of("ADMIN", "admin"))));
-        assertThrows(IllegalArgumentException.class, () -> service().createUser(request(List.of())));
+                () -> service().createUser(request(List.of("COACH")), adminAuth()));
+        assertThrows(IllegalArgumentException.class,
+                () -> service().createUser(request(List.of("ADMIN", "admin")), adminAuth()));
+        assertThrows(IllegalArgumentException.class,
+                () -> service().createUser(request(List.of()), adminAuth()));
     }
 
     @Test

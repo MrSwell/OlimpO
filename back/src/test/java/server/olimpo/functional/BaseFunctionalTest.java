@@ -10,7 +10,6 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import server.olimpo.entity.Client;
 import server.olimpo.entity.InventoryItem;
 import server.olimpo.entity.Membership;
-import server.olimpo.entity.Payment;
 import server.olimpo.entity.Routine;
 import server.olimpo.entity.User;
 import server.olimpo.repository.ClientRepository;

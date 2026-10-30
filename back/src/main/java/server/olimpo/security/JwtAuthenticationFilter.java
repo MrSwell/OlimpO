@@ -47,10 +47,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (jwtService.isValid(token)) {
                     String email = jwtService.extractEmail(token);
                     UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    // Deactivated users (status != ACTIVE) must never be authenticated
+                    // by an old token, even if the JWT is still technically valid.
+                    if (userDetails.isEnabled()) {
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
             } catch (Exception e) {
                 SecurityContextHolder.clearContext();

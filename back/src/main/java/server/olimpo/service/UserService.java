@@ -1,5 +1,7 @@
 package server.olimpo.service;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -45,13 +47,21 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse createUser(CreateUserRequest request) {
+    public UserResponse createUser(CreateUserRequest request, Authentication authentication) {
         String email = request.email().trim().toLowerCase();
+
+        // Validation runs before any DB write and before the caller check.
+        Set<String> normalizedRoles = validateStaffRoles(request.roles());
+
+        // Privilege-escalation guard: only ADMIN may mint ADMIN accounts
+        // (PATCH /users/{id}/roles is already ADMIN-only; POST must match that).
+        if (normalizedRoles.contains("ADMIN") && !hasAuthority(authentication, "ROLE_ADMIN")) {
+            throw new AccessDeniedException("Only ADMIN can assign the ADMIN role");
+        }
 
         if (userRepository.existsByEmail(email)) {
             throw new BusinessException("A user with this email already exists: " + email);
         }
-        validateStaffRoles(request.roles());
 
         User user = User.builder()
                 .email(email)
@@ -101,7 +111,7 @@ public class UserService {
                 user.getPhone(), user.getStatus(), assignedRoles, user.getCreatedAt());
     }
 
-    private void validateStaffRoles(List<String> roles) {
+    private Set<String> validateStaffRoles(List<String> roles) {
         if (roles == null || roles.isEmpty()) {
             throw new IllegalArgumentException("At least one role is required");
         }
@@ -120,6 +130,12 @@ public class UserService {
                 throw new IllegalArgumentException("Duplicate role in request: " + role);
             }
         }
+        return normalized;
+    }
+
+    private boolean hasAuthority(Authentication authentication, String authority) {
+        return authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(authority));
     }
 
     private List<String> assignRoles(Long userId, List<String> roles) {

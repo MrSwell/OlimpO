@@ -141,11 +141,11 @@ Ver **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** para la matriz completa de 
 
 Suite automatizada en tres fases (orden obligatorio), cada una con su informe `RESULTS.md`:
 
-1. **Unitarias** ✅ — `back/src/test/java/server/olimpo/unit/` — JUnit 5 + Mockito: **87/87 en verde** (ver `unit/RESULTS.md`).
+1. **Unitarias** ✅ — `back/src/test/java/server/olimpo/unit/` — JUnit 5 + Mockito: **89/89 en verde** (ver `unit/RESULTS.md`).
 2. **Funcionales** ✅ — `back/src/test/java/server/olimpo/functional/` — contexto real + MySQL por HTTP: **77/77 en verde** (ver `functional/RESULTS.md`).
 3. **Volumen** ✅ — `back/src/test/java/server/olimpo/volume/` — concurrencia, cargas y límites: **16/16 en verde** (ver `volume/RESULTS.md`).
 
-**Suite completa: `Tests run: 180, Failures: 0, Errors: 0` → BUILD SUCCESS.** Toda fase purga sus datos al terminar: la BD de desarrollo queda intacta (auditoría SQL en cada `RESULTS.md`).
+**Suite completa: `Tests run: 182, Failures: 0, Errors: 0` → BUILD SUCCESS.** Toda fase purga sus datos al terminar: la BD de desarrollo queda intacta (auditoría SQL en cada `RESULTS.md`).
 
 Además, los 6 sprints se probaron en vivo por API REST (~60 casos). El plan repetible está en **[docs/POSTMAN.md](docs/POSTMAN.md)**.
 

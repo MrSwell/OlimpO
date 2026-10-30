@@ -3,7 +3,7 @@
 - **Fecha de ejecución:** 2026-10-29
 - **Comando:** `$env:JAVA_HOME = "C:\Program Files\Java\jdk-27"; .\mvnw.cmd test`
 - **Stack:** JUnit 5 + Mockito (sin contexto Spring — puros mocks vía `@ExtendWith(MockitoExtension.class)`)
-- **Resultado global:** `Tests run: 87, Failures: 0, Errors: 0, Skipped: 0` → **BUILD SUCCESS**
+- **Resultado global:** `Tests run: 89, Failures: 0, Errors: 0, Skipped: 0` → **BUILD SUCCESS**
 
 ## Cobertura por clase
 
@@ -12,7 +12,7 @@
 | 1 | `SmokeTest` | Toolchain | 1 | 1 ✅ | 0 |
 | 2 | `JwtServiceTest` | S1 Auth | 3 | 3 ✅ | 0 |
 | 3 | `AuthServiceTest` | S1 Auth | 4 | 4 ✅ | 0 |
-| 4 | `UserServiceTest` | S2 Usuarios/RBAC | 8 | 8 ✅ | 0 |
+| 4 | `UserServiceTest` | S2 Usuarios/RBAC | 10 | 10 ✅ | 0 |
 | 5 | `ClientServiceTest` | S3 Clientes | 11 | 11 ✅ | 0 |
 | 6 | `MembershipServiceTest` | S3 Membresías | 15 | 15 ✅ | 0 |
 | 7 | `PaymentServiceTest` | S3 Pagos | 4 | 4 ✅ | 0 |
@@ -21,12 +21,12 @@
 | 10 | `TrainerScheduleServiceTest` | S5 Horarios | 10 | 10 ✅ | 0 |
 | 11 | `RoutineServiceTest` | S6 Rutinas | 13 | 13 ✅ | 0 |
 | 12 | `OlimpoApplicationTests` | Contexto real (MySQL) | 1 | 1 ✅ | 0 |
-| | **Total** | | **87** | **87** | **0** |
+| | **Total** | | **89** | **89** | **0** |
 
 ## Qué se valida en esta fase
 
 - **Auth (S1):** round-trip del JWT (generar/parsear), rechazo de tokens corruptos y de otra clave/firma (`isValid=false` sin excepciones), normalización de email en login (`trim + lowercase`), `login`/`refresh`/`me` con roles y `tokenType=Bearer`.
-- **Usuarios (S2):** contraseña hasheada con BCrypt antes de persistir, email duplicado → `BusinessException` (409), rol `CLIENT` rechazado en gestión de usuarios (400), rol inválido y roles duplicados → 400, auto-creación del perfil `trainers` al asignar rol `TRAINER`, `updateUserRoles` atómico (`deleteUserRoles` → `insertUserRole` en orden, verificado con `InOrder`), listado con roles agrupados por proyección.
+- **Usuarios (S2):** contraseña hasheada con BCrypt antes de persistir, email duplicado → `BusinessException` (409), rol `CLIENT` rechazado en gestión de usuarios (400), rol inválido y roles duplicados → 400, **guard anti-escalamiento: solo ADMIN puede asignar rol `ADMIN`** (no-ADMIN → `AccessDeniedException` 403), auto-creación del perfil `trainers` al asignar rol `TRAINER`, `updateUserRoles` atómico (`deleteUserRoles` → `insertUserRole` en orden, verificado con `InOrder`), listado con roles agrupados por proyección.
 - **Clientes (S3):** creación de usuario + perfil + rol CLIENT, normalización de email y sexo (`f → F`), duplicado → 409, sexo inválido → 400, 404 en cliente desconocido, y la matriz de acceso: staff (ADMIN/RECEPCIONIST) ve cualquier cliente, `CLIENT` solo el propio (403 `Clients can only access their own data`).
 - **Membresías (S3):** duraciones por tipo (**DAILY=1, QUARTERLY=15, MONTHLY=30** días), máx. 1 `ACTIVE` → 409, tipos/métodos/precios inválidos → 400 con listas permitidas, `renew` extiende desde `max(fechaFin, hoy)` y registra `Payment`, `renew` de membresía no-ACTIVE → 409, `/active` propio para CLIENT vs. parametrizado para staff.
 - **Pagos (S3):** vinculación membership→client, método normalizado a mayúsculas, monto ≤ 0 → 400, membresía desconocida → 404 (validación de orden: 404 antes que 400).

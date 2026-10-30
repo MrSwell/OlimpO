@@ -78,7 +78,7 @@ public class MembershipService {
         String method = validateMethod(request.method());
         BigDecimal price = validatePrice(request.price());
 
-        Membership membership = membershipRepository.findById(id)
+        Membership membership = membershipRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Membership not found with id: " + id));
 
         if (!MembershipStatus.ACTIVE.name().equals(membership.getStatus())) {

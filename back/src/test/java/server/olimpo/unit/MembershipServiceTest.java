@@ -150,7 +150,7 @@ class MembershipServiceTest {
         LocalDate oldEnd = LocalDate.now().plusDays(10);
         Membership membership = Membership.builder().id(30L).clientId(1L)
                 .status("ACTIVE").endDate(oldEnd).build();
-        when(membershipRepository.findById(30L)).thenReturn(Optional.of(membership));
+        when(membershipRepository.findByIdForUpdate(30L)).thenReturn(Optional.of(membership));
 
         MembershipResponse response = service().renewMembership(30L,
                 new RenewMembershipRequest("QUARTERLY", new BigDecimal("80000"), "CARD", "REF-2"));
@@ -167,7 +167,7 @@ class MembershipServiceTest {
     void renewStartsFromTodayWhenExpired() {
         Membership membership = Membership.builder().id(30L).clientId(1L)
                 .status("ACTIVE").endDate(LocalDate.now().minusDays(5)).build();
-        when(membershipRepository.findById(30L)).thenReturn(Optional.of(membership));
+        when(membershipRepository.findByIdForUpdate(30L)).thenReturn(Optional.of(membership));
 
         MembershipResponse response = service().renewMembership(30L,
                 new RenewMembershipRequest("MONTHLY", new BigDecimal("50000"), "CASH", null));
@@ -180,7 +180,7 @@ class MembershipServiceTest {
     void renewInactiveRejected() {
         Membership membership = Membership.builder().id(30L).clientId(1L)
                 .status("EXPIRED").endDate(LocalDate.now()).build();
-        when(membershipRepository.findById(30L)).thenReturn(Optional.of(membership));
+        when(membershipRepository.findByIdForUpdate(30L)).thenReturn(Optional.of(membership));
 
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> service().renewMembership(30L,
@@ -191,7 +191,7 @@ class MembershipServiceTest {
     @Test
     @DisplayName("S3: renew unknown membership -> 404")
     void renewUnknownMembership() {
-        when(membershipRepository.findById(99L)).thenReturn(Optional.empty());
+        when(membershipRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
                 () -> service().renewMembership(99L,

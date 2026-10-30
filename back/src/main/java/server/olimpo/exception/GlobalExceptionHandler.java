@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -129,8 +130,15 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(409, "Conflict", "The request conflicts with existing data"));
     }
 
-    /**
-     * 409 - Lost race: another request committed while this transaction was working on
+        /** 401 - Authenticated identity disappeared mid-flight (deleted account); never a 500. */
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleIdentityMissing(UsernameNotFoundException ex) {
+        log.warn("Identity not found during authentication: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(401, "Unauthorized", "Authentication required or token invalid"));
+    }
+
+    /** 409 - Lost race: another request committed while this transaction was working on
      * the same rows (e.g. two simultaneous weekly-schedule replaces). Never a 500.
      */
     @ExceptionHandler(OptimisticLockingFailureException.class)

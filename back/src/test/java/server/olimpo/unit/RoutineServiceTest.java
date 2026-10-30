@@ -18,7 +18,6 @@ import server.olimpo.entity.Routine;
 import server.olimpo.entity.RoutineAssignment;
 import server.olimpo.entity.Trainer;
 import server.olimpo.entity.User;
-import server.olimpo.exception.BusinessException;
 import server.olimpo.exception.ResourceNotFoundException;
 import server.olimpo.repository.ClientRepository;
 import server.olimpo.repository.RoutineAssignmentRepository;

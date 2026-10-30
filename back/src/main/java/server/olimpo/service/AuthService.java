@@ -23,7 +23,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final long expirationMs;
 
-public AuthService(AuthenticationManager authenticationManager,
+    public AuthService(AuthenticationManager authenticationManager,
                        JwtService jwtService,
                        UserRepository userRepository,
                        @Value("${jwt.expiration-ms}") long expirationMs) {

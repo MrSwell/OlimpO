@@ -35,7 +35,7 @@ Global rules for every persona: code identifiers in **English** (camelCase for T
 
 ## 3. Critical business rules (already implemented)
 
-- **Users**: every role except `CLIENT` may create users (`POST /api/v1/users`). Assigning role `CLIENT` via user management is forbidden (400) — clients are created through `/api/v1/clients` (which creates both the user and the client profile).
+- **Users**: every role except `CLIENT` may create users (`POST /api/v1/users`). Assigning role `CLIENT` via user management is forbidden (400) — clients are created through `/api/v1/clients` (which creates both the user and the client profile). Assigning role `ADMIN` is allowed only when the caller itself is ADMIN (403 otherwise) — no privilege escalation.
 - **Trainer profiles**: a `trainers` row is auto-created when role `TRAINER` is assigned (`UserService.ensureTrainerProfile`). Schedules/routines fail with 404 if the user has `TRAINER` role but no profile.
 - **Memberships are history**: index `(client_id, status)` enforces max 1 `ACTIVE` per client (409 otherwise). Durations: DAILY=1 day, QUARTERLY=15, MONTHLY=30. Renew extends `end_date` from `max(endDate, today)` and auto-registers a payment.
 - **Inventory**: access roles are ADMIN, TRAINER_MANAGER, TRAINER — **deliberately NOT RECEPCIONIST** ("a veces no está la recepcionista"). `OUTBOUND` rejects quantity > stock (409). Valid statuses: `AVAILABLE`, `MAINTENANCE`, `OUT_OF_SERVICE` (400 otherwise). Serial numbers unique (409).
@@ -97,5 +97,5 @@ Existing data: 1 inventory item (id 1), 2 machines, 3 routines, 2 schedule sets,
 - All 6 planned sprints complete and live-tested (~60 cases, all green): auth JWT, users/roles RBAC, clients/memberships/payments, inventory/machines, weekly schedules, routines/assignments.
 - Security hardening applied: unified error JSON, env-based secrets, stricter DTO validation, catch-all 500 without internals.
 - Git: pushed to `origin = https://github.com/MrSwell/OlimpO.git` (branch `master`).
-- Tests: all 3 phases done — unit 87 + functional 77 + volume 16 = **180/180 green**, whole suite `.\mvnw.cmd test` in ~1 min (each folder has its `RESULTS.md`). Volume phase caught & fixed a real bug: concurrent weekly-schedule replaces raced into a 500 (now serialized via `TrainerRepository.findByIdForUpdate` + `OptimisticLockingFailureException` → 409 handler).
+- Tests: all 3 phases done — unit 89 + functional 77 + volume 16 = **182/182 green**, whole suite `.\mvnw.cmd test` in ~1 min (each folder has its `RESULTS.md`). Volume phase caught & fixed a real bug: concurrent weekly-schedule replaces raced into a 500 (now serialized via `TrainerRepository.findByIdForUpdate` + `OptimisticLockingFailureException` → 409 handler). Security review hardened: only ADMIN may assign the ADMIN role on `POST /users`; concurrent membership renews serialized (`MembershipRepository.findByIdForUpdate`); disabled users can't ride an old JWT (filter checks `isEnabled`); `UsernameNotFoundException` → 401 (never 500).
 - Still open: rate-limiting for `/auth/login`, CORS config when frontend arrives, frontend (`front/`) not started.
