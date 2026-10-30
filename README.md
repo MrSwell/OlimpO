@@ -139,4 +139,16 @@ Ver **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** para la matriz completa de 
 
 ## Pruebas
 
-Se probaron los 6 sprints (auth, usuarios, clientes/membresías/pagos, inventario/máquinas, horarios, rutinas) por API REST viva (~60 casos). Test automatizado no incluido aún (decisión: añadir `JUnit/MockMvc` cuando se solicite). El plan repetible está en **[docs/POSTMAN.md](docs/POSTMAN.md)**.
+Suite automatizada en tres fases (orden obligatorio), cada una con su informe `RESULTS.md`:
+
+1. **Unitarias** ✅ — `back/src/test/java/server/olimpo/unit/` — JUnit 5 + Mockito: **87/87 en verde** (ver `unit/RESULTS.md`).
+2. **Funcionales** — contra contexto real + MySQL (pendiente).
+3. **Volumen** — (pendiente).
+
+Además, los 6 sprints se probaron en vivo por API REST (~60 casos). El plan repetible está en **[docs/POSTMAN.md](docs/POSTMAN.md)**.
+
+```powershell
+cd back
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-27"
+.\mvnw.cmd test
+```

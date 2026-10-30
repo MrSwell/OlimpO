@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-OlimpoApplication<olimpo>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "server.olimpo.OlimpoApplication",
+            "javaExec": "C:\\Program Files\\Java\\jdk-27\\bin\\java.exe",
+            "projectName": "olimpo",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

@@ -24,7 +24,7 @@ Global rules for every persona: code identifiers in **English** (camelCase for T
 ## 2. Non-negotiable conventions
 
 1. **All code identifiers in English, camelCase** (`trainerId`, `lowStock`, `dayOfWeek`, `yearOfExperience`). Conversation with the user is in Spanish; code/comments in English.
-2. **No automated tests yet** (user decision: "Aún no agregues los test"). Only add tests if the user explicitly asks. Manual testing = live HTTP calls.
+2. **Tests live in three ordered phases** under `back/src/test/java/server/olimpo/`: `unit/` (JUnit + Mockito, no Spring context) → later `functional/` (real context + MySQL) → later `volume/`. Each test folder contains a `RESULTS.md` report. Keep the existing style (Mockito `@Mock` repos with `thenAnswer` to set entity ids, `@DisplayName` in English). Every phase must end verifying delete/cleanup so the dev DB isn't polluted.
 3. **Never print stack traces, SQL or class details in HTTP error responses.** `GlobalExceptionHandler` must remain the single place that maps exceptions to responses with this exact shape:
    ```json
    { "status": 400, "error": "Bad Request", "message": "..." }
@@ -97,4 +97,5 @@ Existing data: 1 inventory item (id 1), 2 machines, 3 routines, 2 schedule sets,
 - All 6 planned sprints complete and live-tested (~60 cases, all green): auth JWT, users/roles RBAC, clients/memberships/payments, inventory/machines, weekly schedules, routines/assignments.
 - Security hardening applied: unified error JSON, env-based secrets, stricter DTO validation, catch-all 500 without internals.
 - Git: pushed to `origin = https://github.com/MrSwell/OlimpO.git` (branch `master`).
-- Still open: no automated tests (by design), rate-limiting for `/auth/login`, CORS config when frontend arrives, frontend (`front/`) not started.
+- Tests: phase 1 (unit) done — 87/87 green (`back/src/test/java/server/olimpo/unit/RESULTS.md`). Functional and volume phases pending.
+- Still open: rate-limiting for `/auth/login`, CORS config when frontend arrives, frontend (`front/`) not started.
