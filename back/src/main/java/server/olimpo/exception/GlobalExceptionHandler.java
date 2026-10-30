@@ -3,6 +3,7 @@ package server.olimpo.exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -126,6 +127,18 @@ public class GlobalExceptionHandler {
         log.error("Data integrity violation: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(409, "Conflict", "The request conflicts with existing data"));
+    }
+
+    /**
+     * 409 - Lost race: another request committed while this transaction was working on
+     * the same rows (e.g. two simultaneous weekly-schedule replaces). Never a 500.
+     */
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLock(OptimisticLockingFailureException ex) {
+        log.warn("Concurrent modification detected: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(409, "Conflict",
+                        "The resource was modified by another request, try again"));
     }
 
     /** 500 - Catch-all: log the full stack trace server-side, return a generic message. */

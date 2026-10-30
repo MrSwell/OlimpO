@@ -65,7 +65,7 @@ class TrainerScheduleServiceTest {
         TrainerSchedule stale = TrainerSchedule.builder().id(1L).trainerId(2L)
                 .dayOfWeek(2).startTime(LocalTime.of(22, 0)).endTime(LocalTime.of(23, 0)).build();
         List<TrainerSchedule> oldWeek = List.of(stale);
-        when(trainerRepository.findById(2L)).thenReturn(Optional.of(trainer(2L)));
+        when(trainerRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(trainer(2L)));
         when(scheduleRepository.findByTrainerIdOrderByDayOfWeekAscStartTimeAsc(2L)).thenReturn(oldWeek);
         when(scheduleRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -88,7 +88,7 @@ class TrainerScheduleServiceTest {
     @Test
     @DisplayName("S5: overlapping slots on the same day -> 409 before touching the DB")
     void overlappingSlotsRejected() {
-        when(trainerRepository.findById(2L)).thenReturn(Optional.of(trainer(2L)));
+        when(trainerRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(trainer(2L)));
 
         var overlap = List.of(
                 new CreateTrainerScheduleRequest(3, LocalTime.of(8, 0), LocalTime.of(12, 0), null),
@@ -104,7 +104,7 @@ class TrainerScheduleServiceTest {
     @Test
     @DisplayName("S5: endTime <= startTime -> 400")
     void invalidTimeRange() {
-        when(trainerRepository.findById(2L)).thenReturn(Optional.of(trainer(2L)));
+        when(trainerRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(trainer(2L)));
 
         var badRange = List.of(
                 new CreateTrainerScheduleRequest(2, LocalTime.of(18, 0), LocalTime.of(9, 0), null));
@@ -119,7 +119,7 @@ class TrainerScheduleServiceTest {
     @Test
     @DisplayName("S5: empty list of slots -> 400")
     void emptySlotsRejected() {
-        when(trainerRepository.findById(2L)).thenReturn(Optional.of(trainer(2L)));
+        when(trainerRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(trainer(2L)));
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> service().saveWeeklySchedule(2L, List.of(), auth("admin@olimpo.com", "ADMIN")));
@@ -130,7 +130,7 @@ class TrainerScheduleServiceTest {
     @Test
     @DisplayName("S5: invalid status -> 400 with allowed list")
     void invalidScheduleStatus() {
-        when(trainerRepository.findById(2L)).thenReturn(Optional.of(trainer(2L)));
+        when(trainerRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(trainer(2L)));
 
         var badStatus = List.of(
                 new CreateTrainerScheduleRequest(2, LocalTime.of(6, 0), LocalTime.of(10, 0), "FERIADO"));
@@ -142,9 +142,9 @@ class TrainerScheduleServiceTest {
     }
 
     @Test
-    @DisplayName("S5: unknown trainer -> 404")
+    @DisplayName("S5: unknown trainer -> 404 (locked lookup on the write path)")
     void unknownTrainer() {
-        when(trainerRepository.findById(99L)).thenReturn(Optional.empty());
+        when(trainerRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> service().saveWeeklySchedule(99L,
                 List.of(new CreateTrainerScheduleRequest(2, LocalTime.of(6, 0), LocalTime.of(10, 0), null)),

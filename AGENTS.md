@@ -97,5 +97,5 @@ Existing data: 1 inventory item (id 1), 2 machines, 3 routines, 2 schedule sets,
 - All 6 planned sprints complete and live-tested (~60 cases, all green): auth JWT, users/roles RBAC, clients/memberships/payments, inventory/machines, weekly schedules, routines/assignments.
 - Security hardening applied: unified error JSON, env-based secrets, stricter DTO validation, catch-all 500 without internals.
 - Git: pushed to `origin = https://github.com/MrSwell/OlimpO.git` (branch `master`).
-- Tests: phase 1 (unit) done — 87/87 green (`back/src/test/java/server/olimpo/unit/RESULTS.md`). Functional and volume phases pending.
+- Tests: all 3 phases done — unit 87 + functional 77 + volume 16 = **180/180 green**, whole suite `.\mvnw.cmd test` in ~1 min (each folder has its `RESULTS.md`). Volume phase caught & fixed a real bug: concurrent weekly-schedule replaces raced into a 500 (now serialized via `TrainerRepository.findByIdForUpdate` + `OptimisticLockingFailureException` → 409 handler).
 - Still open: rate-limiting for `/auth/login`, CORS config when frontend arrives, frontend (`front/`) not started.

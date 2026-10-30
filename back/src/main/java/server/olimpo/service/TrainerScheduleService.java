@@ -54,7 +54,9 @@ public class TrainerScheduleService {
                                                             List<CreateTrainerScheduleRequest> slots,
                                                             Authentication authentication) {
         assertCanManageSchedules(trainerId, authentication);
-        getTrainerProfile(trainerId);
+        // Pessimistic lock on the trainer row: concurrent replaces of the same week
+        // serialize here, so neither one can delete rows the other already removed.
+        getTrainerProfileForUpdate(trainerId);
 
         if (slots == null || slots.isEmpty()) {
             throw new IllegalArgumentException("At least one schedule slot is required");
@@ -144,6 +146,11 @@ public class TrainerScheduleService {
 
     private Trainer getTrainerProfile(Long trainerId) {
         return trainerRepository.findById(trainerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trainer not found with id: " + trainerId));
+    }
+
+    private Trainer getTrainerProfileForUpdate(Long trainerId) {
+        return trainerRepository.findByIdForUpdate(trainerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trainer not found with id: " + trainerId));
     }
 
