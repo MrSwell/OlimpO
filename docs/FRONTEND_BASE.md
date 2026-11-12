@@ -100,6 +100,7 @@ Dirección: un sistema de gestión que se lee como una publicación, no como un 
 
 - **Entrada de página**: los bloques suben 10px y aparecen en 0.5s con un stagger de 50ms. Solo una vez, al cargar.
 - **Trazo del gráfico**: la línea se dibuja de izquierda a derecha (1.2s) y los puntos aparecen después. Sin rebotes.
+- **Capas flotantes**: toast y modal entran con la misma subida corta; el scrim funde en 0.3s.
 - **Hover silencioso**: el borde del panel se aclara, el icono de sección pasa a dorado, el avatar de cliente se dora, el icono de tema rota 14° y el valor de fila se aclara.
 - **Regla**: nada de movimiento continuo, parallax ni animaciones que compitan con la lectura. `prefers-reduced-motion` desactiva todo y deja el gráfico ya dibujado.
 
