@@ -1,6 +1,6 @@
 # FRONTEND_BASE.md — Bases y directivas de estilo del frontend Olimpo
 
-Fuente de verdad visual para `front/`. Cualquier cambio de identidad se documenta aquí primero y luego se replica en código. Última actualización: 2026-11-12 (mockup v4 — negro editorial).
+Fuente de verdad visual para `front/`. Cualquier cambio de identidad se documenta aquí primero y luego se replica en código. Última actualización: 2026-11-12 (mockup v4 — negro editorial + iconos y movimiento).
 
 ---
 
@@ -15,8 +15,8 @@ Estas reglas mandan sobre cualquier preferencia estética y se aplican a todo el
 5. **Cero gradientes.** Ni en fondos, ni en botones, ni en texto, ni en tarjetas. La jerarquía se logra con tipografía, borde y espacio.
 6. **Cero chips rellenos.** El estado se muestra con un **punto de 6px + texto**; una etiqueta es solo borde de 1px sin fondo.
 7. **Sin sombras en cards.** La elevación se declara una vez con el borde. La sombra queda reservada a capas flotantes (toast y modal).
-8. **Navegación por texto.** Barra superior con enlaces; sin sidebar, sin iconos decorativos en la navegación. Solo se dibujan iconos funcionales (buscar, tema, cerrar, alerta).
-9. **Acento dorado con disciplina.** Dorado únicamente en: marca, enlace activo, borde/texto de la acción principal, foco y cifras clave. Nunca como relleno.
+8. **Navegación por texto con icono funcional.** Barra superior con enlaces; sin sidebar. Cada enlace lleva un icono de línea pequeño que lo representa (panel, clientes, membresías, pagos, inventario, horarios). Nunca ilustraciones decorativas ni iconos rellenos.
+9. **Acento dorado con disciplina.** Dorado únicamente en: marca, icono del enlace activo, icono de sección al pasar el cursor, borde/texto de la acción principal, foco y cifras clave. Nunca como relleno.
 10. **Densidad y aire.** Padding de página 56/32, separación entre bloques 24–32, paneles con 24 de padding. Más espacio sobre un título que debajo.
 
 > Cualquier propuesta que necesite relleno de color para explicarse está mal resuelta: se resuelve con borde, texto o espacio.
@@ -60,19 +60,21 @@ Dirección: un sistema de gestión que se lee como una publicación, no como un 
 - **Radios**: paneles 12px, controles 8px. Sin pills.
 - **Escala**: 12 / 12.5 / 13 / 14 / 15 / 17 / 26–30 / 38. Sin más pasos.
 
-## 3. Iconografía — react-icons
+## 3. Iconografía — línea, representativa, sin relleno
 
-- Librería: **`react-icons`** (`lu` para UI, `io5` para glifos decorativos si hiciera falta).
-- En la interfaz solo iconos funcionales: buscar, tema, cerrar, alerta. La navegación es texto.
-- Trazo uniforme 1.7, tamaños 16–18px.
+- **Sistema**: un sprite SVG inline en el mockup (`<symbol>` + `<use>`); en React, **`react-icons`** (`lu`) con los mismos significados. Un solo trazo: `1.7`, `stroke-linecap="round"`.
+- **Qué se dibuja**: iconos representativos de la función o del dato — panel, clientes, membresías, pagos, inventario, horarios, correo, candado, teléfono, pin, documento, reloj, calendario, editar, refrescar, flecha, check, buscar, alerta, tema.
+- **Dónde aparecen**: navegación, título de página, labels de métricas, cabeceras de panel, labels de datos, botones y controles con icono de entrada. Siempre acompañan a texto; nunca sustituyen la etiqueta.
+- **Regla de color**: el icono hereda el color del texto. El dorado se reserva al enlace activo, al icono de sección en hover, al título de página y al icono del toast. Prohibidos los iconos rellenos, multicolor o ilustrativos.
+- **Tamaños**: 12–13px en labels densos, 14–16px en UI, 20–22px en marca y título de página.
 
 ## 4. Vocabulario de componentes (mockup v4)
 
 | Componente | Patrón | Dónde se usa |
 |---|---|---|
-| `Metric` | label uppercase + cifra serif + delta en texto; sin card ni icono | Franja de resumen del panel |
-| `Panel` | superficie `--panel` + borde 1px + radio 12 + padding 24 | contenedor base |
-| `PanelHead` | título 15px + acción de texto, separados por hairline | cabecera de panel |
+| `Metric` | label uppercase con icono pequeño + cifra serif + delta en texto; sin card | Franja de resumen del panel |
+| `Panel` | superficie `--panel` + borde 1px + radio 12 + padding 24; el borde se aclara en hover | contenedor base |
+| `PanelHead` | icono 15px + título 15px + acción de texto, separados por hairline | cabecera de panel |
 | `Row` | hora / contenido / valor, filas con hairline | agenda, vencimientos |
 | `Table` | header sin fondo, filas hairline, columnas alineadas | pagos, historial |
 | `Status` | punto de 6px + texto; color solo en el punto | membresía, cuenta |
@@ -82,16 +84,24 @@ Dirección: un sistema de gestión que se lee como una publicación, no como un 
 | `ClientCard` | avatar + nombre + correo + 3 datos + 2 acciones de texto | directorio de clientes |
 | `MembershipPanel` | plan en serif + fechas + meandro | ficha del cliente |
 | `Chart` | línea dorada sobre grid hairline | asistencia |
-| `Button` | outline; principal = borde y texto dorados; nunca relleno | acciones |
-| `Input` | `--panel-2` + borde neutro; foco dorado | formularios |
+| `Button` | outline; principal = borde y texto dorados; nunca relleno; icono 15px opcional | acciones |
+| `Input` | `--panel-2` + borde neutro; foco dorado; icono de 15px a la izquierda cuando el campo lo pide | formularios |
+| `Icon` | sprite SVG, trazo 1.7, hereda color; 12–22px | navegación, labels, botones |
 
 ## 5. Layout
 
-- **Header** 68px sticky: marca, navegación de texto, toggle de tema, usuario. En `<820px` la navegación se oculta.
+- **Header** 68px sticky: marca, navegación de texto con icono, toggle de tema, usuario. En `<820px` la navegación se oculta.
 - **Página**: máx 1180px, padding 56/32, bloques separados por 24–32px.
 - **Panel**: franja de métricas (3) → split 1.9fr/1fr → panel de tabla. Nada más.
 - **Footer**: meandro + firma.
 - Responsive: 1180 / 1020 / 820 / 560.
+
+### Movimiento (vida sin ruido)
+
+- **Entrada de página**: los bloques suben 10px y aparecen en 0.5s con un stagger de 50ms. Solo una vez, al cargar.
+- **Trazo del gráfico**: la línea se dibuja de izquierda a derecha (1.2s) y los puntos aparecen después. Sin rebotes.
+- **Hover silencioso**: el borde del panel se aclara, el icono de sección pasa a dorado, el avatar de cliente se dora, el icono de tema rota 14° y el valor de fila se aclara.
+- **Regla**: nada de movimiento continuo, parallax ni animaciones que compitan con la lectura. `prefers-reduced-motion` desactiva todo y deja el gráfico ya dibujado.
 
 ## 6. Stack del frontend
 
@@ -100,7 +110,7 @@ Dirección: un sistema de gestión que se lee como una publicación, no como un 
 | Vite + React 19 + TS | base | — |
 | Astryx (`@astryxdesign/core` + theme-neutral) | componentes base a adaptar | pin de versión exacta (beta) |
 | Tailwind CSS 4 | layout fino | cascade layers |
-| **react-icons** | iconografía única | `lu` (+`io5`) |
+| **react-icons** | iconografía única | `lu` |
 | react-hook-form + zod | formularios espejo de DTO | `zodResolver` |
 | TanStack Query v5 | estado del servidor | queryKeys `['clients', page, size, search]`… |
 | Zustand v5 | sesión (`persist`) + tema | dark-first |
@@ -117,6 +127,6 @@ Dirección: un sistema de gestión que se lee como una publicación, no como un 
 - `client-detail.html` — panel de membresía, historial, pagos y datos.
 - `client-renew.html` — modal de renovación con la regla `max(endDate, hoy)` y conflicto 409 como toast.
 
-Técnica: tema con checkbox oculto + `body:has()`, modales `<dialog open>` fijos, `prefers-reduced-motion` respetado.
+Técnica: tema con checkbox oculto + `body:has()`, sprite SVG inline en cada página, modales `<dialog open>` fijos, `prefers-reduced-motion` respetado.
 
 Cambios visuales relevantes se registran aquí como decisiones, no en comentarios de código.
