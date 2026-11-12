@@ -134,6 +134,8 @@ Ver **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** para la matriz completa de 
 - Identificadores del código en **inglés y camelCase** (`trainerId`, `lowStock`, `dayOfWeek`).
 - Días de la semana: **1 = domingo … 7 = sábado** (convención MySQL `DAYOFWEEK`).
 - Diagrama de flujo completo: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+- Identidad visual y directivas de estilo del frontend: **[docs/FRONTEND_BASE.md](docs/FRONTEND_BASE.md)**.
+- Plan de implementación del frontend (fases, rutas y criterios de aceptación): **[docs/FRONTEND_PLAN.md](docs/FRONTEND_PLAN.md)**.
 - Instrucciones para agentes de IA (incluye el rol según carpeta: senior backend en `back/`, senior frontend React en `front/`): **[AGENTS.md](AGENTS.md)**.
 - Plan de pruebas para Postman: **[docs/POSTMAN.md](docs/POSTMAN.md)**.
 

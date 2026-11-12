@@ -11,7 +11,7 @@ Estas reglas mandan sobre cualquier preferencia estética y se aplican a todo el
 1. **El fondo siempre es negro.** Las superficies son negro cálido (`--bg`, `--panel`, `--panel-2`). Nunca se rellena un contenedor con un color de estado (rojo, verde, ámbar, dorado translúcido) ni con un tinte de marca.
 2. **Solo bordes.** La separación se comunica con un borde de 1px neutro (`--line` / `--line-strong`). El color no pinta el borde de un contenedor; el dorado solo aparece en foco, en la acción principal y en texto de acento.
 3. **Los errores siempre son pops.** Un error se comunica con un **toast** flotante (superficie negra, borde neutro, icono de color, título + recuperación). Prohibidos los banners inline, los bloques con fondo de color y los bordes de color para errores.
-4. **La información no satura.** Máximo **3 bloques** por vista. Las métricas se leen como texto, no como cards con iconos. Las tablas muestran lo esencial y el resto vive en el detalle.
+4. **La información no satura.** Máximo **3 bloques principales (regiones)** por vista. Los detalles se agrupan en subsecciones con hairline dentro de un bloque, no en cards adicionales. Las métricas se leen como texto, no como cards con iconos. Las tablas muestran lo esencial y el resto vive en el detalle.
 5. **Cero gradientes.** Ni en fondos, ni en botones, ni en texto, ni en tarjetas. La jerarquía se logra con tipografía, borde y espacio.
 6. **Cero chips rellenos.** El estado se muestra con un **punto de 6px + texto**; una etiqueta es solo borde de 1px sin fondo.
 7. **Sin sombras en cards.** La elevación se declara una vez con el borde. La sombra queda reservada a capas flotantes (toast y modal).
