@@ -1,107 +1,97 @@
-# FRONTEND_BASE.md — Bases del frontend Olimpo (design system + stack)
+# FRONTEND_BASE.md — Bases y directivas de estilo del frontend Olimpo
 
-Fuente de verdad visual para `front/`. Cualquier cambio de identidad se documenta aquí primero y luego se replica en código. Última actualización: 2026-11-12 (mockup v3 — oro + negro cálido).
+Fuente de verdad visual para `front/`. Cualquier cambio de identidad se documenta aquí primero y luego se replica en código. Última actualización: 2026-11-12 (mockup v4 — negro editorial).
 
 ---
 
-## 0. Decisiones de identidad
+## 0. Directivas de estilo (obligatorias)
 
-- **Sin azules (2026-11-12)**: se elimina el zafiro de la identidad. Ningún tono azul se usa como marca, estado, foco ni decoración. La paleta es **dorado + negro cálido**.
-- **Cobre = secundario funcional**: solo para diferenciar estados (pago con tarjeta, RECEPCIONIST, barras de comparación, tramo secundario del donut). Nunca como decoración ni como color de marca.
-- **Oscuro primero**: la app abre en dark; el tema claro es de igual calidad y se alterna desde el topbar.
-- **Hex crudo prohibido** fuera del archivo de tokens (`olimpoTheme.ts` en React; `styles.css :root` en el mockup). En dark mode no se duplica con `dark:` — cambian los tokens.
+Estas reglas mandan sobre cualquier preferencia estética y se aplican a todo el frontend, mockups incluidos:
 
-## 1. Identidad visual — "Olimpo: oro sobre negro cálido"
+1. **El fondo siempre es negro.** Las superficies son negro cálido (`--bg`, `--panel`, `--panel-2`). Nunca se rellena un contenedor con un color de estado (rojo, verde, ámbar, dorado translúcido) ni con un tinte de marca.
+2. **Solo bordes.** La separación se comunica con un borde de 1px neutro (`--line` / `--line-strong`). El color no pinta el borde de un contenedor; el dorado solo aparece en foco, en la acción principal y en texto de acento.
+3. **Los errores siempre son pops.** Un error se comunica con un **toast** flotante (superficie negra, borde neutro, icono de color, título + recuperación). Prohibidos los banners inline, los bloques con fondo de color y los bordes de color para errores.
+4. **La información no satura.** Máximo **3 bloques** por vista. Las métricas se leen como texto, no como cards con iconos. Las tablas muestran lo esencial y el resto vive en el detalle.
+5. **Cero gradientes.** Ni en fondos, ni en botones, ni en texto, ni en tarjetas. La jerarquía se logra con tipografía, borde y espacio.
+6. **Cero chips rellenos.** El estado se muestra con un **punto de 6px + texto**; una etiqueta es solo borde de 1px sin fondo.
+7. **Sin sombras en cards.** La elevación se declara una vez con el borde. La sombra queda reservada a capas flotantes (toast y modal).
+8. **Navegación por texto.** Barra superior con enlaces; sin sidebar, sin iconos decorativos en la navegación. Solo se dibujan iconos funcionales (buscar, tema, cerrar, alerta).
+9. **Acento dorado con disciplina.** Dorado únicamente en: marca, enlace activo, borde/texto de la acción principal, foco y cifras clave. Nunca como relleno.
+10. **Densidad y aire.** Padding de página 56/32, separación entre bloques 24–32, paneles con 24 de padding. Más espacio sobre un título que debajo.
 
-Metodología olímpica/griega + minimalismo premium. El negro es **cálido** (subtono marrón), nunca gris plano ni azulado; el papel del tema claro es cálido, no blanco frío.
+> Cualquier propuesta que necesite relleno de color para explicarse está mal resuelta: se resuelve con borde, texto o espacio.
 
-- **Motivo griego único**: el **meandro** (clave griega) como divisor decorativo en oro — bajo la marca, en la tarjeta de membresía y en el pie del sidebar. Es el único ornamento; el resto es geometría limpia.
-- **Glifo de columna dórica** como logo (en React se renderiza con `react-icons` / SVG de marca).
-- **Gradientes firma**:
-  - `--grad-gold`: `linear-gradient(135deg, #f5ce5c, #b98a1b)` — CTA primario, stat destacado, chip de la tarjeta.
-  - `--grad-black`: `linear-gradient(135deg, #1c1710, #0e0b07 78%)` — tarjeta de membresía, panel del login, promo del sidebar.
-  - `--grad-bar`: cobre (comparativo) · `--grad-bar-gold`: oro (dato actual).
-- **Profundidad declarada una sola vez**: las cards se definen con **borde + hairline interior** (`inset 0 1px 0`), sin sombra difusa; la sombra (`--shadow-pop`) queda reservada a capas flotantes (modales, botones sobre superficies negras). Sin halos de color a offset cero.
+## 1. Identidad visual — "Negro editorial"
 
-### Tokens (dark = default)
+Dirección: un sistema de gestión que se lee como una publicación, no como un tablero de videojuego. Negro cálido, líneas finas, tipografía con jerarquía y un único ornamento griego.
+
+- **Dark-first**: la app abre en oscuro. El tema claro existe con la misma estructura y reglas (papel cálido, sin rellenos tintados).
+- **Motivo griego único**: el **meandro**, dibujado como línea dorada de 1px al 55% de opacidad. Aparece solo en el pie, el login y el panel de membresía. Nada más.
+- **Glifo de columna dórica** como marca (SVG propio; en React, `react-icons`/componente de marca).
+- **Regla de tokens**: hex crudo prohibido fuera de `olimpoTheme.ts` (React) y de `styles.css :root` (mockup). En dark no se duplica con `dark:` — cambian los tokens.
+- **Decisión 2026-11-12**: el mockup v3 (gradientes, chips rellenos, sidebar) queda descartado y se usa como anti-referencia. La dirección vigente es este v4.
+
+### Tokens (dark = canónico)
 
 | Token | Dark | Light | Uso |
 |---|---|---|---|
-| `--bg` | `#0c0a07` | `#f6f3ec` | fondo app (negro cálido / papel cálido) |
-| `--surface` | `#14110c` | `#ffffff` | cards, sidebar, topbar |
-| `--surface-2` | `#1a1610` | `#f9f6ef` | headers de card, hover, inputs |
-| `--surface-3` | `#221d14` | `#efe9dc` | pistas de charts, huecos |
-| `--text` | `#f0ebe1` | `#1a140c` | contenido |
-| `--text-muted` | `#a79e8d` | `#6b6252` | secundario |
-| `--text-faint` | `#6e675a` | `#988f7d` | terciario, labels |
-| `--border` | `#292319` | `#e7e1d3` | borde de card |
-| `--border-strong` | `#3a3224` | `#d8d0bd` | inputs, chips, divisores fuertes |
-| `--gold` | `#e8b93e` | `#8a6d1f` | identidad, acento activo, ADMIN |
-| `--gold-strong` | `#f5ce5c` | `#9a7514` | hover, texto de marca, meandro |
-| `--gold-deep` | `#b98a1b` | `#6e5613` | fin de gradiente, scrollbar hover |
-| `--copper` | `#d08b4c` | `#a56432` | secundario funcional (CARD, RECEPCIONIST) |
-| `--copper-strong` | `#e0a468` | `#8a5a28` | texto/acento cobre |
-| `--success` | `#5fbf77` | `#1e7f4f` | estados positivos |
-| `--warning` | `#e0a468` | `#a35d00` | por vencer |
-| `--danger` | `#e06555` | `#b3261e` | errores, vencida |
+| `--bg` | `#080807` | `#f2f2f0` | fondo de la app |
+| `--panel` | `#0d0d0b` | `#fafaf8` | paneles, toast, modal |
+| `--panel-2` | `#111110` | `#f5f5f3` | inputs y selects |
+| `--text` | `#ece9e2` | `#17150f` | contenido |
+| `--text-muted` | `#a09c92` | `#5c584f` | secundario |
+| `--text-faint` | `#8a867c` | `#6e6a60` | labels, metadatos |
+| `--line` | `#262521` | `#dcdcd7` | borde de paneles y filas |
+| `--line-strong` | `#3a3833` | `#c8c8c1` | inputs, botones, toast |
+| `--gold` | `#d9b45c` | `#7a5f16` | marca, acento, foco |
+| `--gold-strong` | `#eccd82` | `#634d0d` | hover y texto de acento |
+| `--danger` | `#e08272` | `#a53c30` | icono de error |
+| `--success` | `#86c79a` | `#2c6b45` | punto de estado activo |
+| `--warning` | `#d9a86a` | `#8a5a12` | punto por vencer |
 
-- **Superficies del navegador también se tematizan**: `::selection` dorada translúcida, `caret-color` oro, scrollbars finos en `--border-strong` (hover oro). En light se ajustan a la versión oscura del oro.
-
-### Estados de negocio (chips)
-
-- Membresía: `ACTIVE`→success · `EXPIRED`→neutral/muted · por vencer→warning · **tipos (DAILY/QUARTERLY/MONTHLY)→gold** · sin membresía→danger.
-- Pagos: `CASH`→success · `CARD`→**copper** · `TRANSFER`→neutral · `NEQUI`→gold.
-- Roles: `ADMIN`→gold · `RECEPCIONIST`→copper · `TRAINER_MANAGER`→jade (avatar) · `TRAINER`→success · `CLIENT`→neutral.
-- Cuenta: `ACTIVE`→success · `INACTIVE/DEACTIVATED`→danger.
-- Avatares (solo identificación, nunca estado): `gold` (default), `copper`, `jade`, `rose`. Sin zafiro ni violeta.
-
----
+- **Superficies del navegador tematizadas**: selección dorada translúcida, `caret-color` dorado, scrollbars finos en `--line-strong` con hover dorado, `underline-offset` en enlaces y cifras `tabular-nums` en datos.
+- **Foco**: anillo de 2px `--gold-strong` con offset 2. Siempre visible.
 
 ## 2. Tipografía y forma
 
-- **Marca y cifras grandes**: serif (Palatino/Georgia en mockup; en React, la pila del tema Astryx con `Heading`). Cifras siempre `tabular-nums`.
-- **Cuerpo y datos**: sans del sistema (Inter cuando llegue Astryx).
-- Radios: sm 8 · md 12 · lg 16. Densidad media. Escala de espaciado 4px.
-- **Espaciado**: grupos apretados, separación generosa, más aire sobre un título que debajo.
-- Focus visible **siempre**: anillo `0 0 0 3px` gold-soft + borde oro; en superficies doradas, anillo oscuro `rgb(20 16 8 / 0.55)`.
-- Texto de cuerpo con medida 65–75ch; `text-wrap: balance` en títulos.
+- **UI**: sans del sistema; títulos 600 con tracking `-0.02em`.
+- **Cifras y nombres de plan**: serif (Palatino/Georgia) en peso 400, tamaño grande. Aporta el tono editorial sin decorar.
+- **Cuerpo**: 14px, medida 65–75ch, `text-wrap: balance` en títulos.
+- **Radios**: paneles 12px, controles 8px. Sin pills.
+- **Escala**: 12 / 12.5 / 13 / 14 / 15 / 17 / 26–30 / 38. Sin más pasos.
 
 ## 3. Iconografía — react-icons
 
-- Librería: **`react-icons`** (fuente única de iconos; reemplaza a lucide-react).
-- Set base: `react-icons/lu` (Lucide) para UI general; `react-icons/io5` para glifos griegos/decorativos si hace falta.
-- Iconos decorativos de marca (columna, laurel, meandro): SVG inline propios en el mockup; en React viven en `components/brand/`.
-- Tamaño estándar 18px nav / 15px botones / 30px empty-states; `stroke-width` 1.7 uniforme.
+- Librería: **`react-icons`** (`lu` para UI, `io5` para glifos decorativos si hiciera falta).
+- En la interfaz solo iconos funcionales: buscar, tema, cerrar, alerta. La navegación es texto.
+- Trazo uniforme 1.7, tamaños 16–18px.
 
-## 4. Vocabulario de componentes (probado en el mockup v3)
+## 4. Vocabulario de componentes (mockup v4)
 
-Estos patrones existen en HTML+CSS nativo (`front/mockup/`) y se traducen 1:1 a Astryx+Tailwind:
-
-| Componente | Patrón visual | Dónde se usa |
+| Componente | Patrón | Dónde se usa |
 |---|---|---|
-| `StatCard` | valor serif grande, label uppercase, icon-chip circular arriba a la derecha | Dashboard (fila de 4) |
-| `StatCard featured` | variante `grad-gold`, **texto oscuro** `#141008`, icon-chip oscuro, sparkline oscura | 1ª KPI de la fila |
-| `Sparkline` | SVG polyline oscura sobre card dorada, punto final sólido | KPI de clientes |
-| `WeeklyBars` | 7 columnas día; barras cobre (gradiente) vs **rayadas 45°** = sin datos/pendiente; barra "hoy" en oro con tooltip flotante | Asistencia semanal |
-| `DonutGauge` | `conic-gradient` oro + cobre + surface-3, hueco central del color de la superficie, total al centro | Composición de membresías |
-| `MiniBars` | 6 barras finas redondeadas (ingresos por mes), última en oro pleno | Card ingresos |
-| `PaymentRow` | avatar + nombre + meta + chip método + monto `tabular-nums` | Últimos pagos / pagos del cliente |
-| `ReminderCard` | chip de contexto, título serif, hora, botón de acción | Agenda del día / seguimiento |
-| `ClientCard` | avatar-gradiente + nombre + correo + chips de membresía + teléfono/ingreso/ciudad + medidor de días + acciones | Módulo Clientes (grid, no tabla plana) |
-| `MeterBar` | pista `surface-3` + relleno `grad-bar-gold`; `--warn` cobre; `--danger` warning→danger | días restantes de membresía |
-| `Avatar` | iniciales sobre gradiente; variantes `gold`, `copper`, `jade`, `rose` | todos los módulos |
-| `MembershipCard` | tarjeta tipo **credit card** negro-oro: `grad-black`, borde oro, chip dorado, meandro al agua, tipo + fechas + días | ficha del cliente |
-| `PillFilter` | chips-filtro con estado activo (borde oro + gold-soft) | toolbars de listas |
-| `Modal` | `<dialog>` centrado **fixed** + scrim propio con blur | renovar membresía |
-| `ErrorBanner` | borde + fondo danger-soft, muestra `{status, error, message}` del backend tal cual | formularios |
-| `UpgradeCard` (sidebar) | mini card `grad-black` con texto oro y CTA `btn-dark` | pie del sidebar |
+| `Metric` | label uppercase + cifra serif + delta en texto; sin card ni icono | Franja de resumen del panel |
+| `Panel` | superficie `--panel` + borde 1px + radio 12 + padding 24 | contenedor base |
+| `PanelHead` | título 15px + acción de texto, separados por hairline | cabecera de panel |
+| `Row` | hora / contenido / valor, filas con hairline | agenda, vencimientos |
+| `Table` | header sin fondo, filas hairline, columnas alineadas | pagos, historial |
+| `Status` | punto de 6px + texto; color solo en el punto | membresía, cuenta |
+| `Tag` | borde 1px, sin relleno | etiquetas puntuales |
+| `Toast` | único canal de error: negro + borde + icono + título + recuperación | login, formularios, acciones |
+| `Modal` | `<dialog open>` + scrim, superficie negra | renovación |
+| `ClientCard` | avatar + nombre + correo + 3 datos + 2 acciones de texto | directorio de clientes |
+| `MembershipPanel` | plan en serif + fechas + meandro | ficha del cliente |
+| `Chart` | línea dorada sobre grid hairline | asistencia |
+| `Button` | outline; principal = borde y texto dorados; nunca relleno | acciones |
+| `Input` | `--panel-2` + borde neutro; foco dorado | formularios |
 
-## 5. Layout del shell
+## 5. Layout
 
-- **Sidebar** 244px: secciones ("Gestión" / "Operación"), item activo con **fondo gold-soft + anillo interior oro** (sin barra lateral de color); items bloqueados con chip de motivo (`ADMIN`, `PRÓX.`) — refleja la matriz de acceso del backend. En `<860px` colapsa a 68px (solo iconos).
-- **Topbar** 58px sticky: breadcrumb, buscador con atajo `⌘K`, theme toggle integrado (no flotante), notificaciones, avatar + rol.
-- **Contenido** máx 1240px, padding 24. Grillas del dashboard: fila KPI (4) → zona principal 1.65fr/1fr.
-- Responsive verificado: 1280 / 1024 / 860 / 560 / 375.
+- **Header** 68px sticky: marca, navegación de texto, toggle de tema, usuario. En `<820px` la navegación se oculta.
+- **Página**: máx 1180px, padding 56/32, bloques separados por 24–32px.
+- **Panel**: franja de métricas (3) → split 1.9fr/1fr → panel de tabla. Nada más.
+- **Footer**: meandro + firma.
+- Responsive: 1180 / 1020 / 820 / 560.
 
 ## 6. Stack del frontend
 
@@ -109,24 +99,24 @@ Estos patrones existen en HTML+CSS nativo (`front/mockup/`) y se traducen 1:1 a 
 |---|---|---|
 | Vite + React 19 + TS | base | — |
 | Astryx (`@astryxdesign/core` + theme-neutral) | componentes base a adaptar | pin de versión exacta (beta) |
-| Tailwind CSS 4 | layout fino | cascade layers, utilidades ganan |
-| **react-icons** | iconografía única | set `lu` (+`io5` decorativos) |
+| Tailwind CSS 4 | layout fino | cascade layers |
+| **react-icons** | iconografía única | `lu` (+`io5`) |
 | react-hook-form + zod | formularios espejo de DTO | `zodResolver` |
 | TanStack Query v5 | estado del servidor | queryKeys `['clients', page, size, search]`… |
-| Zustand v5 | sesión (`persist`) + preferencia de tema | dark-first |
+| Zustand v5 | sesión (`persist`) + tema | dark-first |
 | react-router v7 | rutas + guards por rol | library mode |
 
 ## 7. Mockup de referencia
 
 `front/mockup/` (git-ignorado, **nunca se sube**): HTML+CSS nativo, cero JS.
 
-- `index.html` — login split-screen (panel negro cálido con aurora dorada + panel de formulario).
-- `dashboard.html` — shell completo + KPIs (1 destacado en oro), barras semanales, donut, recordatorio, últimos pagos, mini-barras.
-- `clients.html` — **grid de ClientCards** (no tabla) con datos completos por cliente + filtros pill.
-- `client-create.html` — página de registro en 2 columnas + membresía inicial opcional + nota de regla 409.
-- `client-detail.html` — ficha con MembershipCard negro-oro + historial + pagos + datos personales.
-- `client-renew.html` — detalle + modal de renovación con preview de la regla `max(endDate, hoy)` y ejemplo 409.
+- `index.html` — login centrado, formulario en panel, error 401 como toast.
+- `dashboard.html` — franja de 3 métricas, línea de asistencia, agenda y últimos pagos.
+- `clients.html` — directorio de 6 fichas mínimas (3 datos + 2 acciones).
+- `client-create.html` — formulario en 2 columnas + membresía inicial + error 400 como toast.
+- `client-detail.html` — panel de membresía, historial, pagos y datos.
+- `client-renew.html` — modal de renovación con la regla `max(endDate, hoy)` y conflicto 409 como toast.
 
-Técnica del mockup: tema con checkbox oculto + `body:has()` (dark por defecto), modales con `<dialog open>` fijo + `.scrim` con blur, `prefers-reduced-motion` respetado.
+Técnica: tema con checkbox oculto + `body:has()`, modales `<dialog open>` fijos, `prefers-reduced-motion` respetado.
 
 Cambios visuales relevantes se registran aquí como decisiones, no en comentarios de código.
