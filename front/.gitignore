@@ -1,0 +1,8 @@
+# Static design mockup — local only, never pushed to GitHub
+mockup/
+
+# Frontend environment & dependencies (future scaffold)
+.env
+.env.local
+node_modules/
+dist/
