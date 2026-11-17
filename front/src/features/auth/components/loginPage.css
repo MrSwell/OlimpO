@@ -1,0 +1,54 @@
+.loginPage__enter {
+  animation: loginRise 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+.loginPage__enter--2 {
+  animation-delay: 0.06s;
+}
+
+.loginPage__roleContext {
+  animation: loginFade 0.24s ease-out both;
+}
+
+.loginPage__slider {
+  transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.loginPage__slider[data-step='credentials'] {
+  transform: translateX(-50%);
+}
+
+@keyframes loginRise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes loginFade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loginPage__enter,
+  .loginPage__roleContext {
+    animation: none;
+  }
+
+  .loginPage__slider {
+    transition: none;
+  }
+}

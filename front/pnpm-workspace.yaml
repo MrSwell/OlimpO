@@ -1,0 +1,7 @@
+# Astryx runs a postinstall nudge; allow it explicitly.
+# The pinned Astryx stack is published continuously; do not block installs
+# because a package is newer than the default release-age window.
+minimumReleaseAge: 0
+
+allowBuilds:
+  '@astryxdesign/core': true

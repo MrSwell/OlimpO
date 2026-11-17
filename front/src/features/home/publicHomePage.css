@@ -1,0 +1,396 @@
+.homePage__heroCopy {
+  animation: homePageHeroEnter 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.homePage__route {
+  animation: homePageRouteEnter 900ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+}
+
+.homePage__route::before {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 7px;
+  width: 1px;
+  background: var(--line-strong);
+  content: '';
+  transform: scaleY(0);
+  transform-origin: top;
+  animation: homePageRouteDraw 950ms cubic-bezier(0.16, 1, 0.3, 1) 280ms forwards;
+}
+
+.homePage__routeStop {
+  opacity: 0;
+  animation: homePageStopEnter 520ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.homePage__routeStop:nth-child(1) {
+  animation-delay: 400ms;
+}
+
+.homePage__routeStop:nth-child(2) {
+  animation-delay: 560ms;
+}
+
+.homePage__routeStop:nth-child(3) {
+  animation-delay: 720ms;
+}
+
+.homePage__serviceCard {
+  --serviceCardRotateX: 0deg;
+  --serviceCardRotateY: 0deg;
+
+  transform-style: preserve-3d;
+  transition:
+    transform 180ms ease-out,
+    border-color 280ms ease;
+}
+
+.homePage__membershipCard {
+  --membershipCardRotateX: 0deg;
+  --membershipCardRotateY: 0deg;
+
+  transform-style: preserve-3d;
+  transition:
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 280ms ease;
+}
+
+.homePage__serviceIcon,
+.homePage__serviceTitle,
+.homePage__serviceDescription {
+  transform: translateZ(0);
+  transition: transform 180ms ease-out;
+}
+
+.homePage__membershipHeading,
+.homePage__membershipPriceBlock,
+.homePage__membershipTerm {
+  transform: translateZ(0);
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .homePage__serviceCard:hover {
+    border-color: var(--line-strong);
+    transform:
+      perspective(700px)
+      rotateX(var(--serviceCardRotateX))
+      rotateY(var(--serviceCardRotateY));
+  }
+
+  .homePage__serviceCard:hover .homePage__serviceIcon {
+    transform: translateZ(40px);
+  }
+
+  .homePage__serviceCard:hover .homePage__serviceTitle {
+    transform: translateZ(24px);
+  }
+
+  .homePage__serviceCard:hover .homePage__serviceDescription {
+    transform: translateZ(10px);
+  }
+
+  .homePage__membershipCard:hover {
+    border-color: var(--line-strong);
+    transform:
+      perspective(900px)
+      rotateX(var(--membershipCardRotateX))
+      rotateY(var(--membershipCardRotateY))
+      translateZ(16px)
+      scale(1.015);
+  }
+
+  .homePage__membershipCard:hover .homePage__membershipHeading {
+    transform: translateZ(18px);
+  }
+
+  .homePage__membershipCard:hover .homePage__membershipPriceBlock {
+    transform: translateZ(22px);
+  }
+
+  .homePage__membershipCard:hover .homePage__membershipTerm {
+    transform: translateZ(8px);
+  }
+}
+
+.homePage__reveal--armed:not(.homePage__reveal--visible) {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.homePage__reveal--visible {
+  animation: homePageSectionReveal 650ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.homePage__reveal--about.homePage__reveal--visible {
+  animation: homePageAboutEnter 720ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.homePage__reveal--services.homePage__reveal--visible {
+  animation: homePageServicesEnter 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.homePage__reveal--pricing.homePage__reveal--visible {
+  animation: homePagePricingEnter 740ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.homePage__reveal--closing.homePage__reveal--visible {
+  animation: homePageClosingEnter 680ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.homePage__reveal--services.homePage__reveal--visible .homePage__serviceCardEntrance:nth-child(1) {
+  animation: homePageServiceCardFromLeft 620ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
+}
+
+.homePage__reveal--services.homePage__reveal--visible .homePage__serviceCardEntrance:nth-child(2) {
+  animation: homePageServiceCardRise 620ms cubic-bezier(0.16, 1, 0.3, 1) 160ms both;
+}
+
+.homePage__reveal--services.homePage__reveal--visible .homePage__serviceCardEntrance:nth-child(3) {
+  animation: homePageServiceCardFromRight 620ms cubic-bezier(0.16, 1, 0.3, 1) 240ms both;
+}
+
+.homePage__reveal--pricing.homePage__reveal--visible .homePage__membershipCardEntrance:nth-child(1) {
+  animation: homePageMembershipFromLeft 680ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
+}
+
+.homePage__reveal--pricing.homePage__reveal--visible .homePage__membershipCardEntrance:nth-child(2) {
+  animation: homePageMembershipRise 680ms cubic-bezier(0.16, 1, 0.3, 1) 160ms both;
+}
+
+.homePage__reveal--pricing.homePage__reveal--visible .homePage__membershipCardEntrance:nth-child(3) {
+  animation: homePageMembershipScale 680ms cubic-bezier(0.16, 1, 0.3, 1) 240ms both;
+}
+
+.homePage__reveal--pricing.homePage__reveal--visible .homePage__membershipCardEntrance:nth-child(4) {
+  animation: homePageMembershipFromRight 680ms cubic-bezier(0.16, 1, 0.3, 1) 320ms both;
+}
+
+@keyframes homePageHeroEnter {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes homePageRouteEnter {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes homePageRouteDraw {
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes homePageStopEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes homePageSectionReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes homePageAboutEnter {
+  from {
+    filter: blur(5px);
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+
+  to {
+    filter: blur(0);
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes homePageServicesEnter {
+  from {
+    clip-path: inset(0 0 12% 0);
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    clip-path: inset(0);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes homePagePricingEnter {
+  from {
+    filter: blur(3px);
+    opacity: 0;
+    transform: perspective(900px) rotateX(4deg) translateY(24px);
+  }
+
+  to {
+    filter: blur(0);
+    opacity: 1;
+    transform: perspective(900px) rotateX(0) translateY(0);
+  }
+}
+
+@keyframes homePageClosingEnter {
+  from {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+
+  to {
+    clip-path: inset(0);
+    opacity: 1;
+  }
+}
+
+@keyframes homePageServiceCardFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-28px) rotateY(-8deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) rotateY(0);
+  }
+}
+
+@keyframes homePageServiceCardRise {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes homePageServiceCardFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(28px) rotateY(8deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) rotateY(0);
+  }
+}
+
+@keyframes homePageMembershipFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px) rotateY(-12deg) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) rotateY(0) scale(1);
+  }
+}
+
+@keyframes homePageMembershipRise {
+  from {
+    opacity: 0;
+    transform: translateY(42px) rotateX(-10deg) scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0) scale(1);
+  }
+}
+
+@keyframes homePageMembershipScale {
+  from {
+    opacity: 0;
+    transform: translateY(18px) rotateZ(4deg) scale(0.82);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateZ(0) scale(1);
+  }
+}
+
+@keyframes homePageMembershipFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px) rotateY(12deg) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) rotateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homePage__heroCopy,
+  .homePage__route,
+  .homePage__route::before,
+  .homePage__routeStop,
+  .homePage__reveal--visible,
+  .homePage__serviceCardEntrance,
+  .homePage__membershipCardEntrance,
+  .homePage__serviceCard,
+  .homePage__membershipCard,
+  .homePage__serviceIcon,
+  .homePage__serviceTitle,
+  .homePage__serviceDescription,
+  .homePage__membershipHeading,
+  .homePage__membershipPriceBlock,
+  .homePage__membershipTerm {
+    animation: none !important;
+    transition: none;
+    transform: none;
+  }
+
+  .homePage__route::before {
+    transform: scaleY(1);
+  }
+
+  .homePage__routeStop {
+    opacity: 1;
+    transform: none;
+  }
+
+  .homePage__reveal--armed:not(.homePage__reveal--visible) {
+    opacity: 1;
+    transform: none;
+  }
+}

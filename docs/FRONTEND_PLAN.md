@@ -17,7 +17,7 @@ Estas reglas son criterio de aceptación, no inspiración. Se aplican a cada pan
 
 1. **El fondo siempre es negro.** Superficies negro cálido (`--bg`, `--panel`, `--panel-2`). Nunca se rellena un contenedor con color de estado ni con tinte de marca.
 2. **Solo bordes.** La separación es un borde de 1px neutro (`--line` / `--line-strong`). El color no pinta bordes de contenedores.
-3. **Los errores siempre son pops.** Todo error se comunica con un **toast** flotante: superficie negra, borde neutro, icono de color, título y recuperación. Prohibidos banners inline, bloques con fondo de color y bordes de color.
+3. **Errores de campo junto al campo; errores globales como pops.** Validaciones locales y errores del backend asociados a un campo usan `fieldError`, texto e icono rojos y borde rojo en el input, sin fondo tintado; desaparecen al editar el campo. Errores globales, de sesión, red y negocio usan toast. Si el backend rechaza credenciales sin especificar cuál, se muestra toast y se marcan ambos campos.
 4. **La información no satura.** Máximo **3 bloques principales (regiones)** por vista. Los detalles se agrupan en subsecciones con hairline dentro de un bloque, no en cards adicionales. Las métricas se leen como texto, no como cards. Las tablas muestran lo esencial; el resto vive en el detalle.
 5. **Cero gradientes.** Ni fondos, ni botones, ni texto, ni tarjetas.
 6. **Cero chips rellenos.** El estado es un **punto de 6px + texto**; una etiqueta es solo borde de 1px sin fondo.
@@ -55,9 +55,11 @@ Estas reglas son criterio de aceptación, no inspiración. Se aplican a cada pan
 
 ### 0.2 Primitivos obligatorios
 
-`Panel`, `PanelHead`, `Metric`, `MetricStrip`, `Row`, `DataTable`, `Status`, `Tag`, `Toast`, `Modal`, `Button`, `IconButton`, `Input`, `Select`, `Field`, `SearchInput`, `Pagination`, `EmptyState`, `Avatar`, `Meander`, `Icon`.
+`panel`, `panelHead`, `metric`, `metricStrip`, `row`, `dataTable`, `status`, `tag`, `toast`, `fieldError`, `modal`, `button`, `iconButton`, `input`, `select`, `field`, `searchInput`, `pagination`, `emptyState`, `avatar`, `meander`, `icon`.
 
-Las features no importan Astryx directamente: todo pasa por `components/ui`, que encapsula accesibilidad, tokens y variantes.
+Los errores de validación local y los errores del backend asociados a un campo se presentan debajo del input con `fieldError` y borde rojo, y desaparecen al cambiar ese campo. Los errores globales y de negocio se presentan como toast. Si el backend no distingue qué credencial falló, se marca correo y contraseña y se conserva el toast.
+
+Los primitivos adoptados de Astryx son `button`, `iconButton`, `modal`, `dataTable`, `tag`, `status` y `emptyState`; el resto sigue siendo propio. Las features no importan Astryx directamente: todo pasa por `components/ui`, que encapsula accesibilidad, tokens y variantes.
 
 ---
 
@@ -66,7 +68,7 @@ Las features no importan Astryx directamente: todo pasa por `components/ui`, que
 | Herramienta | Rol |
 |---|---|
 | Vite + React 19 + TypeScript | base de la SPA |
-| Astryx (`@astryxdesign/core` + `theme-neutral`) | controles accesibles; versión exacta fijada en `package.json` |
+| Astryx (`@astryxdesign/core`, sin `theme-neutral`) | primitivos de `components/ui` | puente de tokens en `tokens.css` |
 | Tailwind CSS 4 | layout fino y utilidades; tokens en cascade layers |
 | `react-icons/lu` | iconografía única |
 | react-hook-form + zod | formularios espejo de los DTO |
@@ -79,12 +81,18 @@ Las features no importan Astryx directamente: todo pasa por `components/ui`, que
 Convenciones:
 
 - TypeScript `strict`; sin `any` en la capa de API.
-- Identificadores en inglés y camelCase; archivos de componentes en kebab-case.
+- Identificadores, archivos, carpetas y componentes React en inglés y camelCase; tipos en PascalCase. Los componentes deben tener nombres descriptivos y se renderizan mediante namespaces JSX (por ejemplo, `<userComponents.userProfile />`).
+- Tailwind para layout, espaciado, tipografía, color, responsive y estados. CSS propio solo para necesidades específicas; sus clases siguen BEM con segmentos camelCase (`block`, `block__element`, `block__element--modifier`).
+- Organizar por entidad en `src/features/<entidad>/`: componentes, layouts, páginas, queries/hooks, esquemas y tipos específicos de cada dominio permanecen juntos. Todo lo de usuarios va en `src/features/users/`; lo compartido vive en `components/ui`, `components/layout` o `lib`.
 - Sin secretos en el repositorio. La URL de API sale de `VITE_API_URL`.
 - No se cambia el contrato `/api/v1`. Cualquier necesidad nueva se propone al perfil backend.
 - Los mockups de `front/mockup/` son referencia local, git-ignored; no se copian a producción, se recrean con componentes.
 
 ---
+
+- **Arrow functions**: todo componente React, hook y función auxiliar se declara como `const` con arrow function (`const panel = (...) => {}`). Prohibidas las declaraciones `function`, incluidas las expresiones que recibe `memo`.
+- **Componentes y lógica separados**: cada feature agrupa por capa. `components/` solo contiene JSX y estado de UI local; `hooks/` concentra estado, efectos, formularios y navegación; `api/` las llamadas HTTP; `model/` esquemas, tipos y constantes. Un componente no ejecuta peticiones ni validaciones que pueda recibir de un hook.
+- **Estructura de feature**: `src/features/<entidad>/components/`, `hooks/`, `api/` y `model/`. Se crean solo las capas que la entidad necesite; lo compartido vive en `components/ui`, `components/layout` o `lib`.
 
 ## 2. Estructura propuesta
 
@@ -98,10 +106,15 @@ front/
    │  ├─ providers.tsx
    │  └─ guards.tsx
    ├─ components/
-   │  ├─ layout/               # AppShell, SiteHeader, SiteNav, SiteFooter, PageHead
+   │  ├─ layout/               # appShell, publicHeader, siteHeader, siteNav, siteFooter, pageHead
    │  └─ ui/                   # primitivos del contrato visual
    ├─ features/
+   │  ├─ home/                  # sitio público y landing de Olimpo
    │  ├─ auth/
+   │  │  ├─ components/         # loginPage, protectedRoute, authSessionManager
+   │  │  ├─ hooks/              # useLoginForm, useShellSession
+   │  │  ├─ api/                # authApi
+   │  │  └─ model/              # authTypes, loginFormSchema, loginRoleGuides, roleLabels
    │  ├─ dashboard/
    │  ├─ clients/
    │  ├─ memberships/
@@ -122,8 +135,12 @@ front/
 
 | Ruta | Vista | Roles |
 |---|---|---|
+| `/` | Home pública: presentación, servicios y planes | público |
+| `/#about` | Ancla “Sobre Olimpo” | público |
+| `/#services` | Ancla de servicios | público |
+| `/#pricing` | Ancla de precios | público |
 | `/login` | Login | público |
-| `/` | Panel | autenticados |
+| `/dashboard` | Panel | autenticados |
 | `/clients` | Directorio | `ADMIN`, `RECEPCIONIST` |
 | `/clients/new` | Nuevo cliente | `ADMIN`, `RECEPCIONIST` |
 | `/clients/:id` | Ficha del cliente | `ADMIN`, `RECEPCIONIST`; `CLIENT` solo el propio |
@@ -138,8 +155,11 @@ front/
 
 Reglas de navegación:
 
-- El header filtra enlaces por rol y muestra **máximo 6**; el resto va en un grupo de texto “Administración”.
+- La home pública tiene navegación por anclas a presentación, “Sobre Olimpo”, servicios y precios; incluye CTA a `/login`. El acceso al sistema no requiere iniciar sesión para explorar la home.
+- El encabezado autenticado usa un menú de usuario compacto; agrupa cada enlace bajo los roles que lo habilitan y filtra rutas con la misma política del guard.
+- Preferencias de tema, acceso a Diseño (solo desarrollo) y cierre de sesión viven dentro del menú, no como botones separados en la barra superior.
 - Un guard por ruta valida sesión y rol; si falta sesión → `/login`; si falta rol → 403 sin filtrar detalles.
+- Después del login, se abre la ruta protegida solicitada originalmente o `/dashboard`; cerrar sesión devuelve a `/login`. `/` permanece como home pública.
 - `RECEPCIONIST` no ve Inventario ni Máquinas (decisión de negocio, no un olvido).
 - `CLIENT` no ve el directorio; solo su ficha y sus rutinas.
 
@@ -155,10 +175,10 @@ Reglas de navegación:
 
 - Scaffold Vite + React + TS, Tailwind 4, alias `@/`.
 - `tokens.css` con dark/light y `ThemeProvider` persistido.
-- Primitivos `Panel`, `PanelHead`, `Metric`, `Status`, `Tag`, `Toast`, `Modal`, `Button`, `Input`, `Field`, `Icon`.
-- `AppShell`: header sticky de 68px, navegación de texto con icono, footer con meandro.
+- Primitivos `panel`, `panelHead`, `metric`, `status`, `tag`, `toast`, `fieldError`, `modal`, `button`, `input`, `field`, `icon`.
+- `appShell`: header sticky de 68px, navegación de texto con icono, footer con meandro.
 - Página de muestra `/design` (solo dev) con todos los primitivos en ambos temas.
-- `ToastHost` global; ningún componente puede renderizar errores inline.
+- `toastHost` global y `fieldError` reutilizable para errores asociados a campos.
 
 **API:** ninguna.
 
@@ -168,7 +188,44 @@ Reglas de navegación:
 - Contraste ≥4.5:1 en texto y placeholders; foco visible en todo control.
 - Teclado: navegación completa, `Esc` cierra modal y toast.
 - `prefers-reduced-motion` deja el contenido sin animación.
-- `npm run build` y `npm run lint` en verde.
+- `pnpm run build` y `pnpm run lint` en verde.
+
+### F1.5 — Home pública y primera visita
+
+**Objetivo:** ofrecer una página pública que presente Olimpo antes del login y permita explorar qué ofrece el gimnasio.
+
+**Ruta y estructura**
+
+- `GET /` sirve la home pública y permanece accesible sin sesión.
+- La página vive en `src/features/home/`; sus secciones, contenido y animaciones específicas se mantienen dentro de esa entidad. Se reutilizan los primitivos globales de `components/ui`.
+- Navegación con anclas a `/#about`, `/#services` y `/#pricing`, más una acción clara para iniciar sesión en `/login`.
+- El panel autenticado se sirve en `/dashboard`; esta separación evita colisionar la portada pública con el destino posterior al login.
+
+**Contenido**
+
+- Hero de bienvenida con propuesta de valor, identidad de Olimpo y CTA hacia servicios/precios e inicio de sesión.
+- Sección “Sobre Olimpo” (o “Sobre mí” si se confirma una marca personal); presentar solo historia y datos aprobados por el negocio.
+- Sección de servicios en cards con icono, nombre y descripción breve; usar profundidad 3D sutil sin sombras duras y respetar `prefers-reduced-motion`.
+- Sección de precios/planes con cada membresía presentada en su propia tarjeta comparativa; mostrar monto, moneda, vigencia y condiciones reales, legibles y comparables.
+- Cierre con CTA y datos de contacto solo si se suministran.
+- Contenido amplio y útil en una página de desplazamiento largo, organizado por jerarquía, anclas y aire visual. No llenar la página con grids repetidos, cards anidadas ni bloques decorativos; mantener un máximo de 3 regiones principales por viewport.
+- No inventar precios, promociones, testimonios, instalaciones, horarios, ubicación ni resultados. Recabar el texto de “Sobre Olimpo”, catálogo, tarifas y condiciones antes de publicar esos datos; los placeholders no se presentan como información real.
+
+**Dirección visual y movimiento**
+
+- Conservar la identidad negro editorial, tokens, tipografía y reglas de color de `docs/FRONTEND_BASE.md`; esta fase amplía la narrativa y densidad informativa, no crea una identidad visual separada.
+- Hacer reconocible el carácter olímpico de Olimpo con referencias helénicas arquitectónicas, el glifo de columna y el meandro, manteniendo la jerarquía editorial y evitando ornamento genérico.
+- Componer una secuencia de movimiento más rica que la UI operativa, pero breve y con propósito: entrada escalonada del hero, revelado único de secciones al entrar en viewport y microinteracciones de foco/hover en enlaces y acciones.
+- Las animaciones no deben ocultar información, bloquear interacción ni repetirse continuamente; sin parallax ni movimiento permanente. Respetar `prefers-reduced-motion` mostrando el contenido inmediatamente.
+
+**Aceptación**
+
+- `/` muestra todas las secciones públicas y funciona sin sesión; cada ancla lleva a su sección y el CTA de acceso llega a `/login`.
+- La ruta `/dashboard` queda reservada al panel autenticado y no se expone como contenido público.
+- Servicios, precios y datos del gimnasio provienen de información entregada por el negocio; no hay cifras o afirmaciones de ejemplo en producción.
+- El contenido es rico pero escaneable, con jerarquía clara, responsive en los breakpoints del §6 y sin exceder 3 regiones principales visibles.
+- La secuencia de movimiento es perceptible pero no distrae; la versión con movimiento reducido presenta el mismo contenido y funcionalidad.
+- Teclado, foco visible, contraste y enlaces ancla funcionan en móvil y escritorio.
 
 ### F2 — Autenticación y navegación por rol
 
@@ -182,15 +239,21 @@ Reglas de navegación:
 
 **Entregables**
 
-- Login del mockup con iconos de correo/candado y error 401 como toast.
-- `authStore` con token, email y roles; persistencia controlada.
+- Login integrado en una sola tarjeta de dos pasos: selección compacta de rol y credenciales. El rol elegido ajusta el título, el resumen y las pistas del formulario; error 401 como toast. No existe `/register`: el alta se hace en recepción.
+- Navegación móvil en el shell autenticado: bajo 821px el header muestra un botón de menú con los mismos enlaces filtrados por rol, cierre por Escape y al cambiar de ruta.
+- `authStore` con token, email, roles, perfil y expiración; persistencia por pestaña en `sessionStorage` (sin guardar contraseñas).
 - Refresh programado antes de `expiresIn`; un solo reintento ante 401.
-- Guards por rol y menú derivado de `roles`.
-- Logout que limpia store, caché de Query y redirige.
+- Guards por rol y menú derivado de `roles`; el panel protegido vive en `/dashboard`.
+- Logout que limpia store, caché de Query y redirige a `/login`; la home pública `/` sigue accesible.
+- La API usa `/api/v1` por defecto; Vite reenvía `/api` a `http://localhost:8080` durante desarrollo y `VITE_API_URL` permite configurar otra base.
 
 **Aceptación**
 
-- Credenciales inválidas muestran toast, nunca banner.
+- Correo vacío/inválido y contraseña vacía muestran errores inline, sin toast; se limpian al editar el campo.
+- Un 401 de credenciales muestra toast y marca ambos campos con un aviso inline hasta que cada uno cambie.
+- Los errores de validación del backend que identifiquen un campo también lo marcan; los errores globales/de negocio siguen usando toast.
+- El login explica el rol antes de entrar y deja claro que el rol real lo determina la cuenta.
+- La navegación por rol funciona en escritorio y en móvil; ningún enlace permitido queda inaccesible.
 - La sesión sobrevive a recarga y se cierra sola al expirar sin refresh válido.
 - Un rol sin permiso no ve el enlace ni puede entrar por URL.
 - Sin `passwordHash` ni datos sensibles en el cliente.
@@ -216,7 +279,7 @@ Reglas de navegación:
 - Alta con RHF + zod: correo único, documento, teléfono, dirección y membresía inicial opcional.
 - Ficha con membresía actual, historial, pagos y datos personales.
 - Renovación en modal con la regla `max(endDate, hoy)` visible y fecha calculada.
-- 400/409/404 como toast; el campo inválido recibe `aria-invalid` y foco, sin borde ni fondo de color.
+- Validaciones 400 asociadas a un campo también se muestran junto al input con borde rojo y foco; los errores globales y los conflictos 404/409 usan toast.
 
 **Aceptación**
 
@@ -243,7 +306,7 @@ Reglas de navegación:
 **Aceptación**
 
 - Registrar un pago invalida el historial del cliente y el resumen.
-- Errores de validación y de negocio siempre como toast.
+- Errores locales y de validación 400 asociados a campos se muestran inline; los errores de negocio y globales usan toast.
 - No se muestra un “total global” que el contrato no pueda sostener.
 
 ### F5 — Inventario y máquinas
@@ -307,7 +370,7 @@ Reglas de navegación:
 
 **Entregables**
 
-- Panel con los 3 bloques del mockup **solo cuando existan endpoints que los sostengan**.
+- Panel en `/dashboard` con los 3 bloques del mockup **solo cuando existan endpoints que los sostengan**.
 - Estados de carga con texto y hairlines (sin shimmer llamativo), vacío y error.
 - Responsive 1180 / 1020 / 820 / 560; header sin desbordes.
 - Pruebas: unitarias de primitivos, integración de features con MSW, E2E de login/cliente/renovación.
@@ -341,15 +404,15 @@ Reglas de navegación:
 
 | Origen | UI |
 |---|---|
-| 400 validación | toast con el mensaje del backend; foco al primer campo inválido |
+| 400 validación | mensaje inline y borde rojo en los campos identificados por el backend, además de toast |
 | 401 sesión | intento único de refresh; si falla, logout + toast |
 | 403 | toast genérico; no se revela el recurso |
 | 404 | toast “no encontrado” y vuelta a la lista |
 | 409 | toast con la regla de negocio |
 | 500 | toast genérico; detalle solo en consola/log |
 
-- Cero banners, cero bloques rojos, cero bordes de color.
-- Los formularios usan zod espejo de los DTO; los mensajes visibles salen del backend cuando existen.
+- Cero banners y fondos rojos; el borde rojo se reserva al input inválido.
+- Los formularios usan zod espejo de los DTO; errores locales aparecen inline sin toast, y los errores de campo identificados por el backend aparecen inline además del toast.
 
 ### Fechas y dinero
 
@@ -365,7 +428,7 @@ Cada pantalla se considera terminada cuando:
 
 - [ ] Cumple las 12 reglas del contrato visual.
 - [ ] No hay gradientes, rellenos tintados, chips rellenos ni sombras en cards.
-- [ ] Los errores son toasts; no existe ningún banner de error.
+- [ ] Errores de campo inline con `fieldError`; errores globales/de negocio como toast; ningún banner.
 - [ ] Máximo 3 bloques principales (regiones) por vista; sin cards anidadas.
 - [ ] Contraste ≥4.5:1 en texto y placeholders; foco visible.
 - [ ] Teclado completo; `Esc` cierra capas; `aria-invalid` en campos con error.
@@ -395,8 +458,8 @@ Mientras esas brechas existan, las vistas afectadas muestran solo lo que el cont
 
 ## 8. Riesgos y decisiones
 
-- **Astryx beta:** encapsular en `components/ui`; una actualización no debe tocar features.
-- **Token en cliente:** persistencia controlada + refresh programado; evaluar `sessionStorage` si el riesgo XSS pesa más que la comodidad.
+- **Astryx 0.7.14 (versión exacta):** encapsulado en `components/ui`; una actualización no debe tocar features.
+- **Token en cliente:** `sessionStorage` por pestaña + refresh programado con margen proporcional; evaluar cookies httpOnly si el backend las ofrece.
 - **Sin navegador en el entorno del agente:** la verificación visual se hace contra el mockup y con axe/Playwright cuando haya entorno navegable.
 - **Roles múltiples:** un usuario puede tener varios roles; la UI une permisos y muestra la unión, no el primero.
 - **Fechas:** la regla `max(endDate, today)` se calcula en backend; la UI solo la muestra y valida formato.
@@ -409,9 +472,9 @@ Mientras esas brechas existan, las vistas afectadas muestran solo lo que el cont
 Cerrar **F1** completo antes de tocar features:
 
 1. Scaffold y tokens.
-2. Primitivos y `ToastHost`.
-3. `AppShell` con header/footer.
+2. Primitivos y `toastHost`.
+3. `appShell` con header/footer.
 4. Página `/design` en oscuro y claro.
 5. Revisión contra `front/mockup/` y checklist de §6.
 
-Con F1 aprobado, F2 (auth) y F3 (clientes) se ejecutan en ese orden.
+Con F1 aprobado, implementar F1.5 (home pública) antes de F2 (auth); después continúan F3 (clientes) y las fases siguientes en orden.
