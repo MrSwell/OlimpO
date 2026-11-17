@@ -1,0 +1,241 @@
+.clientFeature__card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      transparent 72%,
+      color-mix(in srgb, var(--gold) 2%, transparent) 100%
+    ),
+    var(--panel);
+  padding: clamp(16px, 2.4vw, 20px);
+  transition: border-color 180ms ease;
+}
+
+.clientFeature__card:hover,
+.clientFeature__card:focus-within {
+  border-color: var(--text);
+}
+
+.clientFeature__clientCard {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+}
+
+.clientFeature__clientHeading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.clientFeature__clientAvatar {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.clientFeature__actionLink {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 5px 9px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.clientFeature__actionLink:hover,
+.clientFeature__actionLink:focus-visible {
+  border-color: var(--text);
+  background: color-mix(in srgb, var(--text) 4%, var(--panel));
+  color: var(--text);
+}
+
+.clientFeature__actionLink:focus-visible {
+  outline: 2px solid var(--gold-strong);
+  outline-offset: 2px;
+}
+
+.clientFeature__actionLink--primary {
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+
+.clientFeature__checkbox {
+  accent-color: color-mix(in srgb, var(--gold) 32%, var(--line-strong));
+}
+
+.clientFeature__button {
+  box-sizing: border-box;
+  width: fit-content;
+  max-width: 100%;
+  height: 32px;
+  min-height: 32px;
+  border-color: var(--line-strong);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 5px 9px;
+  color: var(--text);
+  font-size: 12.5px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.clientFeature__button:hover:not(:disabled),
+.clientFeature__button:focus-visible:not(:disabled) {
+  border-color: var(--text);
+  background: color-mix(in srgb, var(--text) 4%, var(--panel));
+  color: var(--text);
+}
+
+.clientFeature__profileHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.clientFeature__dashboardGrid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.clientFeature__dashboardProfileCard {
+  grid-column: span 5;
+  display: flex;
+  align-items: center;
+}
+
+.clientFeature__dashboardMembershipCard {
+  grid-column: span 7;
+}
+
+.clientFeature__dashboardDataCard {
+  grid-column: span 6;
+}
+
+.clientFeature__dashboardGoalCard {
+  grid-column: span 12;
+}
+
+.clientFeature__dashboardActivityCard {
+  grid-column: span 6;
+}
+
+.clientFeature__profileIdentity {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 240px;
+  align-items: center;
+  gap: 14px;
+}
+
+.clientFeature__sectionHeading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.clientFeature__remainingTime {
+  font-family: var(--font-ui);
+  font-size: clamp(22px, 2.6vw, 28px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.clientFeature__dataGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.clientFeature__dataItem {
+  min-width: 0;
+}
+
+.clientFeature__membershipProgress {
+  margin-top: 16px;
+}
+
+.clientFeature__progressTrack {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--line);
+}
+
+.clientFeature__progressFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--gold) 24%, var(--line-strong));
+  transition: width 240ms ease-out;
+}
+
+.clientFeature__progressFill[data-state='expired'] {
+  background: var(--danger);
+}
+
+.clientFeature__historyItem + .clientFeature__historyItem {
+  border-top: 1px solid var(--line);
+}
+
+@media (min-width: 1100px) {
+  .clientFeature__dashboardDataCard {
+    grid-column: span 4;
+  }
+
+  .clientFeature__dashboardGoalCard {
+    grid-column: span 4;
+  }
+}
+
+@media (max-width: 900px) {
+  .clientFeature__dashboardProfileCard,
+  .clientFeature__dashboardMembershipCard {
+    grid-column: span 12;
+  }
+}
+
+@media (max-width: 650px) {
+  .clientFeature__dashboardGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .clientFeature__dashboardGrid > * {
+    grid-column: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clientFeature__card,
+  .clientFeature__actionLink,
+  .clientFeature__button,
+  .clientFeature__progressFill {
+    transition: none;
+  }
+}

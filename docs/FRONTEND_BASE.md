@@ -8,11 +8,11 @@ Fuente de verdad visual para `front/`. Cualquier cambio de identidad se document
 
 Estas reglas mandan sobre cualquier preferencia estética y se aplican a todo el frontend, mockups incluidos:
 
-1. **El fondo siempre es negro.** Las superficies son negro cálido (`--bg`, `--panel`, `--panel-2`). Nunca se rellena un contenedor con un color de estado (rojo, verde, ámbar, dorado translúcido) ni con un tinte de marca.
+1. **El fondo siempre es negro.** Las superficies son negro cálido (`--bg`, `--panel`, `--panel-2`). No se rellenan contenedores con colores de estado ni tintes de marca, salvo el degradado casi imperceptible de las cards de clientes descrito en la regla 5.
 2. **Solo bordes.** La separación se comunica con un borde de 1px neutro (`--line` / `--line-strong`). El color no pinta el borde de un contenedor; el dorado solo aparece en foco, en la acción principal y en texto de acento.
 3. **Errores de campo junto al campo; errores globales como pops.** La validación local y los errores de campo reconocidos del backend usan un mensaje pequeño bajo el input, texto e icono rojos y borde rojo en el campo; se limpian al editarlo. Errores de negocio, sesión, red y servidor sin campo asociado usan un **toast** flotante (superficie negra, borde neutro, icono de color, título + recuperación). No usar banners ni fondos rojos. Si el backend rechaza credenciales sin identificar cuál, se muestra el toast y se marcan correo y contraseña.
 4. **La información no satura.** Máximo **3 bloques principales (regiones)** por vista. Los detalles se agrupan en subsecciones con hairline dentro de un bloque, no en cards adicionales. Las métricas se leen como texto, no como cards con iconos. Las tablas muestran lo esencial y el resto vive en el detalle.
-5. **Cero gradientes.** Ni en fondos, ni en botones, ni en texto, ni en tarjetas. La jerarquía se logra con tipografía, borde y espacio.
+5. **Gradientes solo en tarjetas de clientes.** El resto de la interfaz no usa gradientes en fondos, botones, texto ni tarjetas. Las cards de clientes pueden usar un degradado casi imperceptible que avanza de transparente a dorado de izquierda a derecha; debe seguir leyendo primero como negro.
 6. **Cero chips rellenos.** El estado se muestra con un **punto de 6px + texto**; una etiqueta es solo borde de 1px sin fondo.
 7. **Sin sombras en cards.** La elevación se declara una vez con el borde. La sombra queda reservada a capas flotantes (toast y modal).
 8. **Navegación por rol dentro del menú de usuario.** El encabezado autenticado conserva la marca y un único control de usuario; sus acciones se agrupan por los roles de esa cuenta y cada enlace muestra su icono funcional. Tema, diseño de desarrollo y cierre de sesión también viven ahí. Nunca ilustraciones decorativas ni iconos rellenos.
@@ -52,11 +52,12 @@ Dirección: un sistema de gestión que se lee como una publicación, no como un 
 
 - **Superficies del navegador tematizadas**: selección dorada translúcida, `caret-color` dorado, scrollbars finos en `--line-strong` con hover dorado, `underline-offset` en enlaces y cifras `tabular-nums` en datos.
 - **Foco**: anillo de 2px `--gold-strong` con offset 2. Siempre visible.
+- **Dashboard de clientes**: el directorio usa una rejilla de perfiles con avatar inicial, datos legibles y acciones compactas. La ficha distribuye perfil y membresía en la primera fila; contacto, identificación, objetivo, historial y pagos ocupan cards independientes en una rejilla responsive. El degradado interior casi imperceptible avanza de transparente a dorado de izquierda a derecha; al hover o foco, el borde contrasta con `--text`. La membresía destaca los días restantes con una barra accesible.
 
 ## 2. Tipografía y forma
 
 - **UI**: sans del sistema; títulos 600 con tracking `-0.02em`.
-- **Cifras y nombres de plan**: serif (Palatino/Georgia) en peso 400, tamaño grande. Aporta el tono editorial sin decorar.
+- **Cifras y nombres de plan**: serif (Palatino/Georgia) en peso 400 en superficies editoriales. Las métricas operativas del dashboard usan sans con énfasis moderado.
 - **Cuerpo**: 14px, medida 65–75ch, `text-wrap: balance` en títulos.
 - **Radios**: paneles 12px, controles 8px. Sin pills.
 - **Escala**: 12 / 12.5 / 13 / 14 / 15 / 17 / 26–30 / 38. Sin más pasos.

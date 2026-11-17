@@ -3,7 +3,6 @@
 import type { IconType } from 'react-icons'
 import {
   LuCalendarDays as luCalendarDays,
-  LuCreditCard as luCreditCard,
   LuLayoutGrid as luLayoutGrid,
   LuPackage as luPackage,
   LuReceipt as luReceipt,
@@ -23,12 +22,6 @@ export interface NavItem {
 export const navItems: NavItem[] = [
   { to: '/dashboard', label: 'Panel', icon: luLayoutGrid, end: true, allowedRoles: roleGroups.all },
   { to: '/clients', label: 'Clientes', icon: luUsers, allowedRoles: roleGroups.clientManagement },
-  {
-    to: '/memberships',
-    label: 'Membresías',
-    icon: luCreditCard,
-    allowedRoles: roleGroups.clientManagement,
-  },
   { to: '/payments', label: 'Pagos', icon: luReceipt, allowedRoles: roleGroups.clientManagement },
   {
     to: '/inventory',

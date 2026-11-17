@@ -15,11 +15,11 @@ Fuentes de verdad:
 
 Estas reglas son criterio de aceptación, no inspiración. Se aplican a cada pantalla, estado y breakpoint.
 
-1. **El fondo siempre es negro.** Superficies negro cálido (`--bg`, `--panel`, `--panel-2`). Nunca se rellena un contenedor con color de estado ni con tinte de marca.
+1. **El fondo siempre es negro.** Superficies negro cálido (`--bg`, `--panel`, `--panel-2`). No se rellenan contenedores con color de estado ni tinte de marca, salvo el degradado casi imperceptible de las cards de clientes.
 2. **Solo bordes.** La separación es un borde de 1px neutro (`--line` / `--line-strong`). El color no pinta bordes de contenedores.
 3. **Errores de campo junto al campo; errores globales como pops.** Validaciones locales y errores del backend asociados a un campo usan `fieldError`, texto e icono rojos y borde rojo en el input, sin fondo tintado; desaparecen al editar el campo. Errores globales, de sesión, red y negocio usan toast. Si el backend rechaza credenciales sin especificar cuál, se muestra toast y se marcan ambos campos.
 4. **La información no satura.** Máximo **3 bloques principales (regiones)** por vista. Los detalles se agrupan en subsecciones con hairline dentro de un bloque, no en cards adicionales. Las métricas se leen como texto, no como cards. Las tablas muestran lo esencial; el resto vive en el detalle.
-5. **Cero gradientes.** Ni fondos, ni botones, ni texto, ni tarjetas.
+5. **Gradientes solo en tarjetas de clientes.** El resto de la interfaz no usa gradientes; el directorio y la ficha permiten un degradado casi imperceptible de transparente a dorado, de izquierda a derecha.
 6. **Cero chips rellenos.** El estado es un **punto de 6px + texto**; una etiqueta es solo borde de 1px sin fondo.
 7. **Sin sombras en cards.** La elevación se declara con el borde. La sombra queda solo para capas flotantes (toast y modal).
 8. **Navegación por texto con icono funcional.** Barra superior, sin sidebar. Cada enlace lleva un icono de línea que lo representa; nunca ilustraciones ni iconos rellenos.
@@ -275,9 +275,9 @@ Reglas de navegación:
 
 **Entregables**
 
-- Directorio con búsqueda debounced, paginación y fichas mínimas (3 datos + 2 acciones).
-- Alta con RHF + zod: correo único, documento, teléfono, dirección y membresía inicial opcional.
-- Ficha con membresía actual, historial, pagos y datos personales.
+- Directorio en cards con búsqueda debounced, paginación, degradado casi imperceptible de transparente a dorado de izquierda a derecha y acciones compactas.
+- Alta con RHF + zod: correo único, contraseña inicial, documento y datos de perfil que expone `CreateClientRequest`; membresía inicial opcional mediante `POST /memberships`. No se captura dirección porque el contrato actual no incluye ese campo.
+- Ficha como dashboard responsive: perfil y membresía en el resumen superior; contacto, identificación, objetivo, historial y pagos en cards separadas. Acciones compactas, valores fáciles de distinguir y barra de progreso accesible.
 - Renovación en modal con la regla `max(endDate, hoy)` visible y fecha calculada.
 - Validaciones 400 asociadas a un campo también se muestran junto al input con borde rojo y foco; los errores globales y los conflictos 404/409 usan toast.
 

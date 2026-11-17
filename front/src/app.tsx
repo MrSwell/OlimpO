@@ -13,6 +13,9 @@ import * as homePageComponents from '@/features/home/publicHomePage'
 import * as authPageComponents from '@/features/auth/components/loginPage'
 import * as authSessionComponents from '@/features/auth/components/authSessionManager'
 import * as protectedRouteComponents from '@/features/auth/components/protectedRoute'
+import * as clientsPageComponents from '@/features/clients/components/clientsPage'
+import * as clientCreatePageComponents from '@/features/clients/components/clientCreatePage'
+import * as clientDetailPageComponents from '@/features/clients/components/clientDetailPage'
 import * as dashboardComponents from '@/features/dashboard/dashboardPage'
 import * as plannedFeatureComponents from '@/features/dashboard/plannedFeaturePage'
 import * as shellSessionComponents from '@/features/auth/hooks/useShellSession'
@@ -83,39 +86,27 @@ const app = () => {
           />
           <routerComponents.route
             path="/clients"
-            element={plannedPage(
-              'Clientes',
-              'F3',
-              'Consulta y administra el directorio de clientes.',
-              roleGroups.clientManagement,
-            )}
+            element={
+              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.clientManagement}>
+                <clientsPageComponents.clientsPage />
+              </protectedRouteComponents.protectedRoute>
+            }
           />
           <routerComponents.route
             path="/clients/new"
-            element={plannedPage(
-              'Nuevo cliente',
-              'F3',
-              'El alta de clientes estará disponible en la siguiente fase.',
-              roleGroups.clientManagement,
-            )}
+            element={
+              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.clientManagement}>
+                <clientCreatePageComponents.clientCreatePage />
+              </protectedRouteComponents.protectedRoute>
+            }
           />
           <routerComponents.route
             path="/clients/:clientId"
-            element={plannedPage(
-              'Ficha del cliente',
-              'F3',
-              'La información de cada cliente estará disponible en la siguiente fase.',
-              roleGroups.clientRecord,
-            )}
-          />
-          <routerComponents.route
-            path="/memberships"
-            element={plannedPage(
-              'Membresías',
-              'F3',
-              'La consulta y renovación de membresías estará disponible en la siguiente fase.',
-              roleGroups.clientManagement,
-            )}
+            element={
+              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.clientRecord}>
+                <clientDetailPageComponents.clientDetailPage />
+              </protectedRouteComponents.protectedRoute>
+            }
           />
           <routerComponents.route
             path="/payments"
