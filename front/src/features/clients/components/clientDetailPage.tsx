@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import {
   LuArrowLeft as luArrowLeft,
-  LuCalendarDays as luCalendarDays,
+  LuArrowUpRight as luArrowUpRight,
   LuCreditCard as luCreditCard,
   LuFingerprint as luFingerprint,
   LuMail as luMail,
@@ -17,11 +17,11 @@ import {
   clientStatusLabel,
   membershipStatusLabels,
   membershipTypeLabels,
-  paymentMethodLabels,
   type MembershipResponse,
 } from '../model/clientTypes'
 import * as membershipActionDialogComponents from './membershipActionDialog'
 import * as membershipProgressComponents from './membershipProgress'
+import * as paymentHistoryComponents from '@/features/payments/components/paymentHistory'
 import './clientFeature.css'
 
 const membershipStatus = (status: MembershipResponse['status']) => (
@@ -33,11 +33,6 @@ const membershipStatus = (status: MembershipResponse['status']) => (
     {membershipStatusLabels[status]}
   </span>
 )
-
-const paymentDate = (value: string): string => {
-  const [date, time] = value.split('T')
-  return `${formatDate(date)}${time ? ` · ${time.slice(0, 5)}` : ''}`
-}
 
 const getClientInitials = (firstName: string, lastName: string): string =>
   `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
@@ -383,59 +378,29 @@ export const clientDetailPage = () => {
           id="payments"
           aria-labelledby="client-payments-title"
         >
-          <h2 id="client-payments-title" className="text-[15px] font-semibold">
-            Pagos
-          </h2>
-          {profile.paymentsQuery.isPending ? (
-            <p className="py-5 text-sm text-muted">Cargando pagos…</p>
-          ) : profile.paymentsQuery.isError ? (
-            <componentComponents.emptyState
-              title="No se pudieron cargar los pagos"
-              description="Vuelve a intentarlo."
-              action={
-                <componentComponents.button
-                  variant="quiet"
-                  size="sm"
-                  className="clientFeature__button"
-                  onClick={() => void profile.paymentsQuery.refetch()}
-                >
-                  Reintentar
-                </componentComponents.button>
-              }
-            />
-          ) : profile.paymentsQuery.data.content.length === 0 ? (
-            <componentComponents.emptyState
-              icon={luCalendarDays}
-              title="Todavía no hay pagos"
-              description="Los pagos aparecerán aquí cuando se registren."
-            />
-          ) : (
-            <>
-              <ul className="clientFeature__historyList mt-2">
-                {profile.paymentsQuery.data.content.map((payment) => (
-                  <li key={payment.id} className="clientFeature__historyItem py-4">
-                    <div className="flex flex-wrap items-baseline justify-between gap-3">
-                      <span className="font-medium">{paymentDate(payment.paymentDate)}</span>
-                      <span>{formatMoney(payment.amount)}</span>
-                    </div>
-                    <p className="mt-1.5 text-[12.5px] text-muted">
-                      {paymentMethodLabels[payment.method]}
-                      {payment.reference ? ` · ${payment.reference}` : ''}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-              {profile.paymentsQuery.data.totalPages > 1 && (
-                <componentComponents.pagination
-                  page={profile.paymentPage + 1}
-                  pageSize={profile.historyPageSize}
-                  totalItems={profile.paymentsQuery.data.totalElements}
-                  totalPages={profile.paymentsQuery.data.totalPages}
-                  onPageChange={(nextPage) => profile.setPaymentPage(nextPage - 1)}
-                />
-              )}
-            </>
-          )}
+          <div className="clientFeature__sectionHeading">
+            <h2 id="client-payments-title" className="text-[15px] font-semibold">
+              Pagos
+            </h2>
+            {canManageMemberships && (
+              <Link
+                to={`/payments?clientId=${client.id}`}
+                className="clientFeature__actionLink"
+              >
+                Registrar pago
+                <componentComponents.icon icon={luArrowUpRight} size="sm" />
+              </Link>
+            )}
+          </div>
+          <paymentHistoryComponents.paymentHistory
+            data={profile.paymentsQuery.data}
+            isPending={profile.paymentsQuery.isPending}
+            isError={profile.paymentsQuery.isError}
+            page={profile.paymentPage}
+            pageSize={profile.historyPageSize}
+            onPageChange={profile.setPaymentPage}
+            onRetry={() => void profile.paymentsQuery.refetch()}
+          />
         </section>
       </div>
 

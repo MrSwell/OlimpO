@@ -16,6 +16,7 @@ import * as protectedRouteComponents from '@/features/auth/components/protectedR
 import * as clientsPageComponents from '@/features/clients/components/clientsPage'
 import * as clientCreatePageComponents from '@/features/clients/components/clientCreatePage'
 import * as clientDetailPageComponents from '@/features/clients/components/clientDetailPage'
+import * as paymentsPageComponents from '@/features/payments/components/paymentsPage'
 import * as dashboardComponents from '@/features/dashboard/dashboardPage'
 import * as plannedFeatureComponents from '@/features/dashboard/plannedFeaturePage'
 import * as shellSessionComponents from '@/features/auth/hooks/useShellSession'
@@ -110,12 +111,11 @@ const app = () => {
           />
           <routerComponents.route
             path="/payments"
-            element={plannedPage(
-              'Pagos',
-              'F4',
-              'El registro y el historial de pagos estarán disponibles en la fase F4.',
-              roleGroups.clientManagement,
-            )}
+            element={
+              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.clientManagement}>
+                <paymentsPageComponents.paymentsPage />
+              </protectedRouteComponents.protectedRoute>
+            }
           />
           <routerComponents.route
             path="/inventory"

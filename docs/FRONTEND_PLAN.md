@@ -296,17 +296,18 @@ Reglas de navegación:
 
 - `POST /api/v1/payments`
 - `GET /api/v1/clients/{id}/payments?page&size`
+- Reutiliza `GET /api/v1/clients?page&size&search` y `GET /api/v1/clients/{id}/memberships?page&size` de F3 para buscar cliente y asociar el pago a una membresía.
 
 **Entregables**
 
 - Página `/payments` con búsqueda de cliente y su historial paginado.
-- Formulario de registro de pago (monto, método, concepto, fecha) con validación espejo del DTO.
+- Formulario para seleccionar membresía y registrar monto, método y referencia opcional con validación espejo del DTO. La fecha se asigna en el servidor y se muestra en el historial; el contrato actual no admite concepto ni fecha manual.
 - Total del cliente calculado en cliente solo si el backend lo entrega; si no, se muestra el acumulado de la página actual con etiqueta clara.
 
 **Aceptación**
 
-- Registrar un pago invalida el historial del cliente y el resumen.
-- Errores locales y de validación 400 asociados a campos se muestran inline; los errores de negocio y globales usan toast.
+- Registrar un pago invalida el historial del cliente y recalcula el acumulado visible de la página actual.
+- Errores locales y de validación 400 asociados a membresía, monto, método o referencia se muestran inline; los errores de negocio y globales usan toast.
 - No se muestra un “total global” que el contrato no pueda sostener.
 
 ### F5 — Inventario y máquinas
