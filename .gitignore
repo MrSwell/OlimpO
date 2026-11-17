@@ -1,0 +1,9 @@
+/.agents/
+/.codex/
+/.github/
+/.impeccable/
+/.vscode/
+
+.env
+.env.*
+!.env.example
