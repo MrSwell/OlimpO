@@ -22,7 +22,7 @@ Target: the Olimpo backend running locally http://localhost:8080.
 | trainer@olimpo.com | trainer123 | TRAINER_MANAGER + TRAINER (trainer id 2) |
 | trainer2@olimpo.com | trainer123 | TRAINER (trainer id 1) |
 | cliente1@olimpo.com | cliente123 | CLIENT (client id 1) |
-| cliente2@olimpo.com | cliente123 | CLIENT (client id 2) |
+|  | cliente123 | CLIENT (client id 2) |
 
 ## 2. Test suite
 
