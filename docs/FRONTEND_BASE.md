@@ -98,7 +98,7 @@ Dirección: un sistema de gestión que se lee como una publicación, no como un 
 - **Header** 68px sticky: marca y un menú de usuario compacto. Las acciones se agrupan por el conjunto de roles que permite cada ruta; preferencias y cierre de sesión están al pie del mismo menú. Las páginas públicas (`/`, `/login` y el 404 sin sesión) comparten el header de la home.
 - **Página**: máx 1180px, padding 56/32, bloques separados por 24–32px.
 - **panel**: franja de métricas (3) → split 1.9fr/1fr → panel de tabla. Nada más.
-- **Login**: una sola tarjeta alineada a la izquierda con dos pasos, rol y credenciales. El selector de rol es compacto y el rol elegido ajusta el título, el resumen y las pistas del formulario.
+- **Login**: slider de dos pasos alineado a la izquierda: primero se elige el rol (lista vertical con icono, resumen y chevron) y la tarjeta se desliza al formulario de credenciales, cuyo título, resumen y pistas reaccionan al rol elegido. Un botón "Cambiar rol" regresa al paso 1.
 - **Footer**: meandro + firma.
 - Responsive: 1180 / 1020 / 820 / 560.
 

@@ -23,7 +23,7 @@ Frontend-specific rules (`front/`):
 
 ## 1. Project snapshot
 
-- **Product**: gym management system "Olimpo". Monorepo layout: backend = `back/` (this guide's detail), documentation = `docs/`, frontend React = `front/` (planned).
+- **Product**: gym management system "Olimpo". Monorepo layout: backend = `back/`, frontend React = `front/` (F1–F4 implemented: foundation, public home, auth, clients, payments), documentation = `docs/`.
 - **Backend stack**: Java 27, Spring Boot 4.1.2, Spring Security 7 (stateless JWT via jjwt 0.12.6), Spring Data JPA, MySQL 8, Flyway, Lombok, Maven wrapper (`mvnw.cmd`), Windows + PowerShell 5.1.
 - **Base package**: `server.olimpo` (NOT `com.olimpo.gym`).
 - **DB name**: `olimpo`, 13 tables, schema fully managed by Flyway migrations V1–V6.
@@ -105,4 +105,5 @@ Existing data: 1 inventory item (id 1), 2 machines, 3 routines, 2 schedule sets,
 - Security hardening applied: unified error JSON, env-based secrets, stricter DTO validation, catch-all 500 without internals.
 - Git: pushed to `origin = https://github.com/MrSwell/OlimpO.git` (branch `master`).
 - Tests: all 3 phases done — unit 89 + functional 77 + volume 16 = **182/182 green**, whole suite `.\mvnw.cmd test` in ~1 min (each folder has its `RESULTS.md`). Volume phase caught & fixed a real bug: concurrent weekly-schedule replaces raced into a 500 (now serialized via `TrainerRepository.findByIdForUpdate` + `OptimisticLockingFailureException` → 409 handler). Security review hardened: only ADMIN may assign the ADMIN role on `POST /users`; concurrent membership renews serialized (`MembershipRepository.findByIdForUpdate`); disabled users can't ride an old JWT (filter checks `isEnabled`); `UsernameNotFoundException` → 401 (never 500).
-- Still open: rate-limiting for `/auth/login`, CORS config when frontend arrives, frontend (`front/`) not started.
+- **Frontend (`front/`)**: implemented through F4 (last verified 2026-11-17) — foundation (tokens, primitives, shell, `/design`), public home, auth (login as a two-step role→credentials slider, session/refresh in `authStore` + `sessionStorage`), clients (directory, create, detail, renew modal) and payments. Verified with `pnpm lint` + `pnpm build`. Vite dev proxy forwards `/api` to `http://localhost:8080`, so CORS still does not block local development; CORS config is only needed for production without a reverse proxy.
+- Still open: rate-limiting for `/auth/login`, CORS config for production, remaining frontend phases (F5 inventory/machines, schedules, routines, users, panel metrics endpoint).

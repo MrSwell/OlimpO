@@ -8,10 +8,12 @@ Monorepo del sistema web de gestión de gimnasio: usuarios con roles, membresía
 OlimpO/
 ├── back/      # Backend Spring Boot 4 (Java 27 + MySQL 8) — API /api/v1
 ├── docs/      # Documentación técnica y planes de prueba
-│   ├── ARCHITECTURE.md   # Diagramas de flujo, módulos, acceso por ruta
-│   └── POSTMAN.md        # Plan de pruebas (~90 casos) para la IA de Postman
-├── front/     # Futuro frontend (React) — por crear
-└── AGENTS.md  # Convenciones y persona del agente según carpeta
+│   ├── AGENTS.md          # Convenciones y persona del agente según carpeta
+│   ├── ARCHITECTURE.md    # Diagramas de flujo, módulos, acceso por ruta
+│   ├── FRONTEND_BASE.md   # Identidad visual y directivas de estilo del frontend
+│   ├── FRONTEND_PLAN.md   # Plan de implementación del frontend (fases, rutas)
+│   └── POSTMAN.md         # Plan de pruebas (~90 casos) para la IA de Postman
+└── front/     # Frontend React (SPA) — F1–F4 implementadas
 ```
 
 > **Header de la API**: todas las rutas del backend responden JSON bajo `/api/v1/**`.
@@ -68,6 +70,34 @@ back/src/main/java/server.olimpo
 
    La app queda en **http://localhost:8080**; los logs van a `run.log` si rediriges la salida.
    Con devtools activo, `mvnw compile` recarga la app sin reiniciar el proceso.
+
+## Puesta en marcha (front/)
+
+1. Requisitos: Node 20+ y **pnpm** (no usar npm).
+2. Instala y arranca (desde `front/`):
+
+   ```powershell
+   cd front
+   pnpm install
+   pnpm dev
+   ```
+
+   La SPA queda en la URL que imprime Vite (por defecto **http://localhost:5173**).
+
+3. Scripts útiles:
+
+   | Script | Acción |
+   |--------|--------|
+   | `pnpm dev` | Servidor de desarrollo con HMR |
+   | `pnpm build` | Verificación de tipos (`tsc -b`) + build de producción en `dist/` |
+   | `pnpm lint` | Oxlint |
+   | `pnpm preview` | Sirve el build de producción |
+
+4. Conexión con la API:
+   - En desarrollo, el proxy de Vite reenvía `/api` → `http://localhost:8080`; no hace falta CORS.
+   - Para otra base, define `VITE_API_URL` en `front/.env.local` (p. ej. `VITE_API_URL=http://localhost:9090`).
+
+> `front/mockup/` es material de diseño local y está git-ignorado: nunca se sube.
 
 ## Cuentas sembradas (dev)
 
@@ -136,7 +166,7 @@ Ver **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** para la matriz completa de 
 - Diagrama de flujo completo: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 - Identidad visual y directivas de estilo del frontend: **[docs/FRONTEND_BASE.md](docs/FRONTEND_BASE.md)**.
 - Plan de implementación del frontend (fases, rutas y criterios de aceptación): **[docs/FRONTEND_PLAN.md](docs/FRONTEND_PLAN.md)**.
-- Instrucciones para agentes de IA (incluye el rol según carpeta: senior backend en `back/`, senior frontend React en `front/`): **[AGENTS.md](AGENTS.md)**.
+- Instrucciones para agentes de IA (incluye el rol según carpeta: senior backend en `back/`, senior frontend React en `front/`): **[docs/AGENTS.md](docs/AGENTS.md)**.
 - Plan de pruebas para Postman: **[docs/POSTMAN.md](docs/POSTMAN.md)**.
 
 ## Pruebas

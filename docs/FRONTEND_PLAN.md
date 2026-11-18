@@ -1,6 +1,6 @@
 # FRONTEND_PLAN.md — Plan de implementación del frontend Olimpo
 
-Estado: aprobado para ejecución · Última actualización: 2026-11-12
+Estado: en ejecución — F1, F1.5, F2, F3 y F4 implementadas · Última actualización: 2026-11-17
 Alcance: `front/` (React SPA) consumiendo `/api/v1` **sin modificar el contrato**.
 
 Fuentes de verdad:
@@ -99,59 +99,57 @@ Convenciones:
 ```text
 front/
 ├─ mockup/                     # referencia visual, nunca se sube
-├─ public/
+├─ index.html, vite.config.ts, package.json
 └─ src/
+   ├─ main.tsx
+   ├─ app.tsx                  # rutas, guards en línea y toastHost
    ├─ app/
-   │  ├─ router.tsx
-   │  ├─ providers.tsx
-   │  └─ guards.tsx
+   │  ├─ providers.tsx         # ThemeProvider, QueryClientProvider
+   │  └─ designPage.tsx        # /design, solo desarrollo
    ├─ components/
-   │  ├─ layout/               # appShell, publicHeader, siteHeader, siteNav, siteFooter, pageHead
-   │  └─ ui/                   # primitivos del contrato visual
+   │  ├─ layout/               # appShell, publicHeader, siteHeader, siteNav, siteFooter, pageHead, userMenu
+   │  └─ ui/                   # primitivos del contrato visual (button, panel, modal, toastHost, fieldError…)
    ├─ features/
-   │  ├─ home/                  # sitio público y landing de Olimpo
-   │  ├─ auth/
-   │  │  ├─ components/         # loginPage, protectedRoute, authSessionManager
-   │  │  ├─ hooks/              # useLoginForm, useShellSession
-   │  │  ├─ api/                # authApi
-   │  │  └─ model/              # authTypes, loginFormSchema, loginRoleGuides, roleLabels
-   │  ├─ dashboard/
-   │  ├─ clients/
-   │  ├─ memberships/
-   │  ├─ payments/
-   │  ├─ inventory/
-   │  ├─ machines/
-   │  ├─ schedules/
-   │  └─ routines/
-   ├─ lib/                     # api, queryClient, errors, format, dates
+   │  ├─ home/                 # publicHomePage (home pública)
+   │  ├─ auth/                 # loginPage (slider de rol→credenciales), protectedRoute, authSessionManager
+   │  │   ├─ components/ · hooks/ (useLoginForm, useLoginRoleSlider, useShellSession)
+   │  │   └─ api/ (authApi) · model/ (authTypes, loginFormSchema, loginRoleGuides, roleLabels)
+   │  ├─ dashboard/            # dashboardPage y plannedFeaturePage (marcadores de fases futuras)
+   │  ├─ clients/              # directorio, alta, ficha y renovación (F3, implementado)
+   │  └─ payments/             # registro e historial de pagos (F4, implementado)
+   ├─ lib/                     # apiClient, queryClient, cn
    ├─ stores/                  # authStore, themeStore, toastStore
-   ├─ styles/                  # tokens.css, globals.css
-   └─ types/                   # espejo de DTO de respuesta/request
+   └─ styles/                  # tokens.css, globals.css
 ```
+
+> Las features de `memberships/`, `inventory/`, `machines/`, `schedules/` y `routines/` aún no existen; hoy sus enlaces llevan a `plannedFeaturePage`. `types/` vive dentro de cada feature (`model/`), no como carpeta raíz.
 
 ---
 
 ## 3. Rutas y permisos
 
-| Ruta | Vista | Roles |
-|---|---|---|
-| `/` | Home pública: presentación, servicios y planes | público |
-| `/#about` | Ancla “Sobre Olimpo” | público |
-| `/#services` | Ancla de servicios | público |
-| `/#pricing` | Ancla de precios | público |
-| `/login` | Login | público |
-| `/dashboard` | Panel | autenticados |
-| `/clients` | Directorio | `ADMIN`, `RECEPCIONIST` |
-| `/clients/new` | Nuevo cliente | `ADMIN`, `RECEPCIONIST` |
-| `/clients/:id` | Ficha del cliente | `ADMIN`, `RECEPCIONIST`; `CLIENT` solo el propio |
-| `/clients/:id/renew` | Renovación (modal) | `ADMIN`, `RECEPCIONIST` |
-| `/payments` | Pagos por cliente | `ADMIN`, `RECEPCIONIST` |
-| `/inventory` | Inventario | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` |
-| `/machines` | Máquinas | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` |
-| `/schedules` | Horarios | `ADMIN`, `TRAINER_MANAGER`; `TRAINER` solo el propio |
-| `/routines` | Rutinas | catálogo: autenticados; crear/asignar: `ADMIN`, `TRAINER_MANAGER`, `TRAINER` |
-| `/users` | Usuarios | `ADMIN` |
-| `*` | 404 | — |
+Rutas **implementadas hoy**: `/`, `/#anclas`, `/login`, `/dashboard` (panel con métricas reales cuando el endpoint exista), `/clients`, `/clients/new`, `/clients/:id` con renovación como **modal** dentro de la ficha, `/payments` y `/design` (solo desarrollo, accesible desde el menú de usuario). El resto son rutas planificadas: hoy sus enlaces del shell llevan a `plannedFeaturePage`.
+
+| Ruta | Vista | Roles | Estado |
+|---|---|---|---|
+| `/` | Home pública: presentación, servicios y planes | público | ✅ implementada |
+| `/#about` | Ancla “Sobre Olimpo” | público | ✅ implementada |
+| `/#services` | Ancla de servicios | público | ✅ implementada |
+| `/#pricing` | Ancla de precios | público | ✅ implementada |
+| `/login` | Login (slider de dos pasos) | público | ✅ implementada |
+| `/dashboard` | Panel | autenticados | ✅ implementada |
+| `/clients` | Directorio | `ADMIN`, `RECEPCIONIST` | ✅ implementada |
+| `/clients/new` | Nuevo cliente | `ADMIN`, `RECEPCIONIST` | ✅ implementada |
+| `/clients/:id` | Ficha del cliente | `ADMIN`, `RECEPCIONIST`; `CLIENT` solo el propio | ✅ implementada |
+| — | Renovación de membresía (modal en la ficha, sin ruta propia) | `ADMIN`, `RECEPCIONIST` | ✅ implementada |
+| `/payments` | Pagos por cliente | `ADMIN`, `RECEPCIONIST` | ✅ implementada |
+| `/design` | Página de diseño | solo desarrollo | ✅ implementada |
+| `/inventory` | Inventario | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ⏳ planificada |
+| `/machines` | Máquinas | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ⏳ planificada |
+| `/schedules` | Horarios | `ADMIN`, `TRAINER_MANAGER`; `TRAINER` solo el propio | ⏳ planificada |
+| `/routines` | Rutinas | catálogo: autenticados; crear/asignar: `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ⏳ planificada |
+| `/users` | Usuarios | `ADMIN` | ⏳ planificada |
+| `*` | 404 | — | ✅ implementada |
 
 Reglas de navegación:
 
@@ -239,7 +237,7 @@ Reglas de navegación:
 
 **Entregables**
 
-- Login integrado en una sola tarjeta de dos pasos: selección compacta de rol y credenciales. El rol elegido ajusta el título, el resumen y las pistas del formulario; error 401 como toast. No existe `/register`: el alta se hace en recepción.
+- **Login de dos pasos en slider**: lista vertical de roles (icono + label + summary + chevron); al elegir uno la tarjeta se desliza al formulario de credenciales, que reacciona al rol (título, resumen y pistas); botón "Cambiar rol" regresa. Error 401 como toast. No existe `/register`: el alta se hace en recepción.
 - Navegación móvil en el shell autenticado: bajo 821px el header muestra un botón de menú con los mismos enlaces filtrados por rol, cierre por Escape y al cambiar de ruta.
 - `authStore` con token, email, roles, perfil y expiración; persistencia por pestaña en `sessionStorage` (sin guardar contraseñas).
 - Refresh programado antes de `expiresIn`; un solo reintento ante 401.
@@ -468,14 +466,14 @@ Mientras esas brechas existan, las vistas afectadas muestran solo lo que el cont
 
 ---
 
-## 9. Primer paso
+## 9. Estado actual y próximos pasos
 
-Cerrar **F1** completo antes de tocar features:
+Implementado y en verde (lint + build): F1 (fundación visual), F1.5 (home pública), F2 (auth con login en slider), F3 (clientes: directorio, alta, ficha y renovación modal) y F4 (pagos).
 
-1. Scaffold y tokens.
-2. Primitivos y `toastHost`.
-3. `appShell` con header/footer.
-4. Página `/design` en oscuro y claro.
-5. Revisión contra `front/mockup/` y checklist de §6.
+Siguiente fase — **F5 (inventario y máquinas)**:
 
-Con F1 aprobado, implementar F1.5 (home pública) antes de F2 (auth); después continúan F3 (clientes) y las fases siguientes en orden.
+1. `features/inventory/` y `features/machines/` con las capas `api/`, `hooks/`, `components/` y `model/`.
+2. Reemplazar `plannedFeaturePage` por las vistas reales bajo los roles `ADMIN`, `TRAINER_MANAGER`, `TRAINER`.
+3. Reusar `dataTable`, `searchInput`, `pagination` y `modal` de `components/ui`; errores 409 como toast con la regla de negocio.
+
+Después continúan horarios y rutinas, y al final `/users`.
