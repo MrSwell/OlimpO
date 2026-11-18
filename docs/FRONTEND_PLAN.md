@@ -1,6 +1,6 @@
 # FRONTEND_PLAN.md — Plan de implementación del frontend Olimpo
 
-Estado: en ejecución — F1, F1.5, F2, F3 y F4 implementadas · Última actualización: 2026-11-17
+Estado: en ejecución — F1–F5 implementadas · Última actualización: 2026-11-17
 Alcance: `front/` (React SPA) consumiendo `/api/v1` **sin modificar el contrato**.
 
 Fuentes de verdad:
@@ -115,14 +115,16 @@ front/
    │  │   ├─ components/ · hooks/ (useLoginForm, useLoginRoleSlider, useShellSession)
    │  │   └─ api/ (authApi) · model/ (authTypes, loginFormSchema, loginRoleGuides, roleLabels)
    │  ├─ dashboard/            # dashboardPage y plannedFeaturePage (marcadores de fases futuras)
-   │  ├─ clients/              # directorio, alta, ficha y renovación (F3, implementado)
-   │  └─ payments/             # registro e historial de pagos (F4, implementado)
+   │  ├─ clients/               # directorio, alta, ficha y renovación (F3, implementado)
+   │  ├─ payments/              # registro e historial de pagos (F4, implementado)
+   │  ├─ inventory/             # directorio, ficha y movimientos (F5, implementado)
+   │  └─ machines/              # directorio con filtro de estado (F5, implementado)
    ├─ lib/                     # apiClient, queryClient, cn
    ├─ stores/                  # authStore, themeStore, toastStore
    └─ styles/                  # tokens.css, globals.css
 ```
 
-> Las features de `memberships/`, `inventory/`, `machines/`, `schedules/` y `routines/` aún no existen; hoy sus enlaces llevan a `plannedFeaturePage`. `types/` vive dentro de cada feature (`model/`), no como carpeta raíz.
+> Las features de `schedules/` y `routines/` aún no existen; hoy sus enlaces llevan a `plannedFeaturePage`. `types/` vive dentro de cada feature (`model/`), no como carpeta raíz.
 
 ---
 
@@ -144,8 +146,9 @@ Rutas **implementadas hoy**: `/`, `/#anclas`, `/login`, `/dashboard` (panel con 
 | — | Renovación de membresía (modal en la ficha, sin ruta propia) | `ADMIN`, `RECEPCIONIST` | ✅ implementada |
 | `/payments` | Pagos por cliente | `ADMIN`, `RECEPCIONIST` | ✅ implementada |
 | `/design` | Página de diseño | solo desarrollo | ✅ implementada |
-| `/inventory` | Inventario | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ⏳ planificada |
-| `/machines` | Máquinas | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ⏳ planificada |
+| `/inventory` | Directorio de inventario (búsqueda + vista stock bajo) | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
+| `/inventory/:itemId` | Ficha del ítem con movimientos `INBOUND`/`OUTBOUND` | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
+| `/machines` | Directorio de máquinas (búsqueda + filtro de estado) | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
 | `/schedules` | Horarios | `ADMIN`, `TRAINER_MANAGER`; `TRAINER` solo el propio | ⏳ planificada |
 | `/routines` | Rutinas | catálogo: autenticados; crear/asignar: `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ⏳ planificada |
 | `/users` | Usuarios | `ADMIN` | ⏳ planificada |
@@ -308,7 +311,7 @@ Reglas de navegación:
 - Errores locales y de validación 400 asociados a membresía, monto, método o referencia se muestran inline; los errores de negocio y globales usan toast.
 - No se muestra un “total global” que el contrato no pueda sostener.
 
-### F5 — Inventario y máquinas
+### F5 — Inventario y máquinas (implementado)
 
 **Objetivo:** operación de inventario con roles correctos.
 
@@ -468,12 +471,11 @@ Mientras esas brechas existan, las vistas afectadas muestran solo lo que el cont
 
 ## 9. Estado actual y próximos pasos
 
-Implementado y en verde (lint + build): F1 (fundación visual), F1.5 (home pública), F2 (auth con login en slider), F3 (clientes: directorio, alta, ficha y renovación modal) y F4 (pagos).
+Implementado y en verde (lint + build): F1 (fundación visual), F1.5 (home pública), F2 (auth con login en slider), F3 (clientes: directorio, alta, ficha y renovación modal), F4 (pagos) y F5 (inventario con ficha y movimientos, máquinas con filtro de estado).
 
-Siguiente fase — **F5 (inventario y máquinas)**:
+Siguiente fase — **F6 (horarios y rutinas)**:
 
-1. `features/inventory/` y `features/machines/` con las capas `api/`, `hooks/`, `components/` y `model/`.
-2. Reemplazar `plannedFeaturePage` por las vistas reales bajo los roles `ADMIN`, `TRAINER_MANAGER`, `TRAINER`.
-3. Reusar `dataTable`, `searchInput`, `pagination` y `modal` de `components/ui`; errores 409 como toast con la regla de negocio.
-
-Después continúan horarios y rutinas, y al final `/users`.
+1. `features/schedules/`: malla semanal con **1 = domingo … 7 = sábado** mapeada a etiquetas humanas; `POST` reemplaza el plan completo (la UI advierte la sustitución).
+2. `features/routines/`: catálogo con filtro `type`; `GENERAL` sin precio ni trainer, `CUSTOM` con precio > 0 y trainer; asignaciones con estados `ACTIVE`, `COMPLETED`, `CANCELLED`.
+3. Guard: `TRAINER` solo ve y edita su propia malla (403 del backend → toast).
+4. Reusar `dataTable`, `searchInput`, `pagination` y `modal` de `components/ui`; errores 409 (solapamiento) como toast.

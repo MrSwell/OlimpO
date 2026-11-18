@@ -13,7 +13,7 @@ OlimpO/
 │   ├── FRONTEND_BASE.md   # Identidad visual y directivas de estilo del frontend
 │   ├── FRONTEND_PLAN.md   # Plan de implementación del frontend (fases, rutas)
 │   └── POSTMAN.md         # Plan de pruebas (~90 casos) para la IA de Postman
-└── front/     # Frontend React (SPA) — F1–F4 implementadas
+└── front/     # Frontend React (SPA) — F1–F5 implementadas
 ```
 
 > **Header de la API**: todas las rutas del backend responden JSON bajo `/api/v1/**`.
