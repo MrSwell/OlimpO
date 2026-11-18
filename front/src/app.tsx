@@ -17,6 +17,9 @@ import * as clientsPageComponents from '@/features/clients/components/clientsPag
 import * as clientCreatePageComponents from '@/features/clients/components/clientCreatePage'
 import * as clientDetailPageComponents from '@/features/clients/components/clientDetailPage'
 import * as paymentsPageComponents from '@/features/payments/components/paymentsPage'
+import * as inventoryPageComponents from '@/features/inventory/components/inventoryPage'
+import * as inventoryDetailPageComponents from '@/features/inventory/components/itemDetailPage'
+import * as machinesPageComponents from '@/features/machines/components/machinesPage'
 import * as dashboardComponents from '@/features/dashboard/dashboardPage'
 import * as plannedFeatureComponents from '@/features/dashboard/plannedFeaturePage'
 import * as shellSessionComponents from '@/features/auth/hooks/useShellSession'
@@ -119,12 +122,27 @@ const app = () => {
           />
           <routerComponents.route
             path="/inventory"
-            element={plannedPage(
-              'Inventario',
-              'F5',
-              'La operación de inventario estará disponible en la fase F5.',
-              roleGroups.trainingStaff,
-            )}
+            element={
+              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.trainingStaff}>
+                <inventoryPageComponents.inventoryPage />
+              </protectedRouteComponents.protectedRoute>
+            }
+          />
+          <routerComponents.route
+            path="/inventory/:itemId"
+            element={
+              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.trainingStaff}>
+                <inventoryDetailPageComponents.itemDetailPage />
+              </protectedRouteComponents.protectedRoute>
+            }
+          />
+          <routerComponents.route
+            path="/machines"
+            element={
+              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.trainingStaff}>
+                <machinesPageComponents.machinesPage />
+              </protectedRouteComponents.protectedRoute>
+            }
           />
           <routerComponents.route
             path="/schedules"

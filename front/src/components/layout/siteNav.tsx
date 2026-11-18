@@ -3,6 +3,7 @@
 import type { IconType } from 'react-icons'
 import {
   LuCalendarDays as luCalendarDays,
+  LuCog as luCog,
   LuLayoutGrid as luLayoutGrid,
   LuPackage as luPackage,
   LuReceipt as luReceipt,
@@ -27,6 +28,12 @@ export const navItems: NavItem[] = [
     to: '/inventory',
     label: 'Inventario',
     icon: luPackage,
+    allowedRoles: roleGroups.trainingStaff,
+  },
+  {
+    to: '/machines',
+    label: 'Máquinas',
+    icon: luCog,
     allowedRoles: roleGroups.trainingStaff,
   },
   {
