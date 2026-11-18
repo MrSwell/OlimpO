@@ -83,7 +83,7 @@ export const clientDetailPage = () => {
   if (!profile.hasValidClientId) {
     return (
       <>
-        <componentComponents.pageHead title="Ficha del cliente" className="mb-6" />
+        <componentComponents.pageHead title="Ficha del cliente" />
         <section className="clientFeature__card">
           <componentComponents.emptyState
             title="Identificador no válido"
@@ -97,7 +97,7 @@ export const clientDetailPage = () => {
   if (profile.clientQuery.isPending) {
     return (
       <>
-        <componentComponents.pageHead title="Ficha del cliente" className="mb-6" />
+        <componentComponents.pageHead title="Ficha del cliente" />
         <section className="clientFeature__card">
           <p className="py-10 text-center text-sm text-muted">Cargando ficha…</p>
         </section>
@@ -108,7 +108,7 @@ export const clientDetailPage = () => {
   if (profile.clientQuery.isError || !client) {
     return (
       <>
-        <componentComponents.pageHead title="Ficha del cliente" className="mb-6" />
+        <componentComponents.pageHead title="Ficha del cliente" />
         <section className="clientFeature__card">
           <componentComponents.emptyState
             title="No se pudo cargar la ficha"
@@ -132,7 +132,7 @@ export const clientDetailPage = () => {
     <>
       <componentComponents.pageHead
         title="Ficha del cliente"
-        className="mb-6"
+       
         actions={
           <Link to="/clients" className="clientFeature__actionLink">
             <componentComponents.icon icon={luArrowLeft} size="sm" />

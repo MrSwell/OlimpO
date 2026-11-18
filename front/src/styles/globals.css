@@ -23,10 +23,17 @@
 
   --color-gold: var(--gold);
   --color-gold-strong: var(--gold-strong);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-soft-strong: var(--gold-soft-strong);
+  --color-gold-border: var(--gold-border);
+  --color-gold-ink: var(--gold-ink);
 
   --color-danger: var(--danger);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-success-soft: var(--success-soft);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger-soft: var(--danger-soft);
 
   --font-sans: var(--font-ui);
   --font-serif: var(--font-editorial);

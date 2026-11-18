@@ -11,6 +11,7 @@ import {
 import * as componentComponents from '@/components'
 import { formatMovementDate } from '../model/inventoryFormatting'
 import {
+  getStockState,
   formatStock,
   inventoryMovementTypeLabels,
   type InventoryMovement,
@@ -101,18 +102,18 @@ export const itemDetailPage = () => {
       {header}
 
       <div className="inventoryFeature__detailGrid mb-6">
-        <section className="inventoryFeature__card inventoryFeature__itemCard">
+        <section className="inventoryFeature__itemCard--detail">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
               <h2 className="break-words text-[17px] font-semibold">{item.name}</h2>
               <p className="mt-1 text-[12.5px] text-muted">{item.category || 'Sin categoría'}</p>
             </div>
-            <span className="inventoryFeature__stockCell text-[12.5px]">
-              <span
-                aria-hidden="true"
-                className={`inventoryFeature__stockDot${item.lowStock ? ' inventoryFeature__stockDot--low' : ''}`}
-              />
-              {item.lowStock ? 'Stock bajo' : 'Stock suficiente'}
+            <span
+              className="inventoryFeature__statusChip"
+              data-tone={getStockState(item).tone}
+            >
+              <span aria-hidden="true" className="inventoryFeature__statusDot" />
+              {getStockState(item).label}
             </span>
           </div>
 
@@ -153,8 +154,7 @@ export const itemDetailPage = () => {
           </div>
         </section>
 
-        <section className="inventoryFeature__card inventoryFeature__movementsCard">
-          <div className="mb-4 flex items-baseline justify-between gap-3">
+        <section className="inventoryFeature__card inventoryFeature__movementsCard">          <div className="mb-4 flex items-baseline justify-between gap-3">
             <h2 className="text-[15px] font-semibold">Movimientos</h2>
             <span aria-live="polite" className="text-xs text-faint">
               {detail.movementsQuery.isFetching

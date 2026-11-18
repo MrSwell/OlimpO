@@ -1,6 +1,6 @@
 # FRONTEND_BASE.md — Bases y directivas de estilo del frontend Olimpo
 
-Fuente de verdad visual para `front/`. Cualquier cambio de identidad se documenta aquí primero y luego se replica en código. Última actualización: 2026-11-12 (mockup v4 — negro editorial + iconos y movimiento).
+Fuente de verdad visual para `front/`. Cualquier cambio de identidad se documenta aquí primero y luego se replica en código. Última actualización: 2026-11-17 (v4.1 — acciones en dorado tenue, chips de estado tintados y directorios en cards).
 
 ---
 
@@ -8,18 +8,17 @@ Fuente de verdad visual para `front/`. Cualquier cambio de identidad se document
 
 Estas reglas mandan sobre cualquier preferencia estética y se aplican a todo el frontend, mockups incluidos:
 
-1. **El fondo siempre es negro.** Las superficies son negro cálido (`--bg`, `--panel`, `--panel-2`). No se rellenan contenedores con colores de estado ni tintes de marca, salvo el degradado casi imperceptible de las cards de clientes descrito en la regla 5.
-2. **Solo bordes.** La separación se comunica con un borde de 1px neutro (`--line` / `--line-strong`). El color no pinta el borde de un contenedor; el dorado solo aparece en foco, en la acción principal y en texto de acento.
+1. **El fondo siempre es negro.** Las superficies son negro cálido (`--bg`, `--panel`, `--panel-2`). No se rellenan contenedores grandes con colores de estado ni tintes de marca, salvo dos excepciones: el degradado casi imperceptible de las cards de clientes (regla 5) y los **chips de estado tintados** (regla 6).
+2. **Separación por borde; acción en dorado tenue.** La separación estructural se comunica con un borde de 1px neutro (`--line` / `--line-strong`). Los **botones llevan dorado tenue**: la acción secundaria usa un relleno suave de dorado (12–18% sobre panel) con borde dorado mezclado y texto `--gold-strong`; la **acción principal** usa relleno dorado pleno con texto `--gold-ink`. Todo botón conserva borde y radio de control (8px) para que siempre se lea como botón. Al hover, el relleno sube un escalón; nunca desaparece el borde.
 3. **Errores de campo junto al campo; errores globales como pops.** La validación local y los errores de campo reconocidos del backend usan un mensaje pequeño bajo el input, texto e icono rojos y borde rojo en el campo; se limpian al editarlo. Errores de negocio, sesión, red y servidor sin campo asociado usan un **toast** flotante (superficie negra, borde neutro, icono de color, título + recuperación). No usar banners ni fondos rojos. Si el backend rechaza credenciales sin identificar cuál, se muestra el toast y se marcan correo y contraseña.
 4. **La información no satura.** Máximo **3 bloques principales (regiones)** por vista. Los detalles se agrupan en subsecciones con hairline dentro de un bloque, no en cards adicionales. Las métricas se leen como texto, no como cards con iconos. Las tablas muestran lo esencial y el resto vive en el detalle.
 5. **Gradientes solo en tarjetas de clientes.** El resto de la interfaz no usa gradientes en fondos, botones, texto ni tarjetas. Las cards de clientes pueden usar un degradado casi imperceptible que avanza de transparente a dorado de izquierda a derecha; debe seguir leyendo primero como negro.
-6. **Cero chips rellenos.** El estado se muestra con un **punto de 6px + texto**; una etiqueta es solo borde de 1px sin fondo.
+6. **Chips de estado tintados, etiquetas solo borde.** El estado se codifica con un **chip tintado**: fondo del color semántico al 14–16% (`--success-soft`, `--warning-soft`, `--danger-soft`), punto de 6px del color pleno y texto del color; radio de control (8px), sin pill. La información nunca depende solo del color: punto + texto. Las etiquetas de categoría usan tinte dorado tenue (`--gold-soft`) y las etiquetas neutras solo borde de 1px sin fondo.
 7. **Sin sombras en cards.** La elevación se declara una vez con el borde. La sombra queda reservada a capas flotantes (toast y modal).
 8. **Navegación por rol dentro del menú de usuario.** El encabezado autenticado conserva la marca y un único control de usuario; sus acciones se agrupan por los roles de esa cuenta y cada enlace muestra su icono funcional. Tema, diseño de desarrollo y cierre de sesión también viven ahí. Nunca ilustraciones decorativas ni iconos rellenos.
-9. **Acento dorado con disciplina.** Dorado únicamente en: marca, icono del enlace activo, icono de sección al pasar el cursor, borde/texto de la acción principal, foco y cifras clave. Nunca como relleno.
-10. **Densidad y aire.** Padding de página 56/32, separación entre bloques 24–32, paneles con 24 de padding. Más espacio sobre un título que debajo.
-
-> Cualquier propuesta que necesite relleno de color para explicarse está mal resuelta: se resuelve con borde, texto o espacio.
+9. **Acento dorado con disciplina.** Dorado en: marca, icono del enlace activo, icono de sección al pasar el cursor, relleno tenue de acciones (regla 2), relleno pleno solo de la acción principal, foco y cifras clave. Nunca como relleno de contenedores grandes.
+10. **Densidad y aire.** Padding de página 56/32, separación entre bloques 24–32, paneles con 24 de padding. Más espacio sobre un título que debajo. Ritmo de directorio: cabecera de página → fila de filtros compacta (sin etiquetas visibles; `aria-label` + placeholder) → rejilla de cards con `gap` 16 → paginación.
+11. **Directorios en cards, no tablas.** Inventario y clientes usan rejilla de tarjetas (2–3 por fila), no tablas: cada card muestra identidad (nombre + chip de categoría/estado), una medida visual honesta (p. ej. barra de stock con marcador del mínimo) y su acción. El color codifica estado (sano / cerca del mínimo / bajo) con punto + texto, nunca solo color. Las tablas quedan para registros densos de muchas columnas (p. ej. movimientos).
 
 ## 1. Identidad visual — "Negro editorial"
 
@@ -46,9 +45,14 @@ Dirección: un sistema de gestión que se lee como una publicación, no como un 
 | `--line-strong` | `#3a3833` | `#c8c8c1` | inputs, botones, toast |
 | `--gold` | `#d9b45c` | `#7a5f16` | marca, acento, foco |
 | `--gold-strong` | `#eccd82` | `#634d0d` | hover y texto de acento |
-| `--danger` | `#e08272` | `#a53c30` | icono de error |
-| `--success` | `#86c79a` | `#2c6b45` | punto de estado activo |
-| `--warning` | `#d9a86a` | `#8a5a12` | punto por vencer |
+| `--danger` | `#e08272` | `#a53c30` | icono de error, estado bajo |
+| `--success` | `#86c79a` | `#2c6b45` | punto de estado activo, stock sano |
+| `--warning` | `#d9a86a` | `#8a5a12` | punto por vencer, cerca del mínimo |
+| `--gold-soft` | mix 14% | mix 14% | relleno tenue de acciones y chips de categoría |
+| `--gold-border` | mix 45% | mix 45% | borde de botones secundarios |
+| `--success-soft` / `--warning-soft` / `--danger-soft` | mix 15% | mix 15% | fondo de chips de estado |
+
+Los mixes se definen en `tokens.css` con `color-mix` sobre los tokens base (nunca hex crudo en componentes).
 
 - **Superficies del navegador tematizadas**: selección dorada translúcida, `caret-color` dorado, scrollbars finos en `--line-strong` con hover dorado, `underline-offset` en enlaces y cifras `tabular-nums` en datos.
 - **Foco**: anillo de 2px `--gold-strong` con offset 2. Siempre visible.

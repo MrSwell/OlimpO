@@ -27,6 +27,14 @@
   --success: #86c79a;
   --warning: #d9a86a;
 
+  /* Soft roles: tinted chips and gentle gold actions (see FRONTEND_BASE §0). */
+  --gold-soft: color-mix(in srgb, var(--gold) 14%, var(--panel));
+  --gold-soft-strong: color-mix(in srgb, var(--gold) 22%, var(--panel));
+  --gold-border: color-mix(in srgb, var(--gold) 45%, var(--line-strong));
+  --success-soft: color-mix(in srgb, var(--success) 15%, var(--panel));
+  --warning-soft: color-mix(in srgb, var(--warning) 15%, var(--panel));
+  --danger-soft: color-mix(in srgb, var(--danger) 15%, var(--panel));
+
   --shadow-pop: 0 18px 48px rgb(0 0 0 / 0.62);
 
   --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;

@@ -46,11 +46,11 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--gold-border);
   border-radius: 8px;
-  background: var(--panel);
+  background: var(--gold-soft);
   padding: 5px 9px;
-  color: var(--text-muted);
+  color: var(--gold-strong);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.2;
@@ -64,9 +64,9 @@
 
 .clientFeature__actionLink:hover,
 .clientFeature__actionLink:focus-visible {
-  border-color: var(--text);
-  background: color-mix(in srgb, var(--text) 4%, var(--panel));
-  color: var(--text);
+  border-color: var(--gold);
+  background: var(--gold-soft-strong);
+  color: var(--gold-strong);
 }
 
 .clientFeature__actionLink:focus-visible {
@@ -75,8 +75,82 @@
 }
 
 .clientFeature__actionLink--primary {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--gold-ink);
+}
+
+.clientFeature__actionLink--primary:hover,
+.clientFeature__actionLink--primary:focus-visible {
+  border-color: var(--gold-strong);
+  background: var(--gold-strong);
+  color: var(--gold-ink);
+}
+
+.clientFeature__actionLink--quiet {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.clientFeature__actionLink--quiet:hover,
+.clientFeature__actionLink--quiet:focus-visible {
   border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
   color: var(--text);
+}
+
+.clientFeature__statusChip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 3px 9px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.clientFeature__statusChip[data-tone='ok'] {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.clientFeature__statusChip[data-tone='off'] {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.clientFeature__statusChip[data-tone='neutral'] {
+  border-color: var(--line-strong);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.clientFeature__statusDot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.clientFeature__goalChip {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--gold-soft);
+  padding: 3px 8px;
+  color: var(--gold-strong);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .clientFeature__checkbox {
@@ -235,7 +309,9 @@
   .clientFeature__card,
   .clientFeature__actionLink,
   .clientFeature__button,
-  .clientFeature__progressFill {
+  .clientFeature__progressFill,
+  .clientFeature__statusChip,
+  .clientFeature__goalChip {
     transition: none;
   }
 }

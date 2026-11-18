@@ -3,7 +3,6 @@ import { Link } from 'react-router'
 import {
   LuArrowUpRight as luArrowUpRight,
   LuFilePlus2 as luFilePlus2,
-  LuSearch as luSearch,
   LuUsers as luUsers,
 } from 'react-icons/lu'
 import * as componentComponents from '@/components'
@@ -15,12 +14,15 @@ const clientName = (client: ClientResponse): string => `${client.firstName} ${cl
 const clientInitials = (client: ClientResponse): string =>
   `${client.firstName.charAt(0)}${client.lastName.charAt(0)}`.toUpperCase()
 
+const clientStatusTone = (status: string): string => {
+  if (status === 'ACTIVE') return 'ok'
+  if (status === 'DISABLED') return 'off'
+  return 'neutral'
+}
+
 const clientStatus = ({ status }: ClientResponse) => (
-  <span className="inline-flex items-center gap-2 text-[12.5px] text-muted">
-    <span
-      aria-hidden="true"
-      className={`h-1.5 w-1.5 rounded-full ${status === 'ACTIVE' ? 'bg-success' : 'bg-faint'}`}
-    />
+  <span className="clientFeature__statusChip" data-tone={clientStatusTone(status)}>
+    <span aria-hidden="true" className="clientFeature__statusDot" />
     {clientStatusLabel(status)}
   </span>
 )
@@ -35,7 +37,7 @@ const clientActions = (client: ClientResponse) => (
     </Link>
     <Link
       to={`/clients/${client.id}#payments`}
-      className="clientFeature__actionLink"
+      className="clientFeature__actionLink clientFeature__actionLink--quiet"
     >
       Pagos
     </Link>
@@ -62,6 +64,9 @@ const clientCard = (client: ClientResponse) => (
       </div>
       {clientStatus(client)}
     </div>
+    {client.fitnessGoal && (
+      <span className="clientFeature__goalChip w-fit">{client.fitnessGoal}</span>
+    )}
     <dl className="clientFeature__dataGrid text-[12.5px]">
       <div className="clientFeature__dataItem">
         <dt className="text-faint">Documento</dt>
@@ -83,11 +88,10 @@ export const clientsPage = () => {
     <componentComponents.pageHead
       title="Clientes"
       lede="Gestiona perfiles, membresías y pagos."
-      className="mb-6"
       actions={
         <Link
           to="/clients/new"
-          className="clientFeature__actionLink clientFeature__actionLink--primary"
+          className={componentComponents.buttonClassName('primary', 'sm')}
         >
           <componentComponents.icon icon={luFilePlus2} size="sm" />
           Nuevo cliente
@@ -134,21 +138,18 @@ export const clientsPage = () => {
   return (
     <>
       {header}
-      <div className="mb-6 flex flex-col gap-3 min-[640px]:flex-row min-[640px]:items-end min-[640px]:justify-between">
+      <div className="mb-5 flex flex-col gap-3 min-[640px]:flex-row min-[640px]:items-center min-[640px]:justify-between">
         <div className="w-full min-[640px]:max-w-[360px]">
-          <componentComponents.field label="Buscar clientes" htmlFor="client-search">
-            <componentComponents.input
-              id="client-search"
-              icon={luSearch}
-              type="search"
-              autoComplete="off"
-              value={search}
-              onChange={(event) => setSearch(event.currentTarget.value)}
-              placeholder="Nombre, correo o documento"
-            />
-          </componentComponents.field>
+          <componentComponents.searchInput
+            id="client-search"
+            aria-label="Buscar clientes por nombre, correo o documento"
+            autoComplete="off"
+            value={search}
+            onChange={(event) => setSearch(event.currentTarget.value)}
+            placeholder="Nombre, correo o documento"
+          />
         </div>
-        <p aria-live="polite" className="text-xs text-faint">
+        <p aria-live="polite" className="text-xs text-faint min-[640px]:ml-auto">
           {clientsQuery.isFetching ? 'Actualizando…' : `${data.totalElements} clientes`}
         </p>
       </div>

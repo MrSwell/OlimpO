@@ -42,6 +42,47 @@ export type InventoryMovementType = z.infer<typeof inventoryMovementTypeSchema>
 
 export type InventoryView = 'all' | 'low'
 
+export type StockTone = 'ok' | 'near' | 'low'
+
+export interface StockState {
+  tone: StockTone
+  label: string
+}
+
+/**
+ * Presentation-level stock reading. `low` mirrors the backend's `lowStock`
+ * (`quantity <= minStock`); `near` is a derived heads-up before items run out.
+ */
+export const getStockState = (
+  item: Pick<InventoryItem, 'quantity' | 'minStock'>,
+): StockState => {
+  if (item.quantity <= item.minStock) return { tone: 'low', label: 'Stock bajo' }
+  if (item.minStock > 0 && item.quantity < item.minStock * 1.5) {
+    return { tone: 'near', label: 'Cerca del mínimo' }
+  }
+  return { tone: 'ok', label: 'Stock sano' }
+}
+
+export interface StockMeter {
+  pct: number
+  markerPct: number
+  description: string
+}
+
+/** Bar scale: full width = twice the minimum, so the marker sits at 50%. */
+export const getStockMeter = (
+  item: Pick<InventoryItem, 'quantity' | 'minStock' | 'unit'>,
+): StockMeter => {
+  const scale = item.minStock > 0 ? item.minStock * 2 : Math.max(item.quantity, 8)
+  const pct = Math.min(100, Math.round((item.quantity / scale) * 100))
+  const unit = item.unit ? ` ${item.unit}` : ''
+  return {
+    pct,
+    markerPct: item.minStock > 0 ? 50 : 0,
+    description: `${item.quantity}${unit} de un mínimo de ${item.minStock}${unit}`,
+  }
+}
+
 export const inventoryMovementTypeLabels: Record<
   InventoryMovementType,
   string

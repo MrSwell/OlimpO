@@ -9,12 +9,14 @@ export type ButtonVariant = 'default' | 'primary' | 'quiet'
 export type ButtonSize = 'md' | 'sm'
 
 const baseClassName =
-  'inline-flex items-center justify-center gap-2 rounded-control border bg-transparent font-sans font-medium transition-colors duration-150'
+  'inline-flex items-center justify-center gap-2 rounded-control border font-sans font-medium transition-colors duration-150'
 
 const variantClassNames: Record<ButtonVariant, string> = {
-  default: 'border-line-strong text-ink hover:border-gold hover:text-gold-strong',
-  primary: 'border-gold text-gold-strong hover:border-gold-strong hover:text-gold-strong',
-  quiet: 'border-transparent text-muted hover:text-ink',
+  // Secondary action: gentle gold — soft fill, mixed border, still clearly a button.
+  default: 'border-gold-border bg-gold-soft text-gold-strong hover:border-gold hover:bg-gold-soft-strong',
+  // Primary action: the one full-gold region of the view.
+  primary: 'border-gold bg-gold text-gold-ink hover:border-gold-strong hover:bg-gold-strong',
+  quiet: 'border-transparent bg-transparent text-muted hover:text-ink',
 }
 
 const astryxVariants: Record<ButtonVariant, 'primary' | 'secondary' | 'ghost'> = {

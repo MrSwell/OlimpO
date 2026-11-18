@@ -41,7 +41,6 @@ export const paymentsPage = () => {
       <componentComponents.pageHead
         title="Pagos"
         lede="Registra pagos asociados a una membresía y consulta el historial por cliente."
-        className="mb-6"
       />
 
       <div className="paymentFeature__grid">

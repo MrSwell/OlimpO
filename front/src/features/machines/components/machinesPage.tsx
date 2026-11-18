@@ -18,18 +18,15 @@ const statusFilterOptions: Array<{ value: MachineStatusFilter; label: string }> 
   ...machineStatuses.map((status) => ({ value: status, label: machineStatusLabels[status] })),
 ]
 
-const machineStatusDotClass: Record<Machine['status'], string> = {
-  AVAILABLE: 'machineFeature__statusDot--available',
-  MAINTENANCE: 'machineFeature__statusDot--maintenance',
-  OUT_OF_SERVICE: 'machineFeature__statusDot--out',
+const machineStatusTone: Record<Machine['status'], string> = {
+  AVAILABLE: 'available',
+  MAINTENANCE: 'maintenance',
+  OUT_OF_SERVICE: 'out',
 }
 
 const statusCell = (machine: Machine) => (
-  <span className="machineFeature__statusCell text-[12.5px]">
-    <span
-      aria-hidden="true"
-      className={`machineFeature__statusDot ${machineStatusDotClass[machine.status]}`}
-    />
+  <span className="machineFeature__statusChip" data-tone={machineStatusTone[machine.status]}>
+    <span aria-hidden="true" className="machineFeature__statusDot" />
     {machineStatusLabels[machine.status]}
   </span>
 )
@@ -45,16 +42,15 @@ export const machinesPage = () => {
     <componentComponents.pageHead
       title="Máquinas"
       lede="Estado y serie de cada máquina del gimnasio, con filtros por disponibilidad."
-      className="mb-6"
       actions={
-        <button
-          type="button"
-          className="machineFeature__actionLink"
+        <componentComponents.button
+          variant="primary"
+          size="sm"
+          icon={luPlus}
           onClick={() => setIsCreateDialogOpen(true)}
         >
-          <componentComponents.icon icon={luPlus} size="sm" />
           Nueva máquina
-        </button>
+        </componentComponents.button>
       }
     />
   )

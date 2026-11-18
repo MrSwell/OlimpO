@@ -22,11 +22,32 @@
   max-width: 200px;
 }
 
-.machineFeature__statusCell {
+.machineFeature__statusChip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: var(--text-muted);
+  gap: 7px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 3px 9px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.machineFeature__statusChip[data-tone='available'] {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.machineFeature__statusChip[data-tone='maintenance'] {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.machineFeature__statusChip[data-tone='out'] {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .machineFeature__statusDot {
@@ -34,19 +55,7 @@
   height: 6px;
   flex: 0 0 auto;
   border-radius: 999px;
-  background: var(--line-strong);
-}
-
-.machineFeature__statusDot--available {
-  background: var(--success);
-}
-
-.machineFeature__statusDot--maintenance {
-  background: var(--warning);
-}
-
-.machineFeature__statusDot--out {
-  background: var(--danger);
+  background: currentColor;
 }
 
 .machineFeature__actionLink {
@@ -56,11 +65,11 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--gold-border);
   border-radius: 8px;
-  background: var(--panel);
+  background: var(--gold-soft);
   padding: 4px 10px;
-  color: var(--text);
+  color: var(--gold-strong);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.2;
@@ -72,8 +81,8 @@
 
 .machineFeature__actionLink:hover,
 .machineFeature__actionLink:focus-visible {
-  border-color: var(--text);
-  background: color-mix(in srgb, var(--text) 4%, var(--panel));
+  border-color: var(--gold);
+  background: var(--gold-soft-strong);
 }
 
 .machineFeature__actionLink:focus-visible {

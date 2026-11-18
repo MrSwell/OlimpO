@@ -5,11 +5,13 @@ import {
   LuArrowUpRight as luArrowUpRight,
   LuBoxes as luBoxes,
   LuPlus as luPlus,
-  LuSearch as luSearch,
 } from 'react-icons/lu'
 import * as componentComponents from '@/components'
-import { formatStock } from '../model/inventoryTypes'
-import type { InventoryItem } from '../model/inventoryTypes'
+import {
+  getStockMeter,
+  getStockState,
+  type InventoryItem,
+} from '../model/inventoryTypes'
 import * as itemFormDialogComponents from './itemFormDialog'
 import { useInventoryDirectory } from '../hooks/useInventoryDirectory'
 import './inventoryFeature.css'
@@ -19,19 +21,65 @@ const viewOptions = [
   { value: 'low', label: 'Stock bajo' },
 ] as const
 
-const stockCell = (item: InventoryItem) => (
-  <span className="inventoryFeature__stockCell">
-    <span
-      aria-hidden="true"
-      className={`inventoryFeature__stockDot${item.lowStock ? ' inventoryFeature__stockDot--low' : ''}`}
-    />
-    <span className="tabular-nums text-ink">{formatStock(item)}</span>
-    <span className="text-[11.5px] text-faint">
-      mín. {item.minStock}
-      {item.lowStock ? ' · stock bajo' : ''}
-    </span>
-  </span>
-)
+const itemCard = (item: InventoryItem) => {
+  const stock = getStockState(item)
+  const meter = getStockMeter(item)
+
+  return (
+    <li key={item.id} className="inventoryFeature__itemCard">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="break-words text-[15px] font-semibold leading-[1.25]">{item.name}</h3>
+          <span className="inventoryFeature__categoryChip mt-2">
+            {item.category || 'Sin categoría'}
+          </span>
+        </div>
+        <span
+          className="inventoryFeature__statusChip"
+          data-tone={stock.tone}
+        >
+          <span aria-hidden="true" className="inventoryFeature__statusDot" />
+          {stock.label}
+        </span>
+      </div>
+
+      <div
+        className="inventoryFeature__meter mt-5"
+        role="img"
+        aria-label={meter.description}
+      >
+        <span
+          aria-hidden="true"
+          className="inventoryFeature__meterFill"
+          data-tone={stock.tone}
+          style={{ width: `${meter.pct}%` }}
+        />
+        {meter.markerPct > 0 && (
+          <span
+            aria-hidden="true"
+            className="inventoryFeature__meterMarker"
+            style={{ left: `calc(${meter.markerPct}% - 1px)` }}
+          />
+        )}
+      </div>
+
+      <div className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-4">
+        <div>
+          <p className="text-[22px] font-medium leading-none tabular-nums">
+            {item.quantity}
+            {item.unit && (
+              <span className="ml-1.5 text-[12px] font-normal text-faint">{item.unit}</span>
+            )}
+          </p>
+          <p className="mt-1.5 text-[11.5px] text-faint">mínimo {item.minStock}</p>
+        </div>
+        <Link to={`/inventory/${item.id}`} className="inventoryFeature__actionLink">
+          Ver ficha <componentComponents.icon icon={luArrowUpRight} size="sm" />
+        </Link>
+      </div>
+    </li>
+  )
+}
 
 export const inventoryPage = () => {
   const {
@@ -47,21 +95,21 @@ export const inventoryPage = () => {
   } = useInventoryDirectory()
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const data = itemsQuery.data
+  const isFiltering = Boolean(search.trim() || debouncedSearch)
 
   const header = (
     <componentComponents.pageHead
       title="Inventario"
-      lede="Controla el stock de insumos y accesorios del gimnasio con alertas de stock bajo."
-      className="mb-6"
+      lede="Controla el stock de insumos y accesorios con alertas de stock bajo."
       actions={
-        <button
-          type="button"
-          className="inventoryFeature__actionLink"
+        <componentComponents.button
+          variant="primary"
+          size="sm"
+          icon={luPlus}
           onClick={() => setIsCreateDialogOpen(true)}
         >
-          <componentComponents.icon icon={luPlus} size="sm" />
           Nuevo ítem
-        </button>
+        </componentComponents.button>
       }
     />
   )
@@ -105,17 +153,15 @@ export const inventoryPage = () => {
       {header}
 
       <div className="inventoryFeature__filters mb-5">
-        <componentComponents.field label="Buscar ítems" htmlFor="inventory-search" className="inventoryFeature__search">
-          <componentComponents.input
-            id="inventory-search"
-            icon={luSearch}
-            type="search"
-            autoComplete="off"
-            value={search}
-            onChange={(event) => setSearch(event.currentTarget.value)}
-            placeholder="Nombre o categoría"
-          />
-        </componentComponents.field>
+        <componentComponents.searchInput
+          id="inventory-search"
+          aria-label="Buscar ítems por nombre o categoría"
+          autoComplete="off"
+          value={search}
+          onChange={(event) => setSearch(event.currentTarget.value)}
+          placeholder="Nombre o categoría"
+          className="inventoryFeature__search"
+        />
 
         <div
           className="inventoryFeature__viewToggle"
@@ -149,76 +195,36 @@ export const inventoryPage = () => {
           <componentComponents.emptyState
             icon={luBoxes}
             title={
-              search.trim() || debouncedSearch
+              isFiltering
                 ? 'No encontramos coincidencias'
                 : view === 'low'
                   ? 'Sin stock bajo'
                   : 'Aún no hay ítems'
             }
             description={
-              search.trim() || debouncedSearch
+              isFiltering
                 ? 'Prueba con otro nombre o categoría.'
                 : view === 'low'
                   ? 'Ningún ítem está por debajo de su mínimo. Bien mantenido.'
                   : 'Cuando registres el primer ítem, aparecerá en este directorio.'
             }
             action={
-              !search.trim() &&
-              !debouncedSearch && (
-                <button
-                  type="button"
-                  className="inventoryFeature__actionLink"
+              !isFiltering && (
+                <componentComponents.button
+                  variant="default"
+                  icon={luPlus}
                   onClick={() => setIsCreateDialogOpen(true)}
                 >
-                  <componentComponents.icon icon={luPlus} size="sm" />
                   Registrar ítem
-                </button>
+                </componentComponents.button>
               )
             }
           />
         </section>
       ) : (
-        <section className="inventoryFeature__card">
-          <componentComponents.dataTable<InventoryItem>
-            getRowKey={(item) => item.id}
-            rows={data.content}
-            columns={[
-              {
-                key: 'name',
-                header: 'Ítem',
-                render: (item) => (
-                  <div className="min-w-0">
-                    <p className="break-words text-[13.5px] font-medium text-ink">{item.name}</p>
-                    <p className="mt-0.5 text-[11.5px] text-faint">{item.category || 'Sin categoría'}</p>
-                  </div>
-                ),
-              },
-              {
-                key: 'stock',
-                header: 'Stock',
-                render: stockCell,
-              },
-              {
-                key: 'unit',
-                header: 'Unidad',
-                render: (item) => item.unit || '—',
-              },
-              {
-                key: 'actions',
-                header: '',
-                align: 'right',
-                render: (item) => (
-                  <Link
-                    to={`/inventory/${item.id}`}
-                    className="inventoryFeature__actionLink"
-                  >
-                    Ver ficha <componentComponents.icon icon={luArrowUpRight} size="sm" />
-                  </Link>
-                ),
-              },
-            ]}
-          />
-        </section>
+        <ul className="inventoryFeature__grid">
+          {data.content.map(itemCard)}
+        </ul>
       )}
 
       {data.totalPages > 1 && (

@@ -15,7 +15,7 @@ export const pageHead = ({ title, icon, lede, actions, className }: PageHeadProp
   return (
     <header
       className={cn(
-        'mb-10 flex flex-col items-start justify-between gap-5 min-[821px]:flex-row min-[821px]:items-end',
+        'mb-8 flex flex-col items-start justify-between gap-5 min-[821px]:flex-row min-[821px]:items-end',
         className,
       )}
     >

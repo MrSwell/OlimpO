@@ -33,7 +33,6 @@ export const clientCreatePage = () => {
     <>
       <componentComponents.pageHead
         title="Nuevo cliente"
-        className="mb-6"
         lede="Crea la cuenta y el perfil del cliente. La membresía inicial es opcional."
         actions={
           <Link to="/clients" className="clientFeature__actionLink">
