@@ -63,26 +63,6 @@ export const getStockState = (
   return { tone: 'ok', label: 'Stock sano' }
 }
 
-export interface StockMeter {
-  pct: number
-  markerPct: number
-  description: string
-}
-
-/** Bar scale: full width = twice the minimum, so the marker sits at 50%. */
-export const getStockMeter = (
-  item: Pick<InventoryItem, 'quantity' | 'minStock' | 'unit'>,
-): StockMeter => {
-  const scale = item.minStock > 0 ? item.minStock * 2 : Math.max(item.quantity, 8)
-  const pct = Math.min(100, Math.round((item.quantity / scale) * 100))
-  const unit = item.unit ? ` ${item.unit}` : ''
-  return {
-    pct,
-    markerPct: item.minStock > 0 ? 50 : 0,
-    description: `${item.quantity}${unit} de un mínimo de ${item.minStock}${unit}`,
-  }
-}
-
 export const inventoryMovementTypeLabels: Record<
   InventoryMovementType,
   string

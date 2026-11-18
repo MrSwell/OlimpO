@@ -31,9 +31,6 @@
   --color-danger: var(--danger);
   --color-success: var(--success);
   --color-warning: var(--warning);
-  --color-success-soft: var(--success-soft);
-  --color-warning-soft: var(--warning-soft);
-  --color-danger-soft: var(--danger-soft);
 
   --font-sans: var(--font-ui);
   --font-serif: var(--font-editorial);

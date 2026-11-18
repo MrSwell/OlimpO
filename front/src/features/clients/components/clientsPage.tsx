@@ -28,20 +28,12 @@ const clientStatus = ({ status }: ClientResponse) => (
 )
 
 const clientActions = (client: ClientResponse) => (
-  <div className="flex flex-wrap items-center gap-2">
-    <Link
-      to={`/clients/${client.id}`}
-      className="clientFeature__actionLink clientFeature__actionLink--primary"
-    >
-      Ver ficha <componentComponents.icon icon={luArrowUpRight} size="sm" />
-    </Link>
-    <Link
-      to={`/clients/${client.id}#payments`}
-      className="clientFeature__actionLink clientFeature__actionLink--quiet"
-    >
-      Pagos
-    </Link>
-  </div>
+  <Link
+    to={`/clients/${client.id}`}
+    className="clientFeature__actionLink clientFeature__actionLink--primary"
+  >
+    Ver ficha <componentComponents.icon icon={luArrowUpRight} size="sm" />
+  </Link>
 )
 
 const clientCard = (client: ClientResponse) => (
@@ -64,9 +56,6 @@ const clientCard = (client: ClientResponse) => (
       </div>
       {clientStatus(client)}
     </div>
-    {client.fitnessGoal && (
-      <span className="clientFeature__goalChip w-fit">{client.fitnessGoal}</span>
-    )}
     <dl className="clientFeature__dataGrid text-[12.5px]">
       <div className="clientFeature__dataItem">
         <dt className="text-faint">Documento</dt>
@@ -77,7 +66,14 @@ const clientCard = (client: ClientResponse) => (
         <dd className="mt-1 break-words text-ink">{client.phone || '—'}</dd>
       </div>
     </dl>
-    <div className="mt-auto border-t border-line pt-3">{clientActions(client)}</div>
+    <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
+      {client.fitnessGoal ? (
+        <span className="clientFeature__goalChip">{client.fitnessGoal}</span>
+      ) : (
+        <span />
+      )}
+      {clientActions(client)}
+    </div>
   </li>
 )
 

@@ -72,16 +72,15 @@
 
 .inventoryFeature__itemCard:hover,
 .inventoryFeature__itemCard:focus-within {
-  border-color: var(--text);
+  border-color: var(--line-strong);
 }
 
 .inventoryFeature__categoryChip {
   display: inline-flex;
   width: fit-content;
   align-items: center;
-  border: 1px solid transparent;
+  border: 1px solid color-mix(in srgb, var(--gold) 55%, var(--line));
   border-radius: 8px;
-  background: var(--gold-soft);
   padding: 3px 8px;
   color: var(--gold-strong);
   font-size: 11px;
@@ -104,17 +103,17 @@
 }
 
 .inventoryFeature__statusChip[data-tone='ok'] {
-  background: var(--success-soft);
+  border-color: var(--success);
   color: var(--success);
 }
 
 .inventoryFeature__statusChip[data-tone='near'] {
-  background: var(--warning-soft);
+  border-color: var(--warning);
   color: var(--warning);
 }
 
 .inventoryFeature__statusChip[data-tone='low'] {
-  background: var(--danger-soft);
+  border-color: var(--danger);
   color: var(--danger);
 }
 
@@ -124,45 +123,6 @@
   flex: 0 0 auto;
   border-radius: 999px;
   background: currentColor;
-}
-
-/* ---------- Stock meter ---------- */
-
-.inventoryFeature__meter {
-  position: relative;
-  height: 6px;
-  overflow: hidden;
-  border-radius: 4px;
-  background: var(--line);
-}
-
-.inventoryFeature__meterFill {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--line-strong);
-  transition: width 240ms ease-out;
-}
-
-.inventoryFeature__meterFill[data-tone='ok'] {
-  background: color-mix(in srgb, var(--success) 55%, var(--line-strong));
-}
-
-.inventoryFeature__meterFill[data-tone='near'] {
-  background: color-mix(in srgb, var(--warning) 55%, var(--line-strong));
-}
-
-.inventoryFeature__meterFill[data-tone='low'] {
-  background: color-mix(in srgb, var(--danger) 55%, var(--line-strong));
-}
-
-.inventoryFeature__meterMarker {
-  position: absolute;
-  top: -2px;
-  bottom: -2px;
-  width: 2px;
-  border-radius: 2px;
-  background: var(--text-faint);
 }
 
 /* ---------- Actions ---------- */
@@ -268,7 +228,6 @@
   .inventoryFeature__viewButton,
   .inventoryFeature__actionLink,
   .inventoryFeature__backLink,
-  .inventoryFeature__meterFill,
   .inventoryFeature__itemCard {
     transition: none;
   }

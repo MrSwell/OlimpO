@@ -36,17 +36,17 @@
 }
 
 .machineFeature__statusChip[data-tone='available'] {
-  background: var(--success-soft);
+  border-color: var(--success);
   color: var(--success);
 }
 
 .machineFeature__statusChip[data-tone='maintenance'] {
-  background: var(--warning-soft);
+  border-color: var(--warning);
   color: var(--warning);
 }
 
 .machineFeature__statusChip[data-tone='out'] {
-  background: var(--danger-soft);
+  border-color: var(--danger);
   color: var(--danger);
 }
 

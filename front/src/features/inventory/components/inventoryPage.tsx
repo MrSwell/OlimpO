@@ -8,7 +8,6 @@ import {
 } from 'react-icons/lu'
 import * as componentComponents from '@/components'
 import {
-  getStockMeter,
   getStockState,
   type InventoryItem,
 } from '../model/inventoryTypes'
@@ -23,56 +22,31 @@ const viewOptions = [
 
 const itemCard = (item: InventoryItem) => {
   const stock = getStockState(item)
-  const meter = getStockMeter(item)
 
   return (
     <li key={item.id} className="inventoryFeature__itemCard">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="break-words text-[15px] font-semibold leading-[1.25]">{item.name}</h3>
-          <span className="inventoryFeature__categoryChip mt-2">
-            {item.category || 'Sin categoría'}
-          </span>
-        </div>
-        <span
-          className="inventoryFeature__statusChip"
-          data-tone={stock.tone}
-        >
+        <h3 className="min-w-0 break-words text-[15px] font-semibold leading-[1.25]">
+          {item.name}
+        </h3>
+        <span className="inventoryFeature__statusChip" data-tone={stock.tone}>
           <span aria-hidden="true" className="inventoryFeature__statusDot" />
           {stock.label}
         </span>
       </div>
 
-      <div
-        className="inventoryFeature__meter mt-5"
-        role="img"
-        aria-label={meter.description}
-      >
-        <span
-          aria-hidden="true"
-          className="inventoryFeature__meterFill"
-          data-tone={stock.tone}
-          style={{ width: `${meter.pct}%` }}
-        />
-        {meter.markerPct > 0 && (
-          <span
-            aria-hidden="true"
-            className="inventoryFeature__meterMarker"
-            style={{ left: `calc(${meter.markerPct}% - 1px)` }}
-          />
+      <p className="mt-4 text-[26px] font-medium leading-none tabular-nums">
+        {item.quantity}
+        {item.unit && (
+          <span className="ml-1.5 text-[13px] font-normal text-muted">{item.unit}</span>
         )}
-      </div>
+      </p>
+      <p className="mt-1.5 text-[11.5px] text-faint">Mínimo {item.minStock}</p>
 
-      <div className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-4">
-        <div>
-          <p className="text-[22px] font-medium leading-none tabular-nums">
-            {item.quantity}
-            {item.unit && (
-              <span className="ml-1.5 text-[12px] font-normal text-faint">{item.unit}</span>
-            )}
-          </p>
-          <p className="mt-1.5 text-[11.5px] text-faint">mínimo {item.minStock}</p>
-        </div>
+      <div className="mt-auto flex items-center justify-between gap-3 border-t border-line pt-3">
+        <span className="inventoryFeature__categoryChip">
+          {item.category || 'Sin categoría'}
+        </span>
         <Link to={`/inventory/${item.id}`} className="inventoryFeature__actionLink">
           Ver ficha <componentComponents.icon icon={luArrowUpRight} size="sm" />
         </Link>

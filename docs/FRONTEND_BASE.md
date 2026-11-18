@@ -1,6 +1,6 @@
 # FRONTEND_BASE.md — Bases y directivas de estilo del frontend Olimpo
 
-Fuente de verdad visual para `front/`. Cualquier cambio de identidad se documenta aquí primero y luego se replica en código. Última actualización: 2026-11-17 (v4.1 — acciones en dorado tenue, chips de estado tintados y directorios en cards).
+Fuente de verdad visual para `front/`. Cualquier cambio de identidad se documenta aquí primero y luego se replica en código. Última actualización: 2026-11-17 (v4.1 — acciones en dorado tenue, chips de estado solo borde, directorios en cards y hovers tenues).
 
 ---
 
@@ -8,17 +8,17 @@ Fuente de verdad visual para `front/`. Cualquier cambio de identidad se document
 
 Estas reglas mandan sobre cualquier preferencia estética y se aplican a todo el frontend, mockups incluidos:
 
-1. **El fondo siempre es negro.** Las superficies son negro cálido (`--bg`, `--panel`, `--panel-2`). No se rellenan contenedores grandes con colores de estado ni tintes de marca, salvo dos excepciones: el degradado casi imperceptible de las cards de clientes (regla 5) y los **chips de estado tintados** (regla 6).
+1. **El fondo siempre es negro.** Las superficies son negro cálido (`--bg`, `--panel`, `--panel-2`). No se rellenan contenedores grandes con colores de estado ni tintes de marca, salvo el degradado casi imperceptible de las cards de clientes (regla 5) y el relleno tenue de los botones (regla 2).
 2. **Separación por borde; acción en dorado tenue.** La separación estructural se comunica con un borde de 1px neutro (`--line` / `--line-strong`). Los **botones llevan dorado tenue**: la acción secundaria usa un relleno suave de dorado (12–18% sobre panel) con borde dorado mezclado y texto `--gold-strong`; la **acción principal** usa relleno dorado pleno con texto `--gold-ink`. Todo botón conserva borde y radio de control (8px) para que siempre se lea como botón. Al hover, el relleno sube un escalón; nunca desaparece el borde.
 3. **Errores de campo junto al campo; errores globales como pops.** La validación local y los errores de campo reconocidos del backend usan un mensaje pequeño bajo el input, texto e icono rojos y borde rojo en el campo; se limpian al editarlo. Errores de negocio, sesión, red y servidor sin campo asociado usan un **toast** flotante (superficie negra, borde neutro, icono de color, título + recuperación). No usar banners ni fondos rojos. Si el backend rechaza credenciales sin identificar cuál, se muestra el toast y se marcan correo y contraseña.
 4. **La información no satura.** Máximo **3 bloques principales (regiones)** por vista. Los detalles se agrupan en subsecciones con hairline dentro de un bloque, no en cards adicionales. Las métricas se leen como texto, no como cards con iconos. Las tablas muestran lo esencial y el resto vive en el detalle.
 5. **Gradientes solo en tarjetas de clientes.** El resto de la interfaz no usa gradientes en fondos, botones, texto ni tarjetas. Las cards de clientes pueden usar un degradado casi imperceptible que avanza de transparente a dorado de izquierda a derecha; debe seguir leyendo primero como negro.
-6. **Chips de estado tintados, etiquetas solo borde.** El estado se codifica con un **chip tintado**: fondo del color semántico al 14–16% (`--success-soft`, `--warning-soft`, `--danger-soft`), punto de 6px del color pleno y texto del color; radio de control (8px), sin pill. La información nunca depende solo del color: punto + texto. Las etiquetas de categoría usan tinte dorado tenue (`--gold-soft`) y las etiquetas neutras solo borde de 1px sin fondo.
+6. **Chips de estado solo borde.** El estado se codifica con un **chip sin fondo**: borde de 1px del color semántico pleno (`--success`, `--warning`, `--danger`) y texto del mismo color; radio de control (8px), sin pill y sin relleno. La información nunca depende solo del color: punto de 6px (`currentColor`) + texto. Las etiquetas de categoría y objetivo usan borde dorado mezclado (`--gold` al 55% sobre `--line`) con texto `--gold-strong`, también sin fondo; las etiquetas neutras, borde `--line-strong` y texto `--text-muted`.
 7. **Sin sombras en cards.** La elevación se declara una vez con el borde. La sombra queda reservada a capas flotantes (toast y modal).
 8. **Navegación por rol dentro del menú de usuario.** El encabezado autenticado conserva la marca y un único control de usuario; sus acciones se agrupan por los roles de esa cuenta y cada enlace muestra su icono funcional. Tema, diseño de desarrollo y cierre de sesión también viven ahí. Nunca ilustraciones decorativas ni iconos rellenos.
 9. **Acento dorado con disciplina.** Dorado en: marca, icono del enlace activo, icono de sección al pasar el cursor, relleno tenue de acciones (regla 2), relleno pleno solo de la acción principal, foco y cifras clave. Nunca como relleno de contenedores grandes.
 10. **Densidad y aire.** Padding de página 56/32, separación entre bloques 24–32, paneles con 24 de padding. Más espacio sobre un título que debajo. Ritmo de directorio: cabecera de página → fila de filtros compacta (sin etiquetas visibles; `aria-label` + placeholder) → rejilla de cards con `gap` 16 → paginación.
-11. **Directorios en cards, no tablas.** Inventario y clientes usan rejilla de tarjetas (2–3 por fila), no tablas: cada card muestra identidad (nombre + chip de categoría/estado), una medida visual honesta (p. ej. barra de stock con marcador del mínimo) y su acción. El color codifica estado (sano / cerca del mínimo / bajo) con punto + texto, nunca solo color. Las tablas quedan para registros densos de muchas columnas (p. ej. movimientos).
+11. **Directorios en cards, no tablas.** Inventario y clientes usan rejilla de tarjetas (2–3 por fila), no tablas. Jerarquía fija de la card: **línea 1 = identidad + estado** (nombre y chip; en clientes, avatar + nombre/correo), **medida principal prominente** (cifra de stock con su mínimo; datos de contacto) y **pie con hairline** (categoría/objetivo + acción). El color codifica estado (sano / cerca del mínimo / bajo) con punto + texto, nunca solo color. El hover de card es tenue: `--line-strong`, nunca `--text`. Las tablas quedan para registros densos de muchas columnas (p. ej. movimientos).
 
 ## 1. Identidad visual — "Negro editorial"
 
@@ -48,15 +48,14 @@ Dirección: un sistema de gestión que se lee como una publicación, no como un 
 | `--danger` | `#e08272` | `#a53c30` | icono de error, estado bajo |
 | `--success` | `#86c79a` | `#2c6b45` | punto de estado activo, stock sano |
 | `--warning` | `#d9a86a` | `#8a5a12` | punto por vencer, cerca del mínimo |
-| `--gold-soft` | mix 14% | mix 14% | relleno tenue de acciones y chips de categoría |
+| `--gold-soft` | mix 14% | mix 14% | relleno tenue de acciones |
 | `--gold-border` | mix 45% | mix 45% | borde de botones secundarios |
-| `--success-soft` / `--warning-soft` / `--danger-soft` | mix 15% | mix 15% | fondo de chips de estado |
 
-Los mixes se definen en `tokens.css` con `color-mix` sobre los tokens base (nunca hex crudo en componentes).
+Los mixes se definen en `tokens.css` con `color-mix` sobre los tokens base (nunca hex crudo en componentes). Los chips no llevan fondo tintado: borde + texto del color (regla 6).
 
 - **Superficies del navegador tematizadas**: selección dorada translúcida, `caret-color` dorado, scrollbars finos en `--line-strong` con hover dorado, `underline-offset` en enlaces y cifras `tabular-nums` en datos.
 - **Foco**: anillo de 2px `--gold-strong` con offset 2. Siempre visible.
-- **Dashboard de clientes**: el directorio usa una rejilla de perfiles con avatar inicial, datos legibles y acciones compactas. La ficha distribuye perfil y membresía en la primera fila; contacto, identificación, objetivo, historial y pagos ocupan cards independientes en una rejilla responsive. El degradado interior casi imperceptible avanza de transparente a dorado de izquierda a derecha; al hover o foco, el borde contrasta con `--text`. La membresía destaca los días restantes con una barra accesible.
+- **Dashboard de clientes**: el directorio usa una rejilla de perfiles con avatar inicial, datos legibles y una acción compacta. La ficha distribuye perfil y membresía en la primera fila; contacto, identificación, objetivo, historial y pagos ocupan cards independientes en una rejilla responsive. El degradado interior casi imperceptible avanza de transparente a dorado de izquierda a derecha; al hover o foco, el borde sube a `--line-strong` (hover tenue, regla 11). La membresía destaca los días restantes con una barra accesible.
 
 ## 2. Tipografía y forma
 

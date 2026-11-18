@@ -18,7 +18,7 @@
 
 .clientFeature__card:hover,
 .clientFeature__card:focus-within {
-  border-color: var(--text);
+  border-color: var(--line-strong);
 }
 
 .clientFeature__clientCard {
@@ -87,19 +87,6 @@
   color: var(--gold-ink);
 }
 
-.clientFeature__actionLink--quiet {
-  border-color: var(--line);
-  background: transparent;
-  color: var(--text-muted);
-}
-
-.clientFeature__actionLink--quiet:hover,
-.clientFeature__actionLink--quiet:focus-visible {
-  border-color: var(--line-strong);
-  background: color-mix(in srgb, var(--text) 4%, transparent);
-  color: var(--text);
-}
-
 .clientFeature__statusChip {
   display: inline-flex;
   flex: 0 0 auto;
@@ -115,12 +102,12 @@
 }
 
 .clientFeature__statusChip[data-tone='ok'] {
-  background: var(--success-soft);
+  border-color: var(--success);
   color: var(--success);
 }
 
 .clientFeature__statusChip[data-tone='off'] {
-  background: var(--danger-soft);
+  border-color: var(--danger);
   color: var(--danger);
 }
 
@@ -143,9 +130,8 @@
   width: fit-content;
   max-width: 100%;
   align-items: center;
-  border: 1px solid transparent;
+  border: 1px solid color-mix(in srgb, var(--gold) 55%, var(--line));
   border-radius: 8px;
-  background: var(--gold-soft);
   padding: 3px 8px;
   color: var(--gold-strong);
   font-size: 11px;
