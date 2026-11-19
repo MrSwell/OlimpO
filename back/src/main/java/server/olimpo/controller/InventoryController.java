@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -70,6 +71,12 @@ public class InventoryController {
     @PatchMapping("/{id}")
     public InventoryItemResponse updateItem(@PathVariable Long id, @Valid @RequestBody UpdateInventoryItemRequest request) {
         return inventoryService.updateItem(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteItem(@PathVariable Long id) {
+        inventoryService.deleteItem(id);
     }
 
     @PostMapping("/{id}/movements")

@@ -80,6 +80,10 @@ Target: the Olimpo backend running locally http://localhost:8080.
 | D11 | PATCH /machines/{id} `{"name":"Smith machine","brand":"NordicTrack","serialNumber":"NT-X1-9","status":"MAINTENANCE"}` | | 200 |
 | D12 | GET /machines?status=MAINTENANCE&page=0&size=20&search=smith | — | 200 page object filtered by status and text |
 | D13 | PATCH /machines/{id} `status:"ROTA"` | | 400 |
+| D14 | DELETE /inventory/items/{D1id} | — | 204, no response body |
+| D15 | GET /inventory/items/{D1id} and GET /inventory/items/{D1id}/movements after D14 | — | 404 for both; the item and its movement history are removed |
+| D16 | DELETE /machines/{D9id} | — | 204, no response body |
+| D17 | GET /machines/{D9id} after D16 | — | 404 |
 
 ### Module E — Trainer schedules (dayOfWeek: 1=Sunday … 7=Saturday)
 | # | Request | Body | Expect |
@@ -152,8 +156,9 @@ pm.test("JSON error shape on failure", () => {
 
 ## 4. Notes that may confuse you
 
-- `PUT`/`DELETE`/`GET`-list rules: updates use **PATCH** (items, machines, user roles, membership renew). Don't expect PUT or DELETE routes (they don't exist yet).
+- Updates use **PATCH** (items, machines, user roles, membership renew); there is no PUT. DELETE is available for inventory items and machines. Deleting an item permanently removes its movement history as well.
 - `dayOfWeek=1` is **Sunday**, not Monday (MySQL DAYOFWEEK). `dayName` in responses is derived: 2→Monday, 7→Saturday.
 - Successfully replacing a weekly schedule returns **200** (not 201) even though it's a POST — it's an upsert of the whole week.
 - General routines have `trainerId: null` and `price: null` on purpose.
 - Current seeded data ids in the local DB: item 1, machines 1–2, routines 1–3, trainer profiles 1–2, clients 1–2. Tests adding duplicates of unique fields will 409, that is correct behavior.
+- Delete checks must use only the resources created in this collection (D1 and D9); never delete seeded items or machines.

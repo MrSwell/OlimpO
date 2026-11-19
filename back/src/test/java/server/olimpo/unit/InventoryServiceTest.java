@@ -3,6 +3,7 @@ package server.olimpo.unit;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import server.olimpo.dto.request.CreateInventoryItemRequest;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -172,5 +174,29 @@ class InventoryServiceTest {
         when(itemRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> service().getItemById(99L));
+    }
+
+    @Test
+    @DisplayName("F5: deleting an item removes movements before deleting the item")
+    void deleteItemRemovesMovementHistoryFirst() {
+        InventoryItem item = item(7L, 10, 2);
+        when(itemRepository.findByIdForUpdate(7L)).thenReturn(Optional.of(item));
+
+        service().deleteItem(7L);
+
+        InOrder deletionOrder = inOrder(movementRepository, itemRepository);
+        deletionOrder.verify(movementRepository).deleteByItemId(7L);
+        deletionOrder.verify(itemRepository).delete(item);
+    }
+
+    @Test
+    @DisplayName("F5: deleting an unknown item -> 404 without touching movement history")
+    void deleteUnknownItem() {
+        when(itemRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> service().deleteItem(99L));
+
+        verify(movementRepository, never()).deleteByItemId(99L);
+        verify(itemRepository, never()).delete(any(InventoryItem.class));
     }
 }

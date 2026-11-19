@@ -46,8 +46,13 @@ export const machineFormDialog = ({ open, machine, onClose }: MachineFormDialogP
         </>
       }
     >
-      <form id="machine-form" onSubmit={submit} noValidate className="grid gap-4">
-        <componentComponents.field label="Nombre" htmlFor="machine-name" error={errors.name?.message}>
+      <form id="machine-form" onSubmit={submit} noValidate className="machineFeature__formGrid">
+        <componentComponents.field
+          label="Nombre"
+          htmlFor="machine-name"
+          error={errors.name?.message}
+          className="machineFeature__formFullWidth"
+        >
           <componentComponents.input
             id="machine-name"
             maxLength={150}
@@ -59,7 +64,7 @@ export const machineFormDialog = ({ open, machine, onClose }: MachineFormDialogP
           />
         </componentComponents.field>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="machineFeature__formPair machineFeature__formFullWidth">
           <componentComponents.field
             label="Marca (opcional)"
             htmlFor="machine-brand"
@@ -96,6 +101,7 @@ export const machineFormDialog = ({ open, machine, onClose }: MachineFormDialogP
           htmlFor="machine-serial"
           hint="Único: si ya existe, el backend lo rechaza (409)."
           error={errors.serialNumber?.message}
+          className="machineFeature__formFullWidth"
         >
           <componentComponents.input
             id="machine-serial"
@@ -111,6 +117,7 @@ export const machineFormDialog = ({ open, machine, onClose }: MachineFormDialogP
           label="Estado"
           htmlFor="machine-status"
           error={errors.status?.message}
+          className="machineFeature__formFullWidth"
         >
           <componentComponents.select
             id="machine-status"

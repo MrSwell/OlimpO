@@ -125,29 +125,21 @@
   ::-webkit-scrollbar-thumb:hover {
     background-color: var(--gold);
   }
+
+  /* View Transitions: one shared timing for shared elements and page changes. */
+  ::view-transition-group(*) {
+    animation-duration: 380ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 300ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
 }
 
 @layer components {
-  .pageEnter > * {
-    animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
-  }
-
-  .pageEnter > *:nth-child(2) {
-    animation-delay: 0.05s;
-  }
-
-  .pageEnter > *:nth-child(3) {
-    animation-delay: 0.1s;
-  }
-
-  .pageEnter > *:nth-child(4) {
-    animation-delay: 0.15s;
-  }
-
-  .pageEnter > *:nth-child(5) {
-    animation-delay: 0.2s;
-  }
-
   .toastEnter {
     animation: rise 0.35s cubic-bezier(0.2, 0.7, 0.3, 1) both;
   }

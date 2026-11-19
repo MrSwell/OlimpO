@@ -1,7 +1,7 @@
 /* oxlint-disable react/rules-of-hooks */
 import { Link } from 'react-router'
 import {
-  LuArrowUpRight as luArrowUpRight,
+  LuChevronRight as luChevronRight,
   LuFilePlus2 as luFilePlus2,
   LuUsers as luUsers,
 } from 'react-icons/lu'
@@ -27,59 +27,10 @@ const clientStatus = ({ status }: ClientResponse) => (
   </span>
 )
 
-const clientActions = (client: ClientResponse) => (
-  <Link
-    to={`/clients/${client.id}`}
-    className="clientFeature__actionLink clientFeature__actionLink--primary"
-  >
-    Ver ficha <componentComponents.icon icon={luArrowUpRight} size="sm" />
-  </Link>
-)
-
-const clientCard = (client: ClientResponse) => (
-  <li
-    key={client.id}
-    className="clientFeature__card clientFeature__clientCard gap-4"
-  >
-    <div className="flex items-start justify-between gap-4">
-      <div className="clientFeature__clientHeading min-w-0">
-        <span
-          className="clientFeature__clientAvatar"
-          aria-hidden="true"
-        >
-          <componentComponents.avatar size="md">{clientInitials(client)}</componentComponents.avatar>
-        </span>
-        <div className="min-w-0">
-          <p className="break-words text-[15px] font-medium">{clientName(client)}</p>
-          <p className="mt-1 break-all text-[12.5px] text-muted">{client.email}</p>
-        </div>
-      </div>
-      {clientStatus(client)}
-    </div>
-    <dl className="clientFeature__dataGrid text-[12.5px]">
-      <div className="clientFeature__dataItem">
-        <dt className="text-faint">Documento</dt>
-        <dd className="mt-1 break-words text-ink">{client.documentNumber}</dd>
-      </div>
-      <div className="clientFeature__dataItem">
-        <dt className="text-faint">Teléfono</dt>
-        <dd className="mt-1 break-words text-ink">{client.phone || '—'}</dd>
-      </div>
-    </dl>
-    <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
-      {client.fitnessGoal ? (
-        <span className="clientFeature__goalChip">{client.fitnessGoal}</span>
-      ) : (
-        <span />
-      )}
-      {clientActions(client)}
-    </div>
-  </li>
-)
-
 export const clientsPage = () => {
   const { search, setSearch, page, setPage, pageSize, clientsQuery } = useClientDirectory()
   const data = clientsQuery.data
+
   const header = (
     <componentComponents.pageHead
       title="Clientes"
@@ -134,6 +85,7 @@ export const clientsPage = () => {
   return (
     <>
       {header}
+
       <div className="mb-5 flex flex-col gap-3 min-[640px]:flex-row min-[640px]:items-center min-[640px]:justify-between">
         <div className="w-full min-[640px]:max-w-[360px]">
           <componentComponents.searchInput
@@ -164,7 +116,7 @@ export const clientsPage = () => {
               !search.trim() && (
                 <Link
                   to="/clients/new"
-                  className="clientFeature__actionLink clientFeature__actionLink--primary"
+                  className={componentComponents.buttonClassName('primary', 'sm')}
                 >
                   <componentComponents.icon icon={luFilePlus2} size="sm" />
                   Registrar cliente
@@ -174,10 +126,46 @@ export const clientsPage = () => {
           />
         </section>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {data.content.map(clientCard)}
+        <ul className="clientFeature__clientList" role="list">
+          {data.content.map((client) => (
+            <li key={client.id} className="clientFeature__clientListItem">
+              <Link
+                to={`/clients/${client.id}`}
+                viewTransition
+                state={{ client }}
+                className="clientFeature__clientRow"
+              >
+                <span
+                  className="clientFeature__clientAvatar"
+                  aria-hidden="true"
+                  style={{ viewTransitionName: `client-avatar-${client.id}` }}
+                >
+                  <componentComponents.avatar size="sm">
+                    {clientInitials(client)}
+                  </componentComponents.avatar>
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="break-words font-semibold text-[15px]">
+                    {clientName(client)}
+                  </p>
+                  <p className="clientFeature__clientMeta">
+                    <span>Doc. {client.documentNumber}</span>
+                    <span aria-hidden="true" className="clientFeature__clientMetaDot">·</span>
+                    <span>{client.phone || 'Sin celular'}</span>
+                    <span aria-hidden="true" className="clientFeature__clientMetaDot">·</span>
+                    <span className="truncate">{client.email}</span>
+                  </p>
+                </div>
+                {clientStatus(client)}
+                <span className="clientFeature__clientChevron" aria-hidden="true">
+                  <componentComponents.icon icon={luChevronRight} size="sm" />
+                </span>
+              </Link>
+            </li>
+          ))}
         </ul>
       )}
+
       {data.totalPages > 1 && (
         <componentComponents.pagination
           page={page + 1}

@@ -63,6 +63,54 @@ export const getStockState = (
   return { tone: 'ok', label: 'Stock sano' }
 }
 
+export type CategoryKey =
+  | 'equipment'
+  | 'supplements'
+  | 'drinks'
+  | 'accessories'
+  | 'apparel'
+  | 'other'
+
+export const categoryPresetLabels: Record<Exclude<CategoryKey, 'other'>, string> = {
+  equipment: 'Equipamiento',
+  supplements: 'Suplementos',
+  drinks: 'Bebidas',
+  accessories: 'Accesorios',
+  apparel: 'Ropa',
+}
+
+const categoryKeywords: Record<Exclude<CategoryKey, 'other'>, string[]> = {
+  equipment: ['equip', 'maquin', 'pesa', 'peso', 'barra', 'colchon', 'mancuern', 'disco', 'banda elastica'],
+  supplements: ['supl', 'prote', 'creatina', 'vitamin', 'preentreno', 'whey', 'amino'],
+  drinks: ['bebida', 'agua', 'isoton', 'energet', 'gaseosa', 'jugo'],
+  accessories: ['acces', 'guante', 'cinta', 'cuerda', 'shaker', 'toalla', 'rodillera', 'munequera'],
+  apparel: ['ropa', 'camis', 'pantal', 'sudader', 'short', 'medias', 'uniform'],
+}
+
+export const normalizeCategoryName = (value: string): string =>
+  value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+
+/**
+ * Resolves the presentation key for a free-text category. Known presets map
+ * by keyword; anything else falls back to `other` (which gets a stable
+ * hash-derived accent via the identity palette).
+ */
+export const resolveCategoryKey = (category: string | null): CategoryKey => {
+  if (!category) return 'other'
+  const normalized = normalizeCategoryName(category)
+  const entries = Object.entries(categoryKeywords) as Array<
+    [Exclude<CategoryKey, 'other'>, string[]]
+  >
+  for (const [key, keywords] of entries) {
+    if (keywords.some((keyword) => normalized.includes(keyword))) return key
+  }
+  return 'other'
+}
+
 export const inventoryMovementTypeLabels: Record<
   InventoryMovementType,
   string
@@ -71,5 +119,17 @@ export const inventoryMovementTypeLabels: Record<
   OUTBOUND: 'Salida',
 }
 
-export const formatStock = (item: Pick<InventoryItem, 'quantity' | 'unit'>): string =>
-  item.unit ? `${item.quantity} ${item.unit}` : String(item.quantity)
+/**
+ * A unit is a word ("unidad", "caja"). Numeric units come from legacy free-text
+ * entries and would duplicate the stock number, so they are not displayed.
+ */
+export const displayUnit = (unit: string | null): string | null => {
+  const trimmed = unit?.trim()
+  if (!trimmed) return null
+  return /^\d+$/.test(trimmed) ? null : trimmed
+}
+
+export const formatStock = (item: Pick<InventoryItem, 'quantity' | 'unit'>): string => {
+  const unit = displayUnit(item.unit)
+  return unit ? `${item.quantity} ${unit}` : String(item.quantity)
+}

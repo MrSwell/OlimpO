@@ -82,6 +82,13 @@ public class MachineService {
                 .orElseThrow(() -> new ResourceNotFoundException("Machine not found with id: " + id));
     }
 
+    @Transactional
+    public void deleteMachine(Long id) {
+        Machine machine = machineRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Machine not found with id: " + id));
+        machineRepository.delete(machine);
+    }
+
     private String validateStatus(String status) {
         try {
             return MachineStatus.valueOf(status.trim().toUpperCase()).name();

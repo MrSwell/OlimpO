@@ -27,6 +27,12 @@
   --success: #86c79a;
   --warning: #d9a86a;
 
+  /* Identity accents: stable per-client/category colors (hash-assigned). */
+  --accent-blue: #8ab2e0;
+  --accent-teal: #7cc4b4;
+  --accent-violet: #ab97de;
+  --accent-pink: #dd9db4;
+
   /* Soft roles: tinted chips and gentle gold actions (see FRONTEND_BASE §0). */
   --gold-soft: color-mix(in srgb, var(--gold) 14%, var(--panel));
   --gold-soft-strong: color-mix(in srgb, var(--gold) 22%, var(--panel));
@@ -63,6 +69,12 @@
   --danger: #a53c30;
   --success: #2c6b45;
   --warning: #8a5a12;
+
+  /* Identity accents (light variants: darker for contrast on paper). */
+  --accent-blue: #4a7ab5;
+  --accent-teal: #2f8f7d;
+  --accent-violet: #7a5fc0;
+  --accent-pink: #c05e83;
 
   --shadow-pop: 0 18px 44px rgb(23 21 15 / 0.16);
 }

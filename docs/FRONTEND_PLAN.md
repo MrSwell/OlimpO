@@ -1,6 +1,6 @@
 # FRONTEND_PLAN.md — Plan de implementación del frontend Olimpo
 
-Estado: en ejecución — F1–F5 implementadas · Última actualización: 2026-11-17
+Estado: F1–F5 implementadas; F4.5 consolida el estilo V1.0.0 · Última actualización: 2026-11-18
 Alcance: `front/` (React SPA) consumiendo `/api/v1` **sin modificar el contrato**.
 
 Fuentes de verdad:
@@ -15,18 +15,18 @@ Fuentes de verdad:
 
 Estas reglas son criterio de aceptación, no inspiración. Se aplican a cada pantalla, estado y breakpoint.
 
-1. **El fondo siempre es negro.** Superficies negro cálido (`--bg`, `--panel`, `--panel-2`). No se rellenan contenedores con color de estado ni tinte de marca, salvo el degradado casi imperceptible de las cards de clientes.
-2. **Solo bordes.** La separación es un borde de 1px neutro (`--line` / `--line-strong`). El color no pinta bordes de contenedores.
+1. **El fondo es oscuro.** Superficies negro cálido (`--bg`, `--panel`, `--panel-2`); color semántico y dorado se reservan para acciones, estados y acentos pequeños.
+2. **Separación por borde.** La estructura usa bordes neutros de 1px; las acciones conservan sus variantes establecidas en `FRONTEND_BASE.md`.
 3. **Errores de campo junto al campo; errores globales como pops.** Validaciones locales y errores del backend asociados a un campo usan `fieldError`, texto e icono rojos y borde rojo en el input, sin fondo tintado; desaparecen al editar el campo. Errores globales, de sesión, red y negocio usan toast. Si el backend rechaza credenciales sin especificar cuál, se muestra toast y se marcan ambos campos.
 4. **La información no satura.** Máximo **3 bloques principales (regiones)** por vista. Los detalles se agrupan en subsecciones con hairline dentro de un bloque, no en cards adicionales. Las métricas se leen como texto, no como cards. Las tablas muestran lo esencial; el resto vive en el detalle.
-5. **Gradientes solo en tarjetas de clientes.** El resto de la interfaz no usa gradientes; el directorio y la ficha permiten un degradado casi imperceptible de transparente a dorado, de izquierda a derecha.
+5. **Identidad consistente.** Los acentos no cambian los contratos ni la lectura: las tarjetas de inventario usan tintes oscuros y sutiles; clientes y máquinas conservan superficies oscuras y contraste.
 6. **Cero chips rellenos.** El estado es un **punto de 6px + texto**; una etiqueta es solo borde de 1px sin fondo.
 7. **Sin sombras en cards.** La elevación se declara con el borde. La sombra queda solo para capas flotantes (toast y modal).
 8. **Navegación por texto con icono funcional.** Barra superior, sin sidebar. Cada enlace lleva un icono de línea que lo representa; nunca ilustraciones ni iconos rellenos.
-9. **Dorado con disciplina.** Solo en marca, icono del enlace activo, icono de sección en hover, borde/texto de la acción principal, foco y cifras clave. Nunca como relleno.
-10. **Densidad y aire.** Página 56/32, bloques separados 24–32, paneles con 24 de padding. Más espacio sobre un título que debajo.
+9. **Dorado con disciplina.** Se usa en marca, foco, acciones y cifras clave, con la intensidad definida por los tokens y variantes de botones.
+10. **Densidad y aire.** Página 56/32, bloques separados 24–32 y filtros compactos; los directorios se adaptan al viewport y no ocultan datos en móvil.
 11. **Iconografía de línea.** Sprite SVG en mockup; `react-icons/lu` en React. Trazo 1.7, tamaños 12–22px, color heredado. Siempre acompañan a texto.
-12. **Movimiento silencioso.** Entrada de página con subida corta y stagger, trazo del gráfico, hover de borde/avatar/icono. Sin movimiento continuo. `prefers-reduced-motion` desactiva todo.
+12. **Movimiento silencioso.** La navegación usa View Transitions breves para páginas y elementos compartidos. Se respeta `prefers-reduced-motion`; la UI funciona sin animaciones.
 
 > Si una pantalla necesita un relleno de color para explicarse, está mal resuelta: se corrige con borde, texto o espacio.
 
@@ -140,15 +140,15 @@ Rutas **implementadas hoy**: `/`, `/#anclas`, `/login`, `/dashboard` (panel con 
 | `/#pricing` | Ancla de precios | público | ✅ implementada |
 | `/login` | Login (slider de dos pasos) | público | ✅ implementada |
 | `/dashboard` | Panel | autenticados | ✅ implementada |
-| `/clients` | Directorio | `ADMIN`, `RECEPCIONIST` | ✅ implementada |
+| `/clients` | Directorio de filas que enlazan a la ficha independiente | `ADMIN`, `RECEPCIONIST` | ✅ implementada |
 | `/clients/new` | Nuevo cliente | `ADMIN`, `RECEPCIONIST` | ✅ implementada |
 | `/clients/:id` | Ficha del cliente | `ADMIN`, `RECEPCIONIST`; `CLIENT` solo el propio | ✅ implementada |
 | — | Renovación de membresía (modal en la ficha, sin ruta propia) | `ADMIN`, `RECEPCIONIST` | ✅ implementada |
 | `/payments` | Pagos por cliente | `ADMIN`, `RECEPCIONIST` | ✅ implementada |
 | `/design` | Página de diseño | solo desarrollo | ✅ implementada |
-| `/inventory` | Directorio de inventario (búsqueda + vista stock bajo) | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
+| `/inventory` | Tarjetas de inventario, búsqueda, filtro de stock bajo y resumen de atención | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
 | `/inventory/:itemId` | Ficha del ítem con movimientos `INBOUND`/`OUTBOUND` | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
-| `/machines` | Directorio de máquinas (búsqueda + filtro de estado) | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
+| `/machines` | Tarjetas de máquinas, búsqueda, filtro de estado y resumen | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
 | `/schedules` | Horarios | `ADMIN`, `TRAINER_MANAGER`; `TRAINER` solo el propio | ⏳ planificada |
 | `/routines` | Rutinas | catálogo: autenticados; crear/asignar: `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ⏳ planificada |
 | `/users` | Usuarios | `ADMIN` | ⏳ planificada |
@@ -276,9 +276,9 @@ Reglas de navegación:
 
 **Entregables**
 
-- Directorio en cards con búsqueda debounced, paginación, degradado casi imperceptible de transparente a dorado de izquierda a derecha y acciones compactas.
+- Directorio en filas oscuras con búsqueda debounced, paginación, datos de contacto/status y enlace a la ficha independiente.
 - Alta con RHF + zod: correo único, contraseña inicial, documento y datos de perfil que expone `CreateClientRequest`; membresía inicial opcional mediante `POST /memberships`. No se captura dirección porque el contrato actual no incluye ese campo.
-- Ficha como dashboard responsive: perfil y membresía en el resumen superior; contacto, identificación, objetivo, historial y pagos en cards separadas. Acciones compactas, valores fáciles de distinguir y barra de progreso accesible.
+- Ficha independiente y responsive: identidad, membresía, datos, historial y pagos en secciones; la barra de progreso de membresía es accesible.
 - Renovación en modal con la regla `max(endDate, hoy)` visible y fecha calculada.
 - Validaciones 400 asociadas a un campo también se muestran junto al input con borde rojo y foco; los errores globales y los conflictos 404/409 usan toast.
 
@@ -311,6 +311,16 @@ Reglas de navegación:
 - Errores locales y de validación 400 asociados a membresía, monto, método o referencia se muestran inline; los errores de negocio y globales usan toast.
 - No se muestra un “total global” que el contrato no pueda sostener.
 
+### F4.5 — Consolidación visual y documental V1.0.0
+
+**Objetivo:** cerrar la iteración visual de F4/F5 y dejar una referencia estable para la primera versión.
+
+- Durante el trabajo de F5 se exploraron distintas composiciones para directorios y fichas; se conserva como estilo final el diseño oscuro que está actualmente en el código.
+- La ficha de cliente queda como página independiente en `/clients/:id`; el directorio enlaza a ella.
+- Inventario y máquinas conservan sus directorios de tarjetas, resúmenes laterales y estados/acciones actuales.
+- Se alinean la base visual, los planes y la documentación de rutas/API con el comportamiento existente.
+- F1, F2 y F3 quedan fuera de alcance de esta consolidación; no se alteran sus flujos.
+
 ### F5 — Inventario y máquinas (implementado)
 
 **Objetivo:** operación de inventario con roles correctos.
@@ -320,15 +330,18 @@ Reglas de navegación:
 - `GET|POST /api/v1/inventory/items`
 - `GET /api/v1/inventory/items/low-stock`
 - `GET|PATCH /api/v1/inventory/items/{id}`
+- `DELETE /api/v1/inventory/items/{id}` (elimina también el historial de movimientos del ítem)
 - `GET|POST /api/v1/inventory/items/{id}/movements`
 - `GET|POST /api/v1/machines`
 - `GET|PATCH /api/v1/machines/{id}`
+- `DELETE /api/v1/machines/{id}`
 
 **Entregables**
 
-- Listado con búsqueda, stock bajo y estado (punto + texto).
+- Directorio de inventario con tarjetas, búsqueda, filtro de stock bajo y resumen de atención.
+- Directorio de máquinas con tarjetas, búsqueda, filtro por estado y resumen.
 - Detalle con movimientos `INBOUND`/`OUTBOUND`.
-- Alta/edición de ítem y máquina.
+- Alta/edición y eliminación confirmada de ítems y máquinas.
 - Guard que excluye a `RECEPCIONIST`.
 
 **Aceptación**
@@ -336,6 +349,7 @@ Reglas de navegación:
 - `OUTBOUND` mayor al stock devuelve 409 y toast.
 - Serial duplicado devuelve 409 y toast.
 - Estados inválidos no se pueden enviar desde la UI.
+- Eliminar un ítem elimina también su historial de movimientos; la acción requiere confirmación.
 
 ### F6 — Horarios y rutinas
 
@@ -471,7 +485,7 @@ Mientras esas brechas existan, las vistas afectadas muestran solo lo que el cont
 
 ## 9. Estado actual y próximos pasos
 
-Implementado y en verde (lint + build): F1 (fundación visual), F1.5 (home pública), F2 (auth con login en slider), F3 (clientes: directorio, alta, ficha y renovación modal), F4 (pagos) y F5 (inventario con ficha y movimientos, máquinas con filtro de estado).
+Implementado: F1 (fundación visual), F1.5 (home pública), F2 (auth con login en slider), F3 (clientes: directorio y ficha independiente), F4 (pagos), F4.5 (consolidación visual/documental V1.0.0) y F5 (inventario y máquinas). Frontend lint/build y pruebas unitarias backend focalizadas de eliminación pasaron en este cierre. F6 (horarios y rutinas) sigue pendiente.
 
 Siguiente fase — **F6 (horarios y rutinas)**:
 

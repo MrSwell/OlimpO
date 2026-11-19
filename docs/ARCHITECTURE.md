@@ -176,8 +176,10 @@ Las rutas de colecciones indicadas como **paginadas** aceptan `page` (base cero,
 | `/api/v1/inventory/items` y `/low-stock` (paginadas) | GET | ADMIN, TRAINER_MANAGER, TRAINER |
 | `/api/v1/inventory/items/{id}/movements` (paginada) | GET | ADMIN, TRAINER_MANAGER, TRAINER |
 | `/api/v1/inventory/items/**` | resto | ADMIN, TRAINER_MANAGER, TRAINER |
+| `/api/v1/inventory/items/{id}` | DELETE | ADMIN, TRAINER_MANAGER, TRAINER; borra el ítem y sus movimientos |
 | `/api/v1/machines` (paginada; status + search) | GET | ADMIN, TRAINER_MANAGER, TRAINER |
 | `/api/v1/machines/**` | resto | ADMIN, TRAINER_MANAGER, TRAINER |
+| `/api/v1/machines/{id}` | DELETE | ADMIN, TRAINER_MANAGER, TRAINER |
 | `/api/v1/trainers/{id}/schedules` | GET/POST | ADMIN, TRAINER_MANAGER (cualquiera), TRAINER (solo la propia); lista semanal acotada |
 | `/api/v1/routines` (GET catálogo paginado; type + search) | GET | cualquiera autenticado |
 | `/api/v1/routines` (POST), `/{id}/assignments` | POST | ADMIN, TRAINER_MANAGER, TRAINER |

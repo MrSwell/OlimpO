@@ -13,7 +13,7 @@ OlimpO/
 │   ├── FRONTEND_BASE.md   # Identidad visual y directivas de estilo del frontend
 │   ├── FRONTEND_PLAN.md   # Plan de implementación del frontend (fases, rutas)
 │   └── POSTMAN.md         # Plan de pruebas (~90 casos) para la IA de Postman
-└── front/     # Frontend React (SPA) — F1–F5 implementadas
+└── front/     # Frontend React (SPA) — F1–F5 implementadas; estilo V1.0.0 consolidado
 ```
 
 > **Header de la API**: todas las rutas del backend responden JSON bajo `/api/v1/**`.
@@ -99,6 +99,17 @@ back/src/main/java/server.olimpo
 
 > `front/mockup/` es material de diseño local y está git-ignorado: nunca se sube.
 
+## Frontend — V1.0.0
+
+F1–F5 están implementadas. F4.5 cierra la iteración visual y documental: se conserva como estilo de V1.0.0 el diseño oscuro que está actualmente en el código, sin rehacer los flujos anteriores.
+
+- **Clientes:** directorio en filas con nombre, documento, celular, correo y estado. Cada fila abre la ficha independiente `/clients/:id`, con secciones de identidad, membresía, datos, historial y pagos; el tiempo restante de la membresía se representa con una barra de progreso.
+- **Inventario:** directorio en tarjetas oscuras con categoría, existencia, mínimo y estado de stock; incluye búsqueda, filtro de stock bajo, resumen de atención, detalle e historial de movimientos.
+- **Máquinas:** directorio en tarjetas con marca/modelo, serie y estado; incluye búsqueda, filtro de estado y resumen.
+- **Acciones:** formularios de alta/edición y confirmación antes de eliminar. Eliminar un ítem de inventario también elimina su historial de movimientos.
+- **Sistema visual:** superficies oscuras de alto contraste, dorado discreto para marca/acciones, colores semánticos para estados, tarjetas con jerarquía clara y layouts responsive. La especificación vinculante está en **[docs/FRONTEND_BASE.md](docs/FRONTEND_BASE.md)**.
+- **Siguiente fase:** F6 (horarios y rutinas) permanece pendiente; fases y criterios están en **[docs/FRONTEND_PLAN.md](docs/FRONTEND_PLAN.md)**.
+
 ## Cuentas sembradas (dev)
 
 | Email | Contraseña | Roles |
@@ -131,8 +142,8 @@ Nunca se filtran stacktraces, SQL ni detalles internos; el detalle queda solo en
 | **Clients** | `/api/v1/clients` | `POST`, `GET` paginado, `GET /{id}`, `GET /{id}/memberships` y `/payments` paginados, `GET /{id}/routines` paginado |
 | **Memberships** | `/api/v1/memberships` | `POST`, `GET /active`, `PATCH /{id}/renew` |
 | **Payments** | `/api/v1/payments` | `POST`; historial paginado en `/api/v1/clients/{id}/payments` |
-| **Inventory** | `/api/v1/inventory/items` | `POST`, `GET` y `/low-stock` paginados, `GET /{id}`, `PATCH /{id}`, `POST /{id}/movements`, historial paginado en `GET /{id}/movements` |
-| **Machines** | `/api/v1/machines` | `POST`, `GET ?status=&search=&page=&size=` paginado, `GET /{id}`, `PATCH /{id}` |
+| **Inventory** | `/api/v1/inventory/items` | `POST`, `GET` y `/low-stock` paginados, `GET /{id}`, `PATCH /{id}`, `DELETE /{id}` (arrastra sus movimientos), `POST /{id}/movements`, historial paginado en `GET /{id}/movements` |
+| **Machines** | `/api/v1/machines` | `POST`, `GET ?status=&search=&page=&size=` paginado, `GET /{id}`, `PATCH /{id}`, `DELETE /{id}` |
 | **Schedules** | `/api/v1/trainers/{trainerId}/schedules` | `GET`, `POST` (reemplaza toda la semana) |
 | **Routines** | `/api/v1/routines` | `GET ?type=&search=&page=&size=` paginado, `POST`, `GET /{id}`, `POST /{id}/assignments`, `GET /{id}/assignments` paginado |
 | | | `GET /api/v1/clients/{clientId}/routines` paginado |

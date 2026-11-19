@@ -19,4 +19,6 @@ public interface InventoryMovementRepository extends JpaRepository<InventoryMove
     Page<InventoryMovement> searchByItemId(@Param("itemId") Long itemId,
                                             @Param("search") String search,
                                             Pageable pageable);
+
+    void deleteByItemId(Long itemId);
 }

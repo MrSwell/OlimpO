@@ -81,6 +81,10 @@ export const updateInventoryItem = async (
   return inventoryItemSchema.parse(response)
 }
 
+export const deleteInventoryItem = async (itemId: number): Promise<void> => {
+  await apiRequest<void>(`/inventory/items/${itemId}`, { method: 'DELETE' })
+}
+
 export const registerInventoryMovement = async (
   itemId: number,
   payload: InventoryMovementPayload,

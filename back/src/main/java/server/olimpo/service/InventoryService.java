@@ -72,6 +72,15 @@ public class InventoryService {
         return toResponse(getItemEntity(id));
     }
 
+    /** Removes an item together with its movement history (the movements belong to it). */
+    @Transactional
+    public void deleteItem(Long id) {
+        InventoryItem item = itemRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Inventory item not found with id: " + id));
+        movementRepository.deleteByItemId(id);
+        itemRepository.delete(item);
+    }
+
     /** Alert: items at or below their minimum stock threshold. */
     @Transactional(readOnly = true)
     public PageResponse<InventoryItemResponse> getLowStockItems(String search, Pageable pageable) {

@@ -61,3 +61,7 @@ export const updateMachine = async (
   })
   return machineSchema.parse(response)
 }
+
+export const deleteMachine = async (machineId: number): Promise<void> => {
+  await apiRequest<void>(`/machines/${machineId}`, { method: 'DELETE' })
+}

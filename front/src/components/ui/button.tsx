@@ -5,7 +5,7 @@ import { cn } from '@/lib/cn'
 
 const astryxComponents = { button: astryxButton }
 
-export type ButtonVariant = 'default' | 'primary' | 'quiet'
+export type ButtonVariant = 'default' | 'primary' | 'quiet' | 'danger'
 export type ButtonSize = 'md' | 'sm'
 
 const baseClassName =
@@ -17,12 +17,15 @@ const variantClassNames: Record<ButtonVariant, string> = {
   // Primary action: the one full-gold region of the view.
   primary: 'border-gold bg-gold text-gold-ink hover:border-gold-strong hover:bg-gold-strong',
   quiet: 'border-transparent bg-transparent text-muted hover:text-ink',
+  // Destructive action: never a full red block; tinted border and text.
+  danger: 'border-danger/50 bg-danger/10 text-danger hover:border-danger hover:bg-danger/15',
 }
 
 const astryxVariants: Record<ButtonVariant, 'primary' | 'secondary' | 'ghost'> = {
   default: 'secondary',
   primary: 'primary',
   quiet: 'ghost',
+  danger: 'secondary',
 }
 
 const sizeClassNames: Record<ButtonSize, string> = {

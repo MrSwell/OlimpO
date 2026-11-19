@@ -118,4 +118,25 @@ class MachineServiceTest {
                 () -> service().getAllMachines("ROTA", null, org.springframework.data.domain.PageRequest.of(0, 10)));
         assertTrue(ex.getMessage().contains("Invalid machine status"));
     }
+
+    @Test
+    @DisplayName("F5: deleting a machine removes the existing machine")
+    void deleteMachine() {
+        Machine machine = Machine.builder().id(5L).name("Bici").status("AVAILABLE").build();
+        when(machineRepository.findById(5L)).thenReturn(Optional.of(machine));
+
+        service().deleteMachine(5L);
+
+        verify(machineRepository).delete(machine);
+    }
+
+    @Test
+    @DisplayName("F5: deleting an unknown machine -> 404 without deleting")
+    void deleteUnknownMachine() {
+        when(machineRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> service().deleteMachine(99L));
+
+        verify(machineRepository, never()).delete(any(Machine.class));
+    }
 }

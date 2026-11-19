@@ -1,6 +1,19 @@
 /* oxlint-disable react/rules-of-hooks */
-import { LuBoxes as luBoxes } from 'react-icons/lu'
+import {
+  LuBackpack as luBackpack,
+  LuBoxes as luBoxes,
+  LuCupSoda as luCupSoda,
+  LuDumbbell as luDumbbell,
+  LuPill as luPill,
+  LuShirt as luShirt,
+} from 'react-icons/lu'
+import type { IconType } from 'react-icons'
 import * as componentComponents from '@/components'
+import {
+  categoryPresetLabels,
+  normalizeCategoryName,
+  type CategoryKey,
+} from '../model/inventoryTypes'
 import type { InventoryItem } from '../model/inventoryTypes'
 import { useInventoryItemForm } from '../hooks/useInventoryItemForm'
 
@@ -10,12 +23,32 @@ interface ItemFormDialogProps {
   onClose: () => void
 }
 
+interface PresetOption {
+  key: Exclude<CategoryKey, 'other'>
+  label: string
+  icon: IconType
+}
+
+const presetOptions: PresetOption[] = [
+  { key: 'equipment', label: categoryPresetLabels.equipment, icon: luDumbbell },
+  { key: 'supplements', label: categoryPresetLabels.supplements, icon: luPill },
+  { key: 'drinks', label: categoryPresetLabels.drinks, icon: luCupSoda },
+  { key: 'accessories', label: categoryPresetLabels.accessories, icon: luBackpack },
+  { key: 'apparel', label: categoryPresetLabels.apparel, icon: luShirt },
+]
+
 export const itemFormDialog = ({ open, item, onClose }: ItemFormDialogProps) => {
   const { form, submit, isSubmitting } = useInventoryItemForm({
     item,
     onSaved: onClose,
   })
   const errors = form.formState.errors
+  const categoryValue = form.watch('category')
+  const normalizedCategory = normalizeCategoryName(categoryValue ?? '')
+  const activePreset = presetOptions.find(
+    (option) => normalizeCategoryName(option.label) === normalizedCategory,
+  )
+  const isCustomCategory = normalizedCategory !== '' && !activePreset
 
   return (
     <componentComponents.modal
@@ -59,22 +92,56 @@ export const itemFormDialog = ({ open, item, onClose }: ItemFormDialogProps) => 
         </componentComponents.field>
 
         <componentComponents.field
-          label="Categoría (opcional)"
-          htmlFor="inventory-item-category"
+          label="Categoría"
+          htmlFor={isCustomCategory || categoryValue === '' ? 'inventory-item-category-custom' : undefined}
           error={errors.category?.message}
         >
-          <componentComponents.input
-            id="inventory-item-category"
-            maxLength={100}
-            aria-invalid={Boolean(errors.category)}
-            aria-describedby={errors.category ? 'inventory-item-category-error' : undefined}
-            placeholder="Accesorios, mantenimiento…"
-            {...form.register('category')}
-            disabled={isSubmitting}
-          />
+          <div
+            className="inventoryFeature__presetGrid"
+            role="group"
+            aria-label="Categoría del ítem"
+          >
+            {presetOptions.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                aria-pressed={activePreset?.key === option.key}
+                className="inventoryFeature__presetChip"
+                onClick={() =>
+                  form.setValue('category', option.label, { shouldValidate: true })
+                }
+                disabled={isSubmitting}
+              >
+                <option.icon aria-hidden="true" style={{ color: 'var(--gold-strong)' }} />
+                {option.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              aria-pressed={isCustomCategory || categoryValue === ''}
+              className="inventoryFeature__presetChip"
+              onClick={() => form.setValue('category', '', { shouldValidate: true })}
+              disabled={isSubmitting}
+            >
+              Otro…
+            </button>
+          </div>
+          {(isCustomCategory || categoryValue === '') && (
+            <div className="mt-2.5">
+              <componentComponents.input
+                id="inventory-item-category-custom"
+                maxLength={100}
+                aria-invalid={Boolean(errors.category)}
+                aria-describedby={errors.category ? 'inventory-item-category-error' : undefined}
+                placeholder="Escribe una categoría libre…"
+                {...form.register('category')}
+                disabled={isSubmitting}
+              />
+            </div>
+          )}
         </componentComponents.field>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="inventoryFeature__stockGrid">
           <componentComponents.field
             label="Stock"
             htmlFor="inventory-item-quantity"

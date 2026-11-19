@@ -1,6 +1,6 @@
 # FRONTEND_BASE.md — Bases y directivas de estilo del frontend Olimpo
 
-Fuente de verdad visual para `front/`. Cualquier cambio de identidad se documenta aquí primero y luego se replica en código. Última actualización: 2026-11-17 (v4.1 — acciones en dorado tenue, chips de estado solo borde, directorios en cards y hovers tenues).
+Fuente de verdad visual para `front/`. Cualquier cambio de identidad se documenta aquí primero y luego se replica en código. Estilo visual final aprobado para V1.0.0. Última actualización: 2026-11-18 (v1.0.0 — sistema oscuro y directorios consolidados).
 
 ---
 
@@ -8,17 +8,18 @@ Fuente de verdad visual para `front/`. Cualquier cambio de identidad se document
 
 Estas reglas mandan sobre cualquier preferencia estética y se aplican a todo el frontend, mockups incluidos:
 
-1. **El fondo siempre es negro.** Las superficies son negro cálido (`--bg`, `--panel`, `--panel-2`). No se rellenan contenedores grandes con colores de estado ni tintes de marca, salvo el degradado casi imperceptible de las cards de clientes (regla 5) y el relleno tenue de los botones (regla 2).
-2. **Separación por borde; acción en dorado tenue.** La separación estructural se comunica con un borde de 1px neutro (`--line` / `--line-strong`). Los **botones llevan dorado tenue**: la acción secundaria usa un relleno suave de dorado (12–18% sobre panel) con borde dorado mezclado y texto `--gold-strong`; la **acción principal** usa relleno dorado pleno con texto `--gold-ink`. Todo botón conserva borde y radio de control (8px) para que siempre se lea como botón. Al hover, el relleno sube un escalón; nunca desaparece el borde.
+1. **El fondo siempre es oscuro.** Las superficies usan negro cálido (`--bg`, `--panel`, `--panel-2`). El dorado y los tintes semánticos se reservan para acciones, estados y acentos pequeños; inventario admite un tinte oscuro y discreto por categoría.
+2. **Separación por borde; acciones legibles.** La separación estructural usa borde neutro de 1px (`--line` / `--line-strong`). Las acciones secundarias usan dorado tenue; la principal, dorado pleno con texto `--gold-ink`; las destructivas usan un tinte rojo discreto. Todos conservan borde, foco visible y radio de control (8px).
 3. **Errores de campo junto al campo; errores globales como pops.** La validación local y los errores de campo reconocidos del backend usan un mensaje pequeño bajo el input, texto e icono rojos y borde rojo en el campo; se limpian al editarlo. Errores de negocio, sesión, red y servidor sin campo asociado usan un **toast** flotante (superficie negra, borde neutro, icono de color, título + recuperación). No usar banners ni fondos rojos. Si el backend rechaza credenciales sin identificar cuál, se muestra el toast y se marcan correo y contraseña.
-4. **La información no satura.** Máximo **3 bloques principales (regiones)** por vista. Los detalles se agrupan en subsecciones con hairline dentro de un bloque, no en cards adicionales. Las métricas se leen como texto, no como cards con iconos. Las tablas muestran lo esencial y el resto vive en el detalle.
+4. **La información no satura.** La jerarquía prioriza la información necesaria para operar; los directorios pueden acompañarse con un resumen lateral. La ficha de cliente presenta sus secciones en tarjetas responsive. Evitar duplicar datos y acentos decorativos.
 5. **Gradientes solo en tarjetas de clientes.** El resto de la interfaz no usa gradientes en fondos, botones, texto ni tarjetas. Las cards de clientes pueden usar un degradado casi imperceptible que avanza de transparente a dorado de izquierda a derecha; debe seguir leyendo primero como negro.
-6. **Chips de estado solo borde.** El estado se codifica con un **chip sin fondo**: borde de 1px del color semántico pleno (`--success`, `--warning`, `--danger`) y texto del mismo color; radio de control (8px), sin pill y sin relleno. La información nunca depende solo del color: punto de 6px (`currentColor`) + texto. Las etiquetas de categoría y objetivo usan borde dorado mezclado (`--gold` al 55% sobre `--line`) con texto `--gold-strong`, también sin fondo; las etiquetas neutras, borde `--line-strong` y texto `--text-muted`.
+6. **Chips de estado solo borde; lo sano se calla.** El estado se codifica con un **chip sin fondo**: borde de 1px del color semántico pleno (`--success`, `--warning`, `--danger`) y texto del mismo color; radio de control (8px), sin pill y sin relleno. La información nunca depende solo del color: punto de 6px + texto. **El estado saludable (stock sano, activo, disponible) se muestra en reposo**: borde `--line`, texto `--text-muted` y solo el punto en verde; únicamente las excepciones (cerca del mínimo, bajo, deshabilitado, en mantenimiento) usan el color semántico pleno. Las etiquetas de categoría y objetivo son neutras: borde `--line` y texto `--text-muted`, sin acento.
 7. **Sin sombras en cards.** La elevación se declara una vez con el borde. La sombra queda reservada a capas flotantes (toast y modal).
 8. **Navegación por rol dentro del menú de usuario.** El encabezado autenticado conserva la marca y un único control de usuario; sus acciones se agrupan por los roles de esa cuenta y cada enlace muestra su icono funcional. Tema, diseño de desarrollo y cierre de sesión también viven ahí. Nunca ilustraciones decorativas ni iconos rellenos.
 9. **Acento dorado con disciplina.** Dorado en: marca, icono del enlace activo, icono de sección al pasar el cursor, relleno tenue de acciones (regla 2), relleno pleno solo de la acción principal, foco y cifras clave. Nunca como relleno de contenedores grandes.
-10. **Densidad y aire.** Padding de página 56/32, separación entre bloques 24–32, paneles con 24 de padding. Más espacio sobre un título que debajo. Ritmo de directorio: cabecera de página → fila de filtros compacta (sin etiquetas visibles; `aria-label` + placeholder) → rejilla de cards con `gap` 16 → paginación.
-11. **Directorios en cards, no tablas.** Inventario y clientes usan rejilla de tarjetas (2–3 por fila), no tablas. Jerarquía fija de la card: **línea 1 = identidad + estado** (nombre y chip; en clientes, avatar + nombre/correo), **medida principal prominente** (cifra de stock con su mínimo; datos de contacto) y **pie con hairline** (categoría/objetivo + acción). El color codifica estado (sano / cerca del mínimo / bajo) con punto + texto, nunca solo color. El hover de card es tenue: `--line-strong`, nunca `--text`. Las tablas quedan para registros densos de muchas columnas (p. ej. movimientos).
+10. **Densidad y aire.** Padding de página 56/32, separación entre bloques 24–32 y paneles con padding consistente. Los filtros forman una fila compacta con nombre accesible y placeholder. En escritorio, la información operativa puede combinar un directorio con un resumen lateral; en móvil se apila sin perder contenido.
+11. **Directorios y fichas.** **Clientes**: filas oscuras y compactas con avatar, nombre, documento, celular, correo y estado. Cada fila abre `/clients/:id`; la ficha es una página independiente con identidad, membresía, datos, historial y pagos en secciones responsive. **Inventario**: tarjetas oscuras con tinte discreto por categoría, icono, existencia, mínimo, estado y acceso a la ficha; el resumen destaca los ítems que requieren atención. **Máquinas**: tarjetas con nombre, marca/modelo, serie, estado y acciones; el resumen de estados acompaña el directorio.
+12. **Identidad de color estable y categorías con icono.** La paleta no semántica vive en `tokens.css` (`--accent-blue`, `--accent-teal`, `--accent-violet`, `--accent-pink`) y `lib/colorIdentity.ts` asigna un acento estable por *hash*. En inventario, las categorías predeterminadas tienen iconografía lineal; una categoría libre recibe identidad estable e icono neutro. El estado conserva su color semántico y contraste, sin depender solo del color.
 
 ## 1. Identidad visual — "Negro editorial"
 
@@ -26,7 +27,7 @@ Dirección: un sistema de gestión que se lee como una publicación, no como un 
 
 - **Carácter olímpico de Olimpo**: la referencia helénica debe reconocerse en proporciones arquitectónicas, el glifo de columna dórica, el meandro y la serif editorial; reforzarla en superficies públicas sin convertir cada bloque en un templo ni recurrir a adornos genéricos de gimnasio.
 - **Dark-first**: la app abre en oscuro. El tema claro existe con la misma estructura y reglas (papel cálido, sin rellenos tintados).
-- **Motivo griego único**: el **meandro**, dibujado como línea dorada de 1px al 55% de opacidad. Aparece solo en el pie, el login y el panel de membresía. Nada más.
+- **Motivo griego único**: el **meandro**, dibujado como línea dorada de 1px al 55% de opacidad. Aparece en el pie, el login, las cabeceras de página y el panel de membresía. Nada más.
 - **Glifo de columna dórica** como marca (SVG propio; en React, `react-icons`/componente de marca).
 - **Regla de tokens**: hex crudo prohibido fuera de `src/styles/tokens.css` (React) y de `styles.css :root` (mockup). En dark no se duplica con `dark:` — cambian los tokens.
 - **Decisión 2026-11-12**: el mockup v3 (gradientes, chips rellenos, sidebar) queda descartado y se usa como anti-referencia. La dirección vigente es este v4.
@@ -50,12 +51,13 @@ Dirección: un sistema de gestión que se lee como una publicación, no como un 
 | `--warning` | `#d9a86a` | `#8a5a12` | punto por vencer, cerca del mínimo |
 | `--gold-soft` | mix 14% | mix 14% | relleno tenue de acciones |
 | `--gold-border` | mix 45% | mix 45% | borde de botones secundarios |
+| `--accent-blue` / `--accent-teal` / `--accent-violet` / `--accent-pink` | `#8ab2e0` / `#7cc4b4` / `#ab97de` / `#dd9db4` | versiones más oscuras | paleta de identidad (hash por entidad) |
 
 Los mixes se definen en `tokens.css` con `color-mix` sobre los tokens base (nunca hex crudo en componentes). Los chips no llevan fondo tintado: borde + texto del color (regla 6).
 
 - **Superficies del navegador tematizadas**: selección dorada translúcida, `caret-color` dorado, scrollbars finos en `--line-strong` con hover dorado, `underline-offset` en enlaces y cifras `tabular-nums` en datos.
 - **Foco**: anillo de 2px `--gold-strong` con offset 2. Siempre visible.
-- **Dashboard de clientes**: el directorio usa una rejilla de perfiles con avatar inicial, datos legibles y una acción compacta. La ficha distribuye perfil y membresía en la primera fila; contacto, identificación, objetivo, historial y pagos ocupan cards independientes en una rejilla responsive. El degradado interior casi imperceptible avanza de transparente a dorado de izquierda a derecha; al hover o foco, el borde sube a `--line-strong` (hover tenue, regla 11). La membresía destaca los días restantes con una barra accesible.
+- **Ficha de cliente**: el directorio enlaza a una ficha independiente (regla 11). Identidad, membresía, datos, historial y pagos se presentan como secciones responsive; la membresía destaca el tiempo restante con una barra accesible.
 
 ## 2. Tipografía y forma
 
@@ -107,7 +109,7 @@ Los mixes se definen en `tokens.css` con `color-mix` sobre los tokens base (nunc
 
 ### Movimiento (vida sin ruido)
 
-- **Entrada de página**: los bloques suben 10px y aparecen en 0.5s con un stagger de 50ms. Solo una vez, al cargar.
+- **Navegación**: View Transitions de duración breve para cambios de página y elementos compartidos; las actualizaciones funcionan sin transición cuando el navegador no la admite o el usuario solicita movimiento reducido.
 - **Trazo del gráfico**: la línea se dibuja de izquierda a derecha (1.2s) y los puntos aparecen después. Sin rebotes.
 - **Capas flotantes**: toast y modal entran con la misma subida corta; el scrim funde en 0.3s.
 - **Hover silencioso**: el borde del panel se aclara, el icono de sección pasa a dorado, el avatar de cliente se dora, el icono de tema rota 14° y el valor de fila se aclara.

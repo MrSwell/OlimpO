@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -55,5 +56,11 @@ public class MachineController {
     @PatchMapping("/{id}")
     public MachineResponse updateMachine(@PathVariable Long id, @Valid @RequestBody UpdateMachineRequest request) {
         return machineService.updateMachine(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteMachine(@PathVariable Long id) {
+        machineService.deleteMachine(id);
     }
 }

@@ -23,7 +23,7 @@ Frontend-specific rules (`front/`):
 
 ## 1. Project snapshot
 
-- **Product**: gym management system "Olimpo". Monorepo layout: backend = `back/`, frontend React = `front/` (F1–F4 implemented: foundation, public home, auth, clients, payments), documentation = `docs/`.
+- **Product**: gym management system "Olimpo". Monorepo layout: backend = `back/`, frontend React = `front/` (F1–F5 implemented: foundation, public home, auth, clients, payments, inventory, machines), documentation = `docs/`.
 - **Backend stack**: Java 27, Spring Boot 4.1.2, Spring Security 7 (stateless JWT via jjwt 0.12.6), Spring Data JPA, MySQL 8, Flyway, Lombok, Maven wrapper (`mvnw.cmd`), Windows + PowerShell 5.1.
 - **Base package**: `server.olimpo` (NOT `com.olimpo.gym`).
 - **DB name**: `olimpo`, 13 tables, schema fully managed by Flyway migrations V1–V6.
@@ -99,11 +99,11 @@ Existing data: 1 inventory item (id 1), 2 machines, 3 routines, 2 schedule sets,
 7. Controller with `@PreAuthorize` at class or method level, returning DTOs (never entities).
 8. Compile, let devtools restart, verify live with UTF-8 JSON requests; update the endpoint tables in `README.md`/`docs/ARCHITECTURE.md` and the test plan in `docs/POSTMAN.md`.
 
-## 8. Current state (last verified 2026-10-29)
+## 8. Current state (last reviewed 2026-11-18)
 
 - All 6 planned sprints complete and live-tested (~60 cases, all green): auth JWT, users/roles RBAC, clients/memberships/payments, inventory/machines, weekly schedules, routines/assignments.
 - Security hardening applied: unified error JSON, env-based secrets, stricter DTO validation, catch-all 500 without internals.
 - Git: pushed to `origin = https://github.com/MrSwell/OlimpO.git` (branch `master`).
 - Tests: all 3 phases done — unit 89 + functional 77 + volume 16 = **182/182 green**, whole suite `.\mvnw.cmd test` in ~1 min (each folder has its `RESULTS.md`). Volume phase caught & fixed a real bug: concurrent weekly-schedule replaces raced into a 500 (now serialized via `TrainerRepository.findByIdForUpdate` + `OptimisticLockingFailureException` → 409 handler). Security review hardened: only ADMIN may assign the ADMIN role on `POST /users`; concurrent membership renews serialized (`MembershipRepository.findByIdForUpdate`); disabled users can't ride an old JWT (filter checks `isEnabled`); `UsernameNotFoundException` → 401 (never 500).
-- **Frontend (`front/`)**: implemented through F5 (last verified 2026-11-17) — foundation (tokens, primitives, shell, `/design`), public home, auth (login as a two-step role→credentials slider, session/refresh in `authStore` + `sessionStorage`), clients (directory, create, detail, renew modal), payments, inventory (directory, item detail with INBOUND/OUTBOUND movements) and machines (status filter directory). Verified with `pnpm lint` + `pnpm build`. Vite dev proxy forwards `/api` to `http://localhost:8080`, so CORS still does not block local development; CORS config is only needed for production without a reverse proxy.
-- Still open: rate-limiting for `/auth/login`, CORS config for production, remaining frontend phases (F6 schedules/routines, users, panel metrics endpoint).
+- **Frontend (`front/`)**: F1–F5 are implemented. The V1.0.0 visual baseline is recorded in `docs/FRONTEND_BASE.md`; the client profile is a separate route, and inventory/machines use dark card directories. F5 includes confirmed item/machine deletion; deleting an item also deletes its movement history. This worktree passed frontend lint/build and focused backend deletion unit tests; commit is pending. Vite dev proxy forwards `/api` to `http://localhost:8080`, so CORS does not block local development; production CORS is still open if no reverse proxy is used.
+- **Frontend next**: F6 schedules and routines, then the remaining users and dashboard metrics work. Rate-limiting for `/auth/login` and production CORS remain open operational items.

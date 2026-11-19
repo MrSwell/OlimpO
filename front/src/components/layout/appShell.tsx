@@ -18,7 +18,7 @@ export const appShell = ({ children, user, onLogout }: AppShellProps) => {
       ) : (
         <publicHeaderComponents.publicHeader variant="inner" />
       )}
-      <main className="pageEnter mx-auto w-full max-w-[1180px] flex-1 px-6 pt-10 pb-14 min-[821px]:px-8 min-[821px]:pt-14 min-[821px]:pb-[72px]">
+      <main className="mx-auto w-full max-w-[1180px] flex-1 px-6 pt-10 pb-14 min-[821px]:px-8 min-[821px]:pt-14 min-[821px]:pb-[72px]">
         {children}
       </main>
       <siteFooterComponents.siteFooter />
