@@ -5,37 +5,6 @@
   padding: clamp(16px, 2vw, 22px);
 }
 
-.clientFeature__tableCard {
-  overflow: hidden;
-  padding: 0;
-}
-
-.clientFeature__directoryTable {
-  min-width: 820px;
-}
-
-.clientFeature__directoryTable tbody tr {
-  transition: background-color 140ms ease;
-}
-
-.clientFeature__directoryTable tbody tr:hover {
-  background: var(--panel-2);
-}
-
-.clientFeature__nameCell {
-  display: flex;
-  min-width: 220px;
-  align-items: center;
-  gap: 12px;
-}
-
-.clientFeature__tableActions {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
 .clientFeature__clientAvatar {
   display: inline-flex;
   flex: 0 0 auto;
@@ -286,14 +255,6 @@
   outline-offset: 2px;
 }
 
-.clientFeature__clientRowContent {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  flex: 1;
-}
-
 .clientFeature__clientMeta {
   display: flex;
   flex-wrap: wrap;
@@ -436,7 +397,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .clientFeature__directoryTable tbody tr,
   .clientFeature__actionLink,
   .clientFeature__progressFill,
   .clientFeature__clientRow,

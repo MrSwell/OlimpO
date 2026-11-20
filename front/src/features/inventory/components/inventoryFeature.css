@@ -665,7 +665,6 @@
   .inventoryFeature__stockBar > span,
   .inventoryFeature__alertRow,
   .inventoryFeature__deleteAction,
-  .inventoryFeature__directoryTable tbody tr,
   .inventoryFeature__presetChip {
     transition: none;
   }

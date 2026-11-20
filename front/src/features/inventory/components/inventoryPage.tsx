@@ -57,11 +57,15 @@ const inventoryItemCard = (item: InventoryItem) => {
       <div className="inventoryFeature__itemHeader">
         <span
           className="inventoryFeature__categoryIcon"
-          style={{
-            color: accent,
-            background: `color-mix(in srgb, ${accent} 12%, transparent)`,
-            borderColor: `color-mix(in srgb, ${accent} 26%, var(--line))`,
-          }}
+          style={
+            key === 'other'
+              ? undefined
+              : {
+                  color: accent,
+                  background: `color-mix(in srgb, ${accent} 12%, transparent)`,
+                  borderColor: `color-mix(in srgb, ${accent} 26%, var(--line))`,
+                }
+          }
           aria-hidden="true"
         >
           <Icon size={18} />

@@ -140,11 +140,15 @@ export const itemDetailPage = () => {
             <div className="inventoryFeature__detailIdentity">
               <span
                 className="inventoryFeature__categoryIcon"
-                style={{
-                  color: accent,
-                  background: `color-mix(in srgb, ${accent} 12%, transparent)`,
-                  borderColor: `color-mix(in srgb, ${accent} 26%, var(--line))`,
-                }}
+                style={
+                  categoryKey === 'other'
+                    ? undefined
+                    : {
+                        color: accent,
+                        background: `color-mix(in srgb, ${accent} 12%, transparent)`,
+                        borderColor: `color-mix(in srgb, ${accent} 26%, var(--line))`,
+                      }
+                }
                 aria-hidden="true"
               >
                 <CategoryIcon size={18} />
