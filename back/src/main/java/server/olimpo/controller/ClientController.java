@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import server.olimpo.dto.request.CreateClientRequest;
 import server.olimpo.dto.response.ClientResponse;
+import server.olimpo.dto.response.ClientLookupResponse;
 import server.olimpo.dto.response.MembershipResponse;
 import server.olimpo.dto.response.PageResponse;
 import server.olimpo.dto.response.PaymentResponse;
@@ -53,6 +54,17 @@ public class ClientController {
             @RequestParam(required = false) String search) {
         return clientService.getAllClients(search,
                 Pagination.request(page, size, Sort.by(Sort.Order.asc("id"))));
+    }
+
+    @GetMapping("/lookup")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER_MANAGER', 'TRAINER', 'CLIENT')")
+    public PageResponse<ClientLookupResponse> getClientLookup(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search,
+            Authentication authentication) {
+        return clientService.getClientLookup(search,
+                Pagination.request(page, size, Sort.by(Sort.Order.asc("id"))), authentication);
     }
 
     @GetMapping("/{id}")

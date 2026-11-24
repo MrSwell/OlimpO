@@ -6,6 +6,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -202,5 +206,52 @@ class ClientServiceTest {
 
         assertThrows(ResourceNotFoundException.class,
                 () -> service().resolveOwnClientId(auth("sinperfil@olimpo.com", "CLIENT")));
+    }
+
+    @Test
+    @DisplayName("F6: training staff can search minimal client options for routine assignments")
+    void trainingStaffGetsClientLookup() {
+        var pageable = PageRequest.of(0, 20, Sort.by(Sort.Order.asc("id")));
+        Client client = Client.builder().id(7L).userId(5L).build();
+        User user = User.builder().id(5L).firstName("Sofia").lastName("Mendez").build();
+        when(clientRepository.searchClients(null, pageable))
+                .thenReturn(new PageImpl<>(java.util.List.of(client), pageable, 1));
+        when(userRepository.findAllById(java.util.List.of(5L))).thenReturn(java.util.List.of(user));
+
+        var response = service().getClientLookup(" ", pageable,
+                auth("trainer@olimpo.com", "TRAINER"));
+
+        assertEquals(7L, response.content().getFirst().id());
+        assertEquals("Sofia", response.content().getFirst().firstName());
+        assertEquals("Mendez", response.content().getFirst().lastName());
+    }
+
+    @Test
+    @DisplayName("F6: CLIENT lookup returns only the authenticated client's option")
+    void clientGetsOwnLookupOnly() {
+        var pageable = PageRequest.of(0, 20, Sort.by(Sort.Order.asc("id")));
+        User user = User.builder().id(5L).email("cliente1@olimpo.com")
+                .firstName("Luis").lastName("Perez").build();
+        Client client = Client.builder().id(7L).userId(5L).build();
+        when(userRepository.findByEmail("cliente1@olimpo.com")).thenReturn(Optional.of(user));
+        when(clientRepository.findByUserId(5L)).thenReturn(Optional.of(client));
+        when(clientRepository.findById(7L)).thenReturn(Optional.of(client));
+        when(userRepository.findAllById(java.util.List.of(5L))).thenReturn(java.util.List.of(user));
+
+        var response = service().getClientLookup(null, pageable,
+                auth("cliente1@olimpo.com", "CLIENT"));
+
+        assertEquals(1, response.totalElements());
+        assertEquals(7L, response.content().getFirst().id());
+        verify(clientRepository, never()).searchClients(any(), any());
+    }
+
+    @Test
+    @DisplayName("F6: receptionist cannot query the training client lookup")
+    void receptionistCannotGetClientLookup() {
+        assertThrows(AccessDeniedException.class, () -> service().getClientLookup(null,
+                PageRequest.of(0, 20), auth("recepcionista@olimpo.com", "RECEPCIONIST")));
+
+        verifyNoInteractions(clientRepository, userRepository);
     }
 }

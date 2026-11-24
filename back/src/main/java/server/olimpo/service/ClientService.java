@@ -4,10 +4,13 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import server.olimpo.dto.request.CreateClientRequest;
 import server.olimpo.dto.response.ClientResponse;
+import server.olimpo.dto.response.ClientLookupResponse;
 import server.olimpo.dto.response.PageResponse;
 import server.olimpo.entity.Client;
 import server.olimpo.entity.User;
@@ -92,6 +95,34 @@ public class ClientService {
     }
 
     @Transactional(readOnly = true)
+    public PageResponse<ClientLookupResponse> getClientLookup(String search, Pageable pageable,
+                                                               Authentication authentication) {
+        Page<Client> clients;
+        if (hasTrainingRole(authentication)) {
+            clients = clientRepository.searchClients(Pagination.normalizeSearch(search), pageable);
+        } else if (isClientRole(authentication)) {
+            Long ownClientId = resolveOwnClientId(authentication);
+            Client ownClient = clientRepository.findById(ownClientId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + ownClientId));
+            List<Client> content = pageable.getPageNumber() == 0 ? List.of(ownClient) : List.of();
+            clients = new PageImpl<>(content, pageable, 1);
+        } else {
+            throw new AccessDeniedException("Access denied");
+        }
+
+        List<Long> userIds = clients.getContent().stream().map(Client::getUserId).toList();
+        Map<Long, User> usersById = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
+        return PageResponse.from(clients.map(client -> {
+            User user = usersById.get(client.getUserId());
+            if (user == null) {
+                throw new ResourceNotFoundException("User not found for client id: " + client.getId());
+            }
+            return new ClientLookupResponse(client.getId(), user.getFirstName(), user.getLastName());
+        }));
+    }
+
+    @Transactional(readOnly = true)
     public ClientResponse getClientById(Long id) {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + id));
@@ -114,6 +145,17 @@ public class ClientService {
         }
         return authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_CLIENT"));
+    }
+
+    private boolean hasTrainingRole(Authentication authentication) {
+        if (authentication == null) {
+            return false;
+        }
+        return authentication.getAuthorities().stream().anyMatch(a -> {
+            String authority = a.getAuthority();
+            return authority.equals("ROLE_ADMIN") || authority.equals("ROLE_TRAINER_MANAGER")
+                    || authority.equals("ROLE_TRAINER");
+        });
     }
 
     @Transactional(readOnly = true)
