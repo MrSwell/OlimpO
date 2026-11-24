@@ -207,6 +207,34 @@
   grid-column: span 6;
 }
 
+.clientFeature__fichaRoutines {
+  grid-column: span 12;
+}
+
+.clientFeature__routineList {
+  display: grid;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clientFeature__routineItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 12px 0;
+}
+
+.clientFeature__routineItem + .clientFeature__routineItem {
+  border-top: 1px solid var(--line);
+}
+
+.clientFeature__routineBody {
+  min-width: 0;
+}
+
 .clientFeature__sectionTitle {
   font-family: var(--font-editorial);
   font-size: 16px;
@@ -371,6 +399,7 @@
 @media (max-width: 900px) {
   .clientFeature__fichaMembership,
   .clientFeature__fichaData,
+  .clientFeature__fichaRoutines,
   .clientFeature__fichaHistory,
   .clientFeature__fichaPayments {
     grid-column: span 12;

@@ -1,0 +1,406 @@
+.scheduleFeature__panel {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: clamp(18px, 2.4vw, 26px);
+}
+
+.scheduleFeature__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px 20px;
+}
+
+.scheduleFeature__toolbarField {
+  display: grid;
+  flex: 1 1 260px;
+  min-width: 0;
+  max-width: 420px;
+  gap: 7px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.scheduleFeature__ownerTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.scheduleFeature__ownerTitle {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.scheduleFeature__readOnlyChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--text-faint);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.scheduleFeature__readOnlyNote {
+  margin-top: 14px;
+  color: var(--text-faint);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.scheduleFeature__ownerMeta {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
+.scheduleFeature__panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.scheduleFeature__panelTitle {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.scheduleFeature__panelMeta {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Week ledger ---------- */
+
+.scheduleFeature__week {
+  display: grid;
+}
+
+.scheduleFeature__day {
+  display: grid;
+  grid-template-columns: 136px minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.scheduleFeature__day:last-child {
+  border-bottom: 0;
+  padding-bottom: 2px;
+}
+
+.scheduleFeature__dayRail {
+  display: grid;
+  align-content: start;
+  gap: 3px;
+  padding-top: 9px;
+}
+
+.scheduleFeature__dayName {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.scheduleFeature__dayCount {
+  color: var(--text-faint);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
+.scheduleFeature__daySlots {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.scheduleFeature__emptyDay {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  min-height: 40px;
+  color: var(--text-faint);
+  font-size: 12.5px;
+}
+
+.scheduleFeature__dayAdd {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+.scheduleFeature__dayAdd:hover {
+  color: var(--gold-strong);
+}
+
+.scheduleFeature__dayAdd:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid var(--gold-strong);
+  outline-offset: 3px;
+  color: var(--gold-strong);
+}
+
+/* ---------- Slot rows ---------- */
+
+.scheduleFeature__slot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.scheduleFeature__timeRange {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.scheduleFeature__timeField {
+  display: block;
+  min-width: 0;
+}
+
+.scheduleFeature__slot .scheduleFeature__timeInput {
+  width: 128px;
+  padding-inline: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.scheduleFeature__timeDash {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.scheduleFeature__status {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.scheduleFeature__statusDot {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.scheduleFeature__statusSelect {
+  width: 176px;
+  padding-left: 27px;
+  font-size: 12.5px;
+}
+
+.scheduleFeature__status[data-tone='ok'] {
+  color: var(--text-muted);
+}
+
+.scheduleFeature__status[data-tone='ok'] .scheduleFeature__statusDot {
+  background: var(--success);
+}
+
+.scheduleFeature__status[data-tone='warning'] {
+  color: var(--warning);
+}
+
+.scheduleFeature__status[data-tone='warning'] .scheduleFeature__statusSelect {
+  border-color: var(--warning);
+}
+
+.scheduleFeature__status[data-tone='reserved'] {
+  color: var(--accent-blue);
+}
+
+.scheduleFeature__status[data-tone='reserved'] .scheduleFeature__statusSelect {
+  border-color: var(--accent-blue);
+}
+
+.scheduleFeature__status .scheduleFeature__statusSelect:focus-visible {
+  border-color: var(--gold-strong);
+}
+
+.scheduleFeature__slotReadOnly {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+}
+
+.scheduleFeature__timeRangeStatic {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--text);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Add block ---------- */
+
+.scheduleFeature__addForm {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 1.1fr)
+    minmax(130px, 0.8fr)
+    minmax(130px, 0.8fr)
+    minmax(160px, 1fr)
+    auto;
+  align-items: end;
+  gap: 14px;
+  padding-top: 18px;
+}
+
+.scheduleFeature__addForm .scheduleFeature__timeInput {
+  font-variant-numeric: tabular-nums;
+}
+
+.scheduleFeature__addAction {
+  padding-bottom: 1px;
+}
+
+.scheduleFeature__inlineError {
+  margin-top: 13px;
+  color: var(--danger);
+  font-size: 12px;
+}
+
+@media (max-width: 1020px) {
+  .scheduleFeature__addForm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scheduleFeature__addAction {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .scheduleFeature__day {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    padding: 13px 0;
+  }
+
+  .scheduleFeature__dayRail {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 10px;
+    padding-top: 0;
+  }
+
+  .scheduleFeature__dayName {
+    font-size: 12.5px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .scheduleFeature__dayCount {
+    margin-left: auto;
+  }
+
+  .scheduleFeature__emptyDay {
+    min-height: 0;
+    padding-bottom: 4px;
+  }
+}
+
+@media (max-width: 700px) {
+  .scheduleFeature__slot {
+    display: grid;
+    grid-template-areas:
+      'time remove'
+      'status remove';
+    grid-template-columns: minmax(0, 1fr) 34px;
+    row-gap: 8px;
+  }
+
+  .scheduleFeature__timeRange {
+    grid-area: time;
+  }
+
+  .scheduleFeature__status {
+    grid-area: status;
+  }
+
+  .scheduleFeature__slot > :last-child {
+    grid-area: remove;
+    align-self: start;
+  }
+
+  .scheduleFeature__slot .scheduleFeature__timeInput,
+  .scheduleFeature__statusSelect {
+    width: 100%;
+  }
+
+  .scheduleFeature__statusSelect {
+    padding-left: 27px;
+  }
+}
+
+@media (max-width: 560px) {
+  .scheduleFeature__addForm {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .scheduleFeature__panelHead {
+    align-items: flex-start;
+  }
+
+  .scheduleFeature__panelHead > button {
+    white-space: nowrap;
+  }
+
+  .scheduleFeature__dayAdd {
+    padding-block: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scheduleFeature__dayAdd {
+    transition: none;
+  }
+}

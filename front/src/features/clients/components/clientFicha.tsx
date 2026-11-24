@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import * as componentComponents from '@/components'
 import { useAuthStore } from '@/stores/authStore'
 import { useClientProfile } from '../hooks/useClientProfile'
+import { useClientRoutines } from '../hooks/useClientRoutines'
 import { formatDate, formatMoney } from '../model/clientFormatting'
 import {
   clientStatusLabel,
@@ -11,6 +12,10 @@ import {
   type ClientResponse,
   type MembershipResponse,
 } from '../model/clientTypes'
+import {
+  routineAssignmentStatusLabels,
+  type RoutineAssignmentStatus,
+} from '@/features/routines/model/routineTypes'
 import * as membershipActionDialogComponents from './membershipActionDialog'
 import * as membershipProgressComponents from './membershipProgress'
 import * as paymentHistoryComponents from '@/features/payments/components/paymentHistory'
@@ -36,6 +41,12 @@ const clientStatusBadge = (status: string) => (
   </span>
 )
 
+const routineStatusTone: Record<RoutineAssignmentStatus, string> = {
+  ACTIVE: 'ok',
+  COMPLETED: 'neutral',
+  CANCELLED: 'off',
+}
+
 interface ClientFichaProps {
   clientId: string | undefined
   initialClient?: ClientResponse
@@ -59,6 +70,10 @@ export const clientFicha = ({
   const activeMembership = profile.activeMembershipQuery.data
   const canManageMemberships = roles.some(
     (role) => role === 'ADMIN' || role === 'RECEPCIONIST',
+  )
+  const routines = useClientRoutines(
+    profile.clientId,
+    profile.hasValidClientId && profile.clientQuery.isSuccess,
   )
 
   useEffect(() => {
@@ -264,6 +279,68 @@ export const clientFicha = ({
               <dd>{client.fitnessGoal || 'No se ha registrado un objetivo.'}</dd>
             </div>
           </dl>
+        </section>
+
+        <section
+          className="clientFeature__card clientFeature__fichaRoutines"
+          id="routines"
+          aria-labelledby="client-routines-title"
+        >
+          <h2 id="client-routines-title" className="clientFeature__sectionTitle">
+            Rutinas asignadas
+          </h2>
+          {routines.routinesQuery.isPending ? (
+            <p className="py-4 text-sm text-muted">Cargando rutinas…</p>
+          ) : routines.routinesQuery.isError ? (
+            <div className="py-3">
+              <p className="text-[13px] text-muted">No se pudieron cargar las rutinas asignadas.</p>
+              <componentComponents.button
+                variant="quiet"
+                size="sm"
+                className="clientFeature__button mt-3"
+                onClick={() => void routines.routinesQuery.refetch()}
+              >
+                Reintentar
+              </componentComponents.button>
+            </div>
+          ) : routines.routinesQuery.data.content.length === 0 ? (
+            <p className="py-4 text-[13px] text-muted">
+              Este cliente todavía no tiene rutinas asignadas.
+            </p>
+          ) : (
+            <>
+              <ul className="clientFeature__routineList">
+                {routines.routinesQuery.data.content.map((assignment) => (
+                  <li key={assignment.id} className="clientFeature__routineItem">
+                    <div className="clientFeature__routineBody">
+                      <p className="font-medium">
+                        {assignment.routineName ?? 'Rutina sin nombre'}
+                      </p>
+                      <p className="mt-1 text-[12px] text-muted">
+                        Asignada el {formatDate(assignment.assignmentDate)}
+                      </p>
+                    </div>
+                    <span
+                      className="clientFeature__statusChip"
+                      data-tone={routineStatusTone[assignment.status]}
+                    >
+                      <span aria-hidden="true" className="clientFeature__statusDot" />
+                      {routineAssignmentStatusLabels[assignment.status]}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {routines.routinesQuery.data.totalPages > 1 && (
+                <componentComponents.pagination
+                  page={routines.page + 1}
+                  pageSize={routines.pageSize}
+                  totalItems={routines.routinesQuery.data.totalElements}
+                  totalPages={routines.routinesQuery.data.totalPages}
+                  onPageChange={(nextPage) => routines.setPage(nextPage - 1)}
+                />
+              )}
+            </>
+          )}
         </section>
 
         <section

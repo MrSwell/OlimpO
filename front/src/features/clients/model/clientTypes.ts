@@ -48,6 +48,14 @@ const pageResponseSchema = <T extends z.ZodType>(contentSchema: T) =>
   })
 
 export const clientsPageResponseSchema = pageResponseSchema(clientResponseSchema)
+
+export const clientLookupSchema = z.object({
+  id: z.number().int().positive(),
+  firstName: z.string(),
+  lastName: z.string(),
+})
+
+export const clientLookupPageSchema = pageResponseSchema(clientLookupSchema)
 export const membershipsPageResponseSchema = pageResponseSchema(membershipResponseSchema)
 export const paymentsPageResponseSchema = pageResponseSchema(paymentResponseSchema)
 
@@ -143,6 +151,8 @@ export type ClientResponse = z.infer<typeof clientResponseSchema>
 export type MembershipResponse = z.infer<typeof membershipResponseSchema>
 export type PaymentResponse = z.infer<typeof paymentResponseSchema>
 export type ClientsPageResponse = z.infer<typeof clientsPageResponseSchema>
+export type ClientLookup = z.infer<typeof clientLookupSchema>
+export type ClientLookupPage = z.infer<typeof clientLookupPageSchema>
 export type MembershipsPageResponse = z.infer<typeof membershipsPageResponseSchema>
 export type PaymentsPageResponse = z.infer<typeof paymentsPageResponseSchema>
 export type ClientFormValues = z.infer<typeof clientFormSchema>

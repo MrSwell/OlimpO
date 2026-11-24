@@ -1,11 +1,13 @@
 import { ApiError, apiRequest } from '@/lib/apiClient'
 import {
   clientResponseSchema,
+  clientLookupPageSchema,
   clientsPageResponseSchema,
   membershipResponseSchema,
   membershipsPageResponseSchema,
   paymentsPageResponseSchema,
   type ClientResponse,
+  type ClientLookupPage,
   type ClientsPageResponse,
   type CreateClientRequest,
   type CreateMembershipRequest,
@@ -34,6 +36,11 @@ const createQuery = (options: ClientListOptions): string => {
 export const getClients = async (options: ClientListOptions): Promise<ClientsPageResponse> => {
   const response = await apiRequest<unknown>(`/clients?${createQuery(options)}`)
   return clientsPageResponseSchema.parse(response)
+}
+
+export const getClientLookup = async (options: ClientListOptions): Promise<ClientLookupPage> => {
+  const response = await apiRequest<unknown>(`/clients/lookup?${createQuery(options)}`)
+  return clientLookupPageSchema.parse(response)
 }
 
 export const createClient = async (request: CreateClientRequest): Promise<ClientResponse> => {

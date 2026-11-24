@@ -20,6 +20,9 @@ import * as paymentsPageComponents from '@/features/payments/components/payments
 import * as inventoryPageComponents from '@/features/inventory/components/inventoryPage'
 import * as inventoryDetailPageComponents from '@/features/inventory/components/itemDetailPage'
 import * as machinesPageComponents from '@/features/machines/components/machinesPage'
+import * as schedulesPageComponents from '@/features/schedules/components/schedulesPage'
+import * as routinesPageComponents from '@/features/routines/components/routinesPage'
+import * as routineDetailPageComponents from '@/features/routines/components/routineDetailPage'
 import * as dashboardComponents from '@/features/dashboard/dashboardPage'
 import * as plannedFeatureComponents from '@/features/dashboard/plannedFeaturePage'
 import * as shellSessionComponents from '@/features/auth/hooks/useShellSession'
@@ -146,12 +149,27 @@ const app = () => {
           />
           <routerComponents.route
             path="/schedules"
-            element={plannedPage(
-              'Horarios',
-              'F6',
-              'La administración de horarios estará disponible en la fase F6.',
-              roleGroups.trainingStaff,
-            )}
+            element={
+              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.trainingStaff}>
+                <schedulesPageComponents.schedulesPage />
+              </protectedRouteComponents.protectedRoute>
+            }
+          />
+          <routerComponents.route
+            path="/routines"
+            element={
+              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.all}>
+                <routinesPageComponents.routinesPage />
+              </protectedRouteComponents.protectedRoute>
+            }
+          />
+          <routerComponents.route
+            path="/routines/:routineId"
+            element={
+              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.all}>
+                <routineDetailPageComponents.routineDetailPage />
+              </protectedRouteComponents.protectedRoute>
+            }
           />
           <routerComponents.route
             path="/users"

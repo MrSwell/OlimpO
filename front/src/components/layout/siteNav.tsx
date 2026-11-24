@@ -4,6 +4,7 @@ import type { IconType } from 'react-icons'
 import {
   LuCalendarDays as luCalendarDays,
   LuCog as luCog,
+  LuDumbbell as luDumbbell,
   LuLayoutGrid as luLayoutGrid,
   LuPackage as luPackage,
   LuReceipt as luReceipt,
@@ -42,5 +43,6 @@ export const navItems: NavItem[] = [
     icon: luCalendarDays,
     allowedRoles: roleGroups.trainingStaff,
   },
+  { to: '/routines', label: 'Rutinas', icon: luDumbbell, allowedRoles: roleGroups.all },
   { to: '/users', label: 'Usuarios', icon: luUsers, allowedRoles: ['ADMIN'], group: 'administration' },
 ]
