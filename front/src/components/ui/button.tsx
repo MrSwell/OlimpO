@@ -29,8 +29,8 @@ const astryxVariants: Record<ButtonVariant, 'primary' | 'secondary' | 'ghost'> =
 }
 
 const sizeClassNames: Record<ButtonSize, string> = {
-  md: 'px-[15px] text-[13px] leading-[1.3]',
-  sm: 'px-[11px] text-[12.5px] leading-[1.3]',
+  md: 'min-h-9 px-[15px] text-[13px] leading-[1.3]',
+  sm: 'min-h-7 px-[11px] text-[12.5px] leading-[1.3]',
 }
 
 export const buttonClassName = (
