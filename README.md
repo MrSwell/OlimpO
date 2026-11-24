@@ -13,7 +13,7 @@ OlimpO/
 │   ├── FRONTEND_BASE.md   # Identidad visual y directivas de estilo del frontend
 │   ├── FRONTEND_PLAN.md   # Plan de implementación del frontend (fases, rutas)
 │   └── POSTMAN.md         # Plan de pruebas (~90 casos) para la IA de Postman
-└── front/     # Frontend React (SPA) — F1–F5 implementadas; estilo V1.0.0 consolidado
+└── front/     # Frontend React (SPA) — F1–F6 + panel por rol; estilo V1.0.0 consolidado
 ```
 
 > **Header de la API**: todas las rutas del backend responden JSON bajo `/api/v1/**`.
@@ -101,14 +101,17 @@ back/src/main/java/server.olimpo
 
 ## Frontend — V1.0.0
 
-F1–F5 están implementadas. F4.5 cierra la iteración visual y documental: se conserva como estilo de V1.0.0 el diseño oscuro que está actualmente en el código, sin rehacer los flujos anteriores.
+F1–F6 están implementadas, junto con el panel por rol de F7. F4.5 cierra la iteración visual y documental: se conserva como estilo de V1.0.0 el diseño oscuro que está actualmente en el código, sin rehacer los flujos anteriores.
 
-- **Clientes:** directorio en filas con nombre, documento, celular, correo y estado. Cada fila abre la ficha independiente `/clients/:id`, con secciones de identidad, membresía, datos, historial y pagos; el tiempo restante de la membresía se representa con una barra de progreso.
+- **Clientes:** directorio en filas con nombre, documento, celular, correo y estado. Cada fila abre la ficha independiente `/clients/:id`, con secciones de identidad, membresía, datos, rutinas asignadas, historial y pagos; el tiempo restante de la membresía se representa con una barra de progreso.
 - **Inventario:** directorio en tarjetas oscuras con categoría, existencia, mínimo y estado de stock; incluye búsqueda, filtro de stock bajo, resumen de atención, detalle e historial de movimientos.
 - **Máquinas:** directorio en tarjetas con marca/modelo, serie y estado; incluye búsqueda, filtro de estado y resumen.
+- **Horarios:** malla semanal por entrenador como ledger de una columna (lunes → domingo en pantalla; la API conserva 1 = domingo … 7 = sábado), con bloques editables de hora y estado, días vacíos compactos con alta directa y confirmación antes de reemplazar la semana. `ADMIN` y `TRAINER_MANAGER` editan cualquier malla; un `TRAINER` solo consulta la suya en modo lectura.
+- **Rutinas:** catálogo `GENERAL`/`CUSTOM` con filtro y búsqueda, ficha de rutina, alta con validación de tipo/precio/entrenador y asignación a clientes con estados `ACTIVE`, `COMPLETED` y `CANCELLED`.
+- **Panel:** `/dashboard` compone una vista distinta por rol (ADMIN, RECEPCIONIST, TRAINER_MANAGER, TRAINER y CLIENT) con tarjetas de indicadores, paneles de trabajo, acciones rápidas y atajos según permisos. Solo usa endpoints existentes; cuando un dato no está disponible lo indica con `—` en lugar de inventarlo.
 - **Acciones:** formularios de alta/edición y confirmación antes de eliminar. Eliminar un ítem de inventario también elimina su historial de movimientos.
 - **Sistema visual:** superficies oscuras de alto contraste, dorado discreto para marca/acciones, colores semánticos para estados, tarjetas con jerarquía clara y layouts responsive. La especificación vinculante está en **[docs/FRONTEND_BASE.md](docs/FRONTEND_BASE.md)**.
-- **Siguiente fase:** F6 (horarios y rutinas) permanece pendiente; fases y criterios están en **[docs/FRONTEND_PLAN.md](docs/FRONTEND_PLAN.md)**.
+- **Siguiente fase:** F7 (accesibilidad, pruebas de frontend, CI y módulo de usuarios) permanece pendiente; fases y criterios están en **[docs/FRONTEND_PLAN.md](docs/FRONTEND_PLAN.md)**.
 
 ## Cuentas sembradas (dev)
 
@@ -139,7 +142,8 @@ Nunca se filtran stacktraces, SQL ni detalles internos; el detalle queda solo en
 |--------|-----------|----------|
 | **Auth** | `/api/v1/auth` | `POST /login`, `POST /refresh`, `GET /me` |
 | **Users** | `/api/v1/users` | `POST`, `GET` paginado (solo ADMIN), `GET /{id}`, `PATCH /{id}/roles` |
-| **Clients** | `/api/v1/clients` | `POST`, `GET` paginado, `GET /{id}`, `GET /{id}/memberships` y `/payments` paginados, `GET /{id}/routines` paginado |
+| **Clients** | `/api/v1/clients` | `POST`, `GET` paginado, `GET /lookup` paginado (selector mínimo), `GET /{id}`, `GET /{id}/memberships` y `/payments` paginados, `GET /{id}/routines` paginado |
+| **Trainers** | `/api/v1/trainers` | `GET` paginado (selector mínimo: id, nombre, apellido y especialidad) |
 | **Memberships** | `/api/v1/memberships` | `POST`, `GET /active`, `PATCH /{id}/renew` |
 | **Payments** | `/api/v1/payments` | `POST`; historial paginado en `/api/v1/clients/{id}/payments` |
 | **Inventory** | `/api/v1/inventory/items` | `POST`, `GET` y `/low-stock` paginados, `GET /{id}`, `PATCH /{id}`, `DELETE /{id}` (arrastra sus movimientos), `POST /{id}/movements`, historial paginado en `GET /{id}/movements` |
@@ -166,8 +170,8 @@ Ver **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** para la matriz completa de 
 |-----|-------|
 | `ADMIN` | Todo (incluye gestión de usuarios) |
 | `RECEPCIONIST` | Clientes, membresías y pagos; consulta rutinas |
-| `TRAINER_MANAGER` | Planifica malla horaria, inventario, rutinas |
-| `TRAINER` | Inventario, su propia malla horaria, crea/asigna rutinas CUSTOM |
+| `TRAINER_MANAGER` | Planifica malla horaria, inventario, rutinas; consulta el selector de clientes y entrenadores |
+| `TRAINER` | Inventario, su propia malla horaria, crea/asigna rutinas CUSTOM; consulta el selector de clientes (sin datos sensibles) |
 | `CLIENT` | Solo lectura de sus propios datos y catálogos (membresía, rutinas) |
 
 ## Convenciones del proyecto
@@ -184,11 +188,11 @@ Ver **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** para la matriz completa de 
 
 Suite automatizada en tres fases (orden obligatorio), cada una con su informe `RESULTS.md`:
 
-1. **Unitarias** ✅ — `back/src/test/java/server/olimpo/unit/` — JUnit 5 + Mockito: **89/89 en verde** (ver `unit/RESULTS.md`).
+1. **Unitarias** ✅ — `back/src/test/java/server/olimpo/unit/` — JUnit 5 + Mockito: **99/99 en verde** (ver `unit/RESULTS.md`).
 2. **Funcionales** ✅ — `back/src/test/java/server/olimpo/functional/` — contexto real + MySQL por HTTP: **77/77 en verde** (ver `functional/RESULTS.md`).
 3. **Volumen** ✅ — `back/src/test/java/server/olimpo/volume/` — concurrencia, cargas y límites: **16/16 en verde** (ver `volume/RESULTS.md`).
 
-**Suite completa: `Tests run: 182, Failures: 0, Errors: 0` → BUILD SUCCESS.** Toda fase purga sus datos al terminar: la BD de desarrollo queda intacta (auditoría SQL en cada `RESULTS.md`).
+**Suite completa: `Tests run: 192, Failures: 0, Errors: 0` → BUILD SUCCESS.** Toda fase purga sus datos al terminar: la BD de desarrollo queda intacta (auditoría SQL en cada `RESULTS.md`).
 
 Además, los 6 sprints se probaron en vivo por API REST (~60 casos). El plan repetible está en **[docs/POSTMAN.md](docs/POSTMAN.md)**.
 

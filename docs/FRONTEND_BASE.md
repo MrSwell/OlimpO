@@ -1,6 +1,6 @@
 # FRONTEND_BASE.md — Bases y directivas de estilo del frontend Olimpo
 
-Fuente de verdad visual para `front/`. Cualquier cambio de identidad se documenta aquí primero y luego se replica en código. Estilo visual final aprobado para V1.0.0. Última actualización: 2026-11-19 (v1.0.1 — acciones destructivas con confirmación y fichas en una sola columna de bloques).
+Fuente de verdad visual para `front/`. Cualquier cambio de identidad se documenta aquí primero y luego se replica en código. Estilo visual final aprobado para V1.0.0. Última actualización: 2026-11-24 (v1.0.3 — panel por rol con tarjetas de indicadores y atajos; horarios en solo lectura para `TRAINER`).
 
 ---
 
@@ -18,7 +18,7 @@ Estas reglas mandan sobre cualquier preferencia estética y se aplican a todo el
 8. **Navegación por rol dentro del menú de usuario.** El encabezado autenticado conserva la marca y un único control de usuario; sus acciones se agrupan por los roles de esa cuenta y cada enlace muestra su icono funcional. Tema, diseño de desarrollo y cierre de sesión también viven ahí. Nunca ilustraciones decorativas ni iconos rellenos.
 9. **Acento dorado con disciplina.** Dorado en: marca, icono del enlace activo, icono de sección al pasar el cursor, relleno tenue de acciones (regla 2), relleno pleno solo de la acción principal, foco y cifras clave. Nunca como relleno de contenedores grandes.
 10. **Densidad y aire.** Padding de página 56/32, separación entre bloques 24–32 y paneles con padding consistente. Los filtros forman una fila compacta con nombre accesible y placeholder. En escritorio, la información operativa puede combinar un directorio con un resumen lateral; en móvil se apila sin perder contenido.
-11. **Directorios y fichas.** **Clientes**: filas oscuras y compactas con avatar, nombre, documento, celular, correo y estado. Cada fila abre `/clients/:id`; la ficha es una página independiente con identidad, membresía, datos, historial y pagos en secciones responsive. **Inventario**: tarjetas oscuras con tinte discreto por categoría, icono, existencia, mínimo, estado y acceso a la ficha; el resumen destaca los ítems que requieren atención. La ficha del ítem ocupa una banda completa con la identidad a la izquierda y el stock a la derecha, y el historial de movimientos va debajo. **Máquinas**: tarjetas con nombre, marca/modelo, serie, estado y acciones; el resumen de estados acompaña el directorio. **Acciones destructivas**: eliminar vive en el pie del bloque o en la fila con un icono discreto y siempre pide confirmación en un diálogo nativo (Cancelar / Eliminar) antes de ejecutar; el ítem de inventario borra también su historial de movimientos.
+11. **Directorios y fichas.** **Clientes**: filas oscuras y compactas con avatar, nombre, documento, celular, correo y estado. Cada fila abre `/clients/:id`; la ficha es una página independiente con identidad, membresía, datos, rutinas asignadas, historial y pagos en secciones responsive. **Inventario**: tarjetas oscuras con tinte discreto por categoría, icono, existencia, mínimo, estado y acceso a la ficha; el resumen destaca los ítems que requieren atención. La ficha del ítem ocupa una banda completa con la identidad a la izquierda y el stock a la derecha, y el historial de movimientos va debajo. **Máquinas**: tarjetas con nombre, marca/modelo, serie, estado y acciones; el resumen de estados acompaña el directorio. **Horarios**: la semana es un ledger de una sola columna con el día en un raíl a la izquierda y sus bloques a la derecha; el orden visible es lunes → domingo aunque la API conserve 1 = domingo … 7 = sábado. Cada bloque es una fila de hora inicial, hora final, estado y quitar; los días vacíos se comprimen a una línea con “Añadir”, y el alta vive en un panel aparte. **Rutinas**: catálogo en tarjetas con tipo y precio, ficha con asignaciones y estado. **Acciones destructivas**: eliminar vive en el pie del bloque o en la fila con un icono discreto y siempre pide confirmación en un diálogo nativo (Cancelar / Eliminar) antes de ejecutar; el ítem de inventario borra también su historial de movimientos.
 12. **Identidad de color estable y categorías con icono.** La paleta no semántica vive en `tokens.css` (`--accent-blue`, `--accent-teal`, `--accent-violet`, `--accent-pink`) y `lib/colorIdentity.ts` asigna un acento estable por *hash*. En inventario, las categorías predeterminadas tienen iconografía lineal; una categoría libre recibe identidad estable e icono neutro. El estado conserva su color semántico y contraste, sin depender solo del color.
 
 ## 1. Identidad visual — "Negro editorial"
@@ -80,6 +80,7 @@ Los mixes se definen en `tokens.css` con `color-mix` sobre los tokens base (nunc
 | Componente | Patrón | Dónde se usa |
 |---|---|---|
 | `metric` | label uppercase con icono pequeño + cifra serif + delta en texto; sin card | Franja de resumen del panel |
+| `statCard` | superficie `--panel` + borde 1px + icono en tile; label uppercase, cifra serif y delta; hover solo aclara borde e icono | Resumen del panel por rol |
 | `panel` | superficie `--panel` + borde 1px + radio 12 + padding 24; el borde se aclara en hover | contenedor base |
 | `panelHead` | icono 15px + título 15px + acción de texto, separados por hairline | cabecera de panel |
 | `row` | hora / contenido / valor, filas con hairline | agenda, vencimientos |
@@ -102,7 +103,7 @@ Los mixes se definen en `tokens.css` con `color-mix` sobre los tokens base (nunc
 
 - **Header** 68px sticky: marca y un menú de usuario compacto. Las acciones se agrupan por el conjunto de roles que permite cada ruta; preferencias y cierre de sesión están al pie del mismo menú. Las páginas públicas (`/`, `/login` y el 404 sin sesión) comparten el header de la home.
 - **Página**: máx 1180px, padding 56/32, bloques separados por 24–32px.
-- **panel**: franja de métricas (3) → split 1.9fr/1fr → panel de tabla. Nada más.
+- **panel**: tarjetas de resumen (3) → split principal/lateral 1.55fr/1fr → accesos rápidos en grid. Cada rol ve sus propios indicadores, paneles de trabajo y atajos; un rol sin datos para un bloque no lo muestra antes que inventarlo.
 - **Login**: slider de dos pasos alineado a la izquierda: primero se elige el rol (lista vertical con icono, resumen y chevron) y la tarjeta se desliza al formulario de credenciales, cuyo título, resumen y pistas reaccionan al rol elegido. Un botón "Cambiar rol" regresa al paso 1.
 - **Footer**: meandro + firma.
 - Responsive: 1180 / 1020 / 820 / 560.

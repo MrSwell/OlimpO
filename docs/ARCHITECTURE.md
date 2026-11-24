@@ -68,6 +68,7 @@ flowchart LR
         MACH[MachineController]
         TSC[TrainerScheduleController]
         RC[RoutineController]
+        TDC[TrainerDirectoryController]
     end
     subgraph logic["Capa servicio"]
         AS[AuthService]
@@ -79,6 +80,7 @@ flowchart LR
         MACHS[MachineService]
         TSS[TrainerScheduleService]
         RS[RoutineService]
+        TDS[TrainerDirectoryService]
     end
     subgraph data["Capa datos"]
         UR[(UserRepository)]
@@ -96,13 +98,14 @@ flowchart LR
     end
     AC --> AS --> UR
     UC --> US --> UR
-    CC --> CS --> CR
+    CC --> CS --> CR & UR
     MC --> MS --> MR
     PC --> PS --> PR
     IC --> IS --> IR & IMR
     MACH --> MACHS --> MACHR
     TSC --> TSS --> TSR & TR & UR
     RC --> RS --> RR & RAR & TR & CR & UR
+    TDC --> TDS --> TR & UR
 ```
 
 ---
@@ -127,7 +130,7 @@ erDiagram
 - `users` es la raíz de identidad (email + BCrypt + estado) y los roles viven en `user_roles` (N:M).
 - `clients` y `trainers` son perfiles 1:1 (opcional) por usuario, `user_id` UNIQUE.
 - `memberships` es **historial**: índice único `(client_id, status)` garantiza máx. 1 ACTIVE; DAILY también es una membresía.
-- `routines.price` solo aplica cuando `type = 'CUSTOM'`; GENERIC no lleva precio ni trainer.
+- `routines.price` solo aplica cuando `type = 'CUSTOM'`; `GENERAL` no lleva precio ni trainer.
 
 ---
 
@@ -167,6 +170,7 @@ Las rutas de colecciones indicadas como **paginadas** aceptan `page` (base cero,
 | `/api/v1/users/{id}` | GET | solo ADMIN |
 | `/api/v1/users/{id}/roles` | PATCH | solo ADMIN |
 | `/api/v1/clients` (GET paginada; search por identidad/contacto/documento) | POST/GET | ADMIN, RECEPCIONIST |
+| `/api/v1/clients/lookup` (paginada; solo id y nombre, para selectores de asignación) | GET | ADMIN, TRAINER_MANAGER, TRAINER (todos); CLIENT (solo el propio) |
 | `/api/v1/clients/{id}` | GET | ADMIN, RECEPCIONIST, CLIENT (solo el propio) |
 | `/api/v1/clients/{id}/memberships` (paginada) | GET | ADMIN, RECEPCIONIST, CLIENT (solo el propio) |
 | `/api/v1/clients/{id}/payments` (paginada) | GET | ADMIN, RECEPCIONIST, CLIENT (solo el propio) |
@@ -180,6 +184,7 @@ Las rutas de colecciones indicadas como **paginadas** aceptan `page` (base cero,
 | `/api/v1/machines` (paginada; status + search) | GET | ADMIN, TRAINER_MANAGER, TRAINER |
 | `/api/v1/machines/**` | resto | ADMIN, TRAINER_MANAGER, TRAINER |
 | `/api/v1/machines/{id}` | DELETE | ADMIN, TRAINER_MANAGER, TRAINER |
+| `/api/v1/trainers` (paginada; id, nombre, apellido y especialidad, para selectores de malla) | GET | ADMIN, TRAINER_MANAGER (todos); TRAINER (solo el propio) |
 | `/api/v1/trainers/{id}/schedules` | GET/POST | ADMIN, TRAINER_MANAGER (cualquiera), TRAINER (solo la propia); lista semanal acotada |
 | `/api/v1/routines` (GET catálogo paginado; type + search) | GET | cualquiera autenticado |
 | `/api/v1/routines` (POST), `/{id}/assignments` | POST | ADMIN, TRAINER_MANAGER, TRAINER |

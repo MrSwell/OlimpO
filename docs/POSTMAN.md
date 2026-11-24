@@ -22,7 +22,7 @@ Target: the Olimpo backend running locally http://localhost:8080.
 | trainer@olimpo.com | trainer123 | TRAINER_MANAGER + TRAINER (trainer id 2) |
 | trainer2@olimpo.com | trainer123 | TRAINER (trainer id 1) |
 | cliente1@olimpo.com | cliente123 | CLIENT (client id 1) |
-|  | cliente123 | CLIENT (client id 2) |
+| cliente2@olimpo.com | cliente123 | CLIENT (client id 2) |
 
 ## 2. Test suite
 
@@ -117,6 +117,18 @@ Target: the Olimpo backend running locally http://localhost:8080.
 | F13 | GET /clients/1/routines as cliente2 | — | 403 |
 | F14 | POST /routines as CLIENT | — | 403 |
 
+### Module G — Selector directories (minimal data for assignments)
+| # | Request | Expect |
+|---|---------|--------|
+| G1 | GET /clients/lookup?page=0&size=20 as trainer@olimpo.com | 200 page object; each item has only `id`, `firstName`, `lastName` |
+| G2 | GET /clients/lookup?search=cliente1 as trainer@olimpo.com | 200, page filtered by name |
+| G3 | GET /clients/lookup as recepcionista@olimpo.com | 403 (reception does not need the assignment selector) |
+| G4 | GET /clients/lookup as cliente1@olimpo.com | 200, exactly 1 item: own client (id 1) |
+| G5 | GET /clients/lookup as cliente2@olimpo.com | 200, exactly 1 item: own client (id 2) |
+| G6 | GET /trainers?page=0&size=20 as trainer@olimpo.com (TRAINER_MANAGER) | 200 page object; items have `id`, `firstName`, `lastName`, `specialty` |
+| G7 | GET /trainers as trainer2@olimpo.com (plain TRAINER) | 200, exactly 1 item: own trainer profile (id 1) |
+| G8 | GET /trainers as recepcionista@olimpo.com and as cliente1@olimpo.com | 403 for both |
+
 ### Pagination and search checks
 | # | Request | Expect |
 |---|---------|--------|
@@ -125,17 +137,17 @@ Target: the Olimpo backend running locally http://localhost:8080.
 | P3 | GET /clients?page=-1 as ADMIN | 400, unified error JSON |
 | P4 | GET /clients/1/payments?page=0&size=20&search=NEQUI as cliente1 | 200 page object; other clients remain inaccessible |
 
-### Module G — Error-shape checks (cross-cutting)
+### Module H — Error-shape checks (cross-cutting)
 | # | Request | Expect | Asserts |
 |---|---------|--------|---------|
-| G1 | GET /users without token | 401 | body has exactly `status=401`, `error=Unauthorized`, `message` non-empty |
-| G2 | login with wrong password | 401 | message == `Invalid email or password` (no email confirmation) |
-| G3 | GET /nonexistent-endpoint | 404 | `message=Resource not found` |
-| G4 | PUT /users | 405 | `error=Method Not Allowed` |
-| G5 | GET /users/abc | 400 | `message=Invalid request parameter: id` |
-| G6 | login with malformed JSON `{email:}` | 400 | `message=Malformed or unreadable JSON request body` |
-| G7 | POST /users `{"email":"bad","password":"123"}` | 400 | message joins `email: ...; password: ...` |
-| G8 | Any failed request | — | response NEVER contains `Exception`, `at server.olimpo`, SQL text, or `passwordHash` |
+| H1 | GET /users without token | 401 | body has exactly `status=401`, `error=Unauthorized`, `message` non-empty |
+| H2 | login with wrong password | 401 | message == `Invalid email or password` (no email confirmation) |
+| H3 | GET /nonexistent-endpoint | 404 | `message=Resource not found` |
+| H4 | PUT /users | 405 | `error=Method Not Allowed` |
+| H5 | GET /users/abc | 400 | `message=Invalid request parameter: id` |
+| H6 | login with malformed JSON `{email:}` | 400 | `message=Malformed or unreadable JSON request body` |
+| H7 | POST /users `{"email":"bad","password":"123"}` | 400 | message joins `email: ...; password: ...` |
+| H8 | Any failed request | — | response NEVER contains `Exception`, `at server.olimpo`, SQL text, or `passwordHash` |
 
 ## 3. Post-collection checks (global test script)
 
@@ -160,5 +172,6 @@ pm.test("JSON error shape on failure", () => {
 - `dayOfWeek=1` is **Sunday**, not Monday (MySQL DAYOFWEEK). `dayName` in responses is derived: 2→Monday, 7→Saturday.
 - Successfully replacing a weekly schedule returns **200** (not 201) even though it's a POST — it's an upsert of the whole week.
 - General routines have `trainerId: null` and `price: null` on purpose.
+- `/clients/lookup` and `/trainers` are **selector** endpoints: they return only `id` and the display name (trainers also include `specialty`), never documents, phones or emails. Reception is deliberately excluded from both; a `CLIENT` sees only its own record and a plain `TRAINER` only its own profile.
 - Current seeded data ids in the local DB: item 1, machines 1–2, routines 1–3, trainer profiles 1–2, clients 1–2. Tests adding duplicates of unique fields will 409, that is correct behavior.
 - Delete checks must use only the resources created in this collection (D1 and D9); never delete seeded items or machines.

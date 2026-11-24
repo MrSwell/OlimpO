@@ -130,7 +130,7 @@ front/
 
 ## 3. Rutas y permisos
 
-Rutas **implementadas hoy**: `/`, `/#anclas`, `/login`, `/dashboard` (panel con métricas reales cuando el endpoint exista), `/clients`, `/clients/new`, `/clients/:id` con renovación como **modal** dentro de la ficha, `/payments` y `/design` (solo desarrollo, accesible desde el menú de usuario). El resto son rutas planificadas: hoy sus enlaces del shell llevan a `plannedFeaturePage`.
+Rutas **implementadas hoy**: `/`, `/#anclas`, `/login`, `/dashboard` (panel por rol con indicadores, paneles y atajos sobre endpoints reales), `/clients`, `/clients/new`, `/clients/:id` con renovación como **modal** dentro de la ficha, `/payments`, `/inventory`, `/inventory/:itemId`, `/machines`, `/schedules`, `/routines`, `/routines/:id` y `/design` (solo desarrollo, accesible desde el menú de usuario). El resto son rutas planificadas: hoy sus enlaces del shell llevan a `plannedFeaturePage`.
 
 | Ruta | Vista | Roles | Estado |
 |---|---|---|---|
@@ -149,8 +149,9 @@ Rutas **implementadas hoy**: `/`, `/#anclas`, `/login`, `/dashboard` (panel con 
 | `/inventory` | Tarjetas de inventario, búsqueda, filtro de stock bajo y resumen de atención | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
 | `/inventory/:itemId` | Ficha del ítem con movimientos `INBOUND`/`OUTBOUND` | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
 | `/machines` | Tarjetas de máquinas, búsqueda, filtro de estado y resumen | `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
-| `/schedules` | Horarios | `ADMIN`, `TRAINER_MANAGER`; `TRAINER` solo el propio | ⏳ planificada |
-| `/routines` | Rutinas | catálogo: autenticados; crear/asignar: `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ⏳ planificada |
+| `/schedules` | Malla semanal por entrenador: ledger lunes→domingo; `ADMIN`/`TRAINER_MANAGER` editan, `TRAINER` consulta la propia en solo lectura | `ADMIN`, `TRAINER_MANAGER`; `TRAINER` solo el propio | ✅ implementada |
+| `/routines` | Rutinas | catálogo: autenticados; crear/asignar: `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
+| `/routines/:routineId` | Ficha de la rutina con asignaciones | autenticados; asignar: `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
 | `/users` | Usuarios | `ADMIN` | ⏳ planificada |
 | `*` | 404 | — | ✅ implementada |
 
@@ -351,7 +352,7 @@ Reglas de navegación:
 - Estados inválidos no se pueden enviar desde la UI.
 - Eliminar un ítem elimina también su historial de movimientos; la acción requiere confirmación.
 
-### F6 — Horarios y rutinas
+### F6 — Horarios y rutinas (implementado)
 
 **Objetivo:** malla semanal y rutinas con la semántica de días del backend.
 
@@ -371,7 +372,9 @@ Reglas de navegación:
 - `POST` reemplaza el plan semanal completo; la UI advierte que es una sustitución.
 - Rutinas `GENERAL` sin precio ni trainer; `CUSTOM` con precio > 0 y trainer.
 - Asignación con estados `ACTIVE`, `COMPLETED`, `CANCELLED`.
-- `TRAINER` solo ve y edita su propia malla; manager/admin, cualquiera.
+- `TRAINER` solo ve su propia malla y la consulta en **modo lectura**; `ADMIN`/`TRAINER_MANAGER` editan cualquiera.
+
+**Diseño implementado (2026-11-22, ajustado 2026-11-24):** la semana es un ledger de una columna con el día en un raíl a la izquierda y sus bloques a la derecha; en pantalla el orden es **lunes → domingo**, mientras la API conserva `1 = domingo … 7 = sábado`. Los días vacíos se comprimen a una línea con acción directa “Añadir”, y el alta de bloques vive en un panel propio (4 campos en una fila en escritorio, 2×2 en tablet y 1 columna en móvil). Para un `TRAINER` sin rol de supervisión se ocultan el formulario de alta, el guardado y las acciones de borrado: cada bloque se muestra como hora + estado y la cabecera indica “Solo lectura”.
 
 **Aceptación**
 
@@ -380,13 +383,13 @@ Reglas de navegación:
 - La UI no permite `GENERAL` con precio ni `CUSTOM` sin trainer/precio.
 - Un trainer no puede abrir la malla de otro por URL.
 
-### F7 — Panel completo, accesibilidad y entrega
+### F7 — Accesibilidad, pruebas y entrega
 
 **Objetivo:** cerrar el producto con datos reales y calidad verificable.
 
 **Entregables**
 
-- Panel en `/dashboard` con los 3 bloques del mockup **solo cuando existan endpoints que los sostengan**.
+- ~~Panel en `/dashboard` con los 3 bloques del mockup **solo cuando existan endpoints que los sostengan**.~~ Implementado: panel por rol con tarjetas de indicadores, paneles de trabajo, acciones rápidas y atajos, alimentado solo por endpoints existentes.
 - Estados de carga con texto y hairlines (sin shimmer llamativo), vacío y error.
 - Responsive 1180 / 1020 / 820 / 560; header sin desbordes.
 - Pruebas: unitarias de primitivos, integración de features con MSW, E2E de login/cliente/renovación.
@@ -465,7 +468,7 @@ El mockup muestra más de lo que el backend expone hoy. El frontend **no inventa
 2. **Asistencia semanal:** no existe tabla/endpoint de visitas; el gráfico del mockup queda pendiente.
 3. **Pagos globales:** solo existe `POST /payments` y el historial por cliente; no hay listado global.
 4. **Membresías globales/por vencer:** no hay listado global ni filtro por vencimiento.
-5. **Autoservicio `CLIENT`:** `/auth/me` no devuelve `clientId`; se propone añadirlo o crear `/clients/me`.
+5. **Autoservicio `CLIENT`:** resuelto en la práctica con `GET /clients/lookup`, que devuelve solo el registro propio del cliente autenticado; no hace falta añadir `clientId` a `/auth/me`.
 6. **CORS:** el backend aún no configura orígenes del frontend; se propone `CORS` para dev y producción.
 
 Mientras esas brechas existan, las vistas afectadas muestran solo lo que el contrato sostiene y un estado “no disponible” honesto. El mockup sigue siendo la meta visual, no una promesa de datos.
@@ -485,11 +488,11 @@ Mientras esas brechas existan, las vistas afectadas muestran solo lo que el cont
 
 ## 9. Estado actual y próximos pasos
 
-Implementado: F1 (fundación visual), F1.5 (home pública), F2 (auth con login en slider), F3 (clientes: directorio y ficha independiente), F4 (pagos), F4.5 (consolidación visual/documental V1.0.0) y F5 (inventario y máquinas). Frontend lint/build y pruebas unitarias backend focalizadas de eliminación pasaron en este cierre. F6 (horarios y rutinas) sigue pendiente.
+Implementado: F1 (fundación visual), F1.5 (home pública), F2 (auth con login en slider), F3 (clientes: directorio y ficha independiente), F4 (pagos), F4.5 (consolidación visual/documental V1.0.0), F5 (inventario y máquinas), F6 (horarios y rutinas) y el panel por rol de F7. En este cierre pasaron `pnpm build`, `pnpm lint` (solo el aviso preexistente de React Compiler en `useMembershipAction`), la suite completa del backend (192/192) y la verificación visual del panel y de la malla en lectura para los cinco roles.
 
-Siguiente fase — **F6 (horarios y rutinas)**:
+Siguiente fase — **F7 (accesibilidad, pruebas y entrega)**, con el panel ya cerrado:
 
-1. `features/schedules/`: malla semanal con **1 = domingo … 7 = sábado** mapeada a etiquetas humanas; `POST` reemplaza el plan completo (la UI advierte la sustitución).
-2. `features/routines/`: catálogo con filtro `type`; `GENERAL` sin precio ni trainer, `CUSTOM` con precio > 0 y trainer; asignaciones con estados `ACTIVE`, `COMPLETED`, `CANCELLED`.
-3. Guard: `TRAINER` solo ve y edita su propia malla (403 del backend → toast).
-4. Reusar `dataTable`, `searchInput`, `pagination` y `modal` de `components/ui`; errores 409 (solapamiento) como toast.
+1. Revisión de accesibilidad (foco, teclado, contraste) y responsive 1180 / 1020 / 820 / 560 en todas las pantallas.
+2. Pruebas de integración con MSW y E2E de login, cliente y renovación; CI con lint + test + build.
+3. Documentación de rutas, roles y variables de entorno.
+4. Módulo de usuarios (hoy en `plannedFeaturePage`).
