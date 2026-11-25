@@ -24,6 +24,21 @@ export const useRoutineCatalog = (enabled = true) => {
     enabled,
   })
 
+  // Lightweight totals for the type tabs; one item per type is enough to read totalElements.
+  const generalQuery = useQuery({
+    queryKey: ['routines', 'count', 'GENERAL', debouncedSearch],
+    queryFn: () => getRoutines({ page: 0, size: 1, type: 'GENERAL', search: debouncedSearch }),
+    enabled,
+    staleTime: 60_000,
+  })
+
+  const customQuery = useQuery({
+    queryKey: ['routines', 'count', 'CUSTOM', debouncedSearch],
+    queryFn: () => getRoutines({ page: 0, size: 1, type: 'CUSTOM', search: debouncedSearch }),
+    enabled,
+    staleTime: 60_000,
+  })
+
   const updateSearch = (value: string) => {
     setSearch(value)
     setPage(0)
@@ -43,5 +58,9 @@ export const useRoutineCatalog = (enabled = true) => {
     setPage,
     pageSize,
     routinesQuery,
+    counts: {
+      GENERAL: generalQuery.data?.totalElements ?? null,
+      CUSTOM: customQuery.data?.totalElements ?? null,
+    },
   }
 }
