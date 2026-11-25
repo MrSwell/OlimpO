@@ -28,7 +28,7 @@ export const meander = memo(({ className }: MeanderProps) => {
           patternUnits="userSpaceOnUse"
         >
           <path
-            d="M1 9 V1 H15 V7 H8 V4 H11"
+            d="M0 9 H4 V2 H18 V6 H10 V9 H22"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.4"

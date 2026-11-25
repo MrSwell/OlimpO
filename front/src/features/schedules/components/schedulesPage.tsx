@@ -1,14 +1,16 @@
 /* oxlint-disable react/rules-of-hooks */
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   LuCalendarDays as luCalendarDays,
+  LuCheck as luCheck,
   LuClock3 as luClock3,
   LuLock as luLock,
   LuPlus as luPlus,
   LuTrash2 as luTrash2,
 } from 'react-icons/lu'
 import * as componentComponents from '@/components'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { ApiError } from '@/lib/apiClient'
 import { useAuthStore } from '@/stores/authStore'
 import { toast } from '@/stores/toastStore'
@@ -32,6 +34,9 @@ interface ScheduleDraftSlot extends ScheduleSlotPayload {
 
 const trainerName = (trainer: TrainerOption) => `${trainer.firstName} ${trainer.lastName}`
 
+const trainerInitials = (trainer: TrainerOption) =>
+  `${trainer.firstName.charAt(0)}${trainer.lastName.charAt(0)}`.toUpperCase()
+
 const toDraftSlots = (slots: ScheduleSlot[]): ScheduleDraftSlot[] =>
   slots.map((slot) => ({
     key: String(slot.id),
@@ -40,6 +45,23 @@ const toDraftSlots = (slots: ScheduleSlot[]): ScheduleDraftSlot[] =>
     endTime: slot.endTime.slice(0, 5),
     status: slot.status,
   }))
+
+const toMinutes = (value: string) => {
+  const [hours, minutes] = value.split(':').map(Number)
+  return hours * 60 + minutes
+}
+
+const fromMinutes = (total: number) => {
+  const hours = Math.floor(total / 60)
+  const minutes = total % 60
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
+
+const formatHours = (minutes: number) => {
+  if (minutes === 0) return '0 h'
+  const hours = minutes / 60
+  return Number.isInteger(hours) ? `${hours} h` : `${hours.toFixed(1).replace('.', ',')} h`
+}
 
 const getScheduleError = (slots: ScheduleDraftSlot[]): string | null => {
   if (slots.length === 0) return 'La semana debe conservar al menos un bloque horario.'
@@ -64,12 +86,6 @@ const getScheduleError = (slots: ScheduleDraftSlot[]): string | null => {
   return null
 }
 
-const statusTone: Record<ScheduleStatus, string> = {
-  AVAILABLE: 'ok',
-  NOT_AVAILABLE: 'warning',
-  RESERVED: 'reserved',
-}
-
 const readOnlyStatusTone: Record<ScheduleStatus, 'ok' | 'warn' | 'neutral'> = {
   AVAILABLE: 'ok',
   NOT_AVAILABLE: 'warn',
@@ -79,24 +95,31 @@ const readOnlyStatusTone: Record<ScheduleStatus, 'ok' | 'warn' | 'neutral'> = {
 const blockCountLabel = (count: number) =>
   count === 0 ? 'Sin bloques' : `${count} ${count === 1 ? 'bloque' : 'bloques'}`
 
+const blockContent = (slot: ScheduleDraftSlot) => (
+  <>
+    <span className="scheduleFeature__blockDot" aria-hidden="true" />
+    <span className="scheduleFeature__blockTime">
+      {slot.startTime}
+      <span className="scheduleFeature__blockSep" aria-hidden="true">–</span>
+      <span className="scheduleFeature__blockEnd">{slot.endTime}</span>
+    </span>
+    <span className="scheduleFeature__blockStatus">{scheduleStatusLabels[slot.status]}</span>
+  </>
+)
+
 export const schedulesPage = () => {
   const roles = useAuthStore((state) => state.roles)
   const isSupervisor = roles.includes('ADMIN') || roles.includes('TRAINER_MANAGER')
   // A plain TRAINER only consults their own week: scheduling is a supervisor task.
   const isReadOnly = !isSupervisor
+  const isCompact = useMediaQuery('(max-width: 760px)')
   const queryClient = useQueryClient()
   const [trainerSearch, setTrainerSearch] = useState('')
   const [trainerId, setTrainerId] = useState<number | null>(null)
   const [draftSlots, setDraftSlots] = useState<ScheduleDraftSlot[]>([])
-  const [dayOfWeek, setDayOfWeek] = useState(2)
-  const [startTime, setStartTime] = useState('06:00')
-  const [endTime, setEndTime] = useState('07:00')
-  const [status, setStatus] = useState<ScheduleStatus>('AVAILABLE')
-  const [slotError, setSlotError] = useState<string | null>(null)
+  const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [confirmSave, setConfirmSave] = useState(false)
   const [nextSlotId, setNextSlotId] = useState(0)
-  const addFormRef = useRef<HTMLFormElement>(null)
-  const startTimeRef = useRef<HTMLInputElement>(null)
   const trainersQuery = useTrainerDirectory(trainerSearch)
   const trainerOptions = trainersQuery.data?.content
   const scheduleQuery = useWeeklySchedule(trainerId)
@@ -112,8 +135,15 @@ export const schedulesPage = () => {
   }, [trainerId, trainerOptions])
 
   useEffect(() => {
-    if (scheduleQuery.data) setDraftSlots(toDraftSlots(scheduleQuery.data))
+    if (scheduleQuery.data) {
+      setDraftSlots(toDraftSlots(scheduleQuery.data))
+      setSelectedKey(null)
+    }
   }, [scheduleQuery.data])
+
+  useEffect(() => {
+    setSelectedKey(null)
+  }, [trainerId])
 
   const normalizedDraft = useMemo(
     () => draftSlots.map(({ dayOfWeek: day, startTime: start, endTime: end, status: slotStatus }) => ({
@@ -131,6 +161,62 @@ export const schedulesPage = () => {
   const hasChanges = JSON.stringify(normalizedDraft) !== JSON.stringify(normalizedSaved)
   const validationError = getScheduleError(draftSlots)
 
+  const sortedSlots = useMemo(
+    () =>
+      [...draftSlots].sort(
+        (first, second) =>
+          first.dayOfWeek - second.dayOfWeek || first.startTime.localeCompare(second.startTime),
+      ),
+    [draftSlots],
+  )
+
+  const selectedSlot = draftSlots.find((slot) => slot.key === selectedKey) ?? null
+
+  const weekSummary = useMemo(() => {
+    const totalMinutes = draftSlots.reduce(
+      (total, slot) => total + (toMinutes(slot.endTime) - toMinutes(slot.startTime)),
+      0,
+    )
+    const days = new Set(draftSlots.map((slot) => slot.dayOfWeek)).size
+    const statusCounts = draftSlots.reduce<Record<ScheduleStatus, number>>(
+      (counts, slot) => {
+        counts[slot.status] += 1
+        return counts
+      },
+      { AVAILABLE: 0, NOT_AVAILABLE: 0, RESERVED: 0 },
+    )
+    return { totalMinutes, days, statusCounts }
+  }, [draftSlots])
+
+  const timeline = useMemo(() => {
+    if (sortedSlots.length === 0) {
+      return { start: 6 * 60, end: 22 * 60 }
+    }
+    const starts = sortedSlots.map((slot) => toMinutes(slot.startTime))
+    const ends = sortedSlots.map((slot) => toMinutes(slot.endTime))
+    let start = Math.max(0, Math.floor(Math.min(...starts) / 60) * 60 - 60)
+    let end = Math.min(24 * 60, Math.ceil(Math.max(...ends) / 60) * 60 + 60)
+    if (end - start < 6 * 60) end = Math.min(24 * 60, start + 6 * 60)
+    if (end - start < 6 * 60) start = Math.max(0, end - 6 * 60)
+    return { start, end }
+  }, [sortedSlots])
+
+  const timelineSpan = timeline.end - timeline.start
+  const positionOf = (minutes: number) => ((minutes - timeline.start) / timelineSpan) * 100
+
+  const tickStep = timelineSpan > 18 * 60 ? 180 : timelineSpan > 10 * 60 ? 120 : 60
+  const gridStep = timelineSpan > 12 * 60 ? 120 : 60
+  const ticks = useMemo(() => {
+    const values: number[] = []
+    for (let minute = timeline.start; minute <= timeline.end; minute += tickStep) {
+      values.push(minute)
+    }
+    // Only add the closing tick when it will not collide with the previous label.
+    const last = values[values.length - 1]
+    if (timeline.end - last >= tickStep * 0.6) values.push(timeline.end)
+    return values
+  }, [timeline, tickStep])
+
   const saveMutation = useMutation({
     mutationFn: () => {
       if (trainerId === null) throw new Error('Selecciona un entrenador antes de guardar.')
@@ -139,6 +225,7 @@ export const schedulesPage = () => {
     onSuccess: async (savedSlots) => {
       await queryClient.invalidateQueries({ queryKey: ['trainer-schedule', trainerId] })
       setDraftSlots(toDraftSlots(savedSlots))
+      setSelectedKey(null)
       setConfirmSave(false)
       toast.success('Semana guardada', 'La malla semanal se reemplazó correctamente.')
     },
@@ -154,46 +241,39 @@ export const schedulesPage = () => {
     },
   })
 
-  const addSlot = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setSlotError(null)
-    if (endTime <= startTime) {
-      setSlotError('La hora final debe ser posterior a la hora inicial.')
-      return
-    }
-
-    const nextSlot: ScheduleDraftSlot = {
-      key: `new-${nextSlotId}`,
-      dayOfWeek,
-      startTime,
-      endTime,
-      status,
-    }
-    const error = getScheduleError([...draftSlots, nextSlot])
-    if (error && error !== 'La semana debe conservar al menos un bloque horario.') {
-      setSlotError(error)
-      return
-    }
-    setDraftSlots((current) => [...current, nextSlot])
-    setNextSlotId((current) => current + 1)
-  }
-
   const updateSlot = (key: string, patch: Partial<ScheduleSlotPayload>) => {
     setDraftSlots((current) =>
       current.map((slot) => (slot.key === key ? { ...slot, ...patch } : slot)),
     )
-    setSlotError(null)
   }
 
-  const startAddForDay = (dayValue: number) => {
-    setDayOfWeek(dayValue)
-    setSlotError(null)
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    addFormRef.current?.scrollIntoView({
-      behavior: reduceMotion ? 'auto' : 'smooth',
-      block: 'center',
-    })
-    startTimeRef.current?.focus({ preventScroll: true })
+  const addSlot = (dayValue: number) => {
+    const daySlots = sortedSlots.filter((slot) => slot.dayOfWeek === dayValue)
+    const latestEnd = daySlots.reduce(
+      (latest, slot) => Math.max(latest, toMinutes(slot.endTime)),
+      0,
+    )
+    let start = daySlots.length > 0 ? latestEnd : 6 * 60
+    if (start >= 23 * 60) start = 6 * 60
+    const end = Math.min(start + 60, 24 * 60)
+    const key = `new-${nextSlotId}`
+    setDraftSlots((current) => [
+      ...current,
+      {
+        key,
+        dayOfWeek: dayValue,
+        startTime: fromMinutes(start),
+        endTime: fromMinutes(end),
+        status: 'AVAILABLE',
+      },
+    ])
+    setNextSlotId((current) => current + 1)
+    setSelectedKey(key)
+  }
+
+  const removeSlot = (key: string) => {
+    setDraftSlots((current) => current.filter((slot) => slot.key !== key))
+    setSelectedKey((current) => (current === key ? null : current))
   }
 
   const header = (
@@ -240,9 +320,21 @@ export const schedulesPage = () => {
 
   const trainers = trainerOptions ?? []
   const selectedTrainer = trainers.find((trainer) => trainer.id === trainerId)
-  const sortedSlots = [...draftSlots].sort(
-    (first, second) =>
-      first.dayOfWeek - second.dayOfWeek || first.startTime.localeCompare(second.startTime),
+  const legend = (
+    <div className="scheduleFeature__legend" aria-label="Estados de los bloques">
+      <span className="scheduleFeature__legendItem" data-status="AVAILABLE">
+        <span className="scheduleFeature__legendDot" aria-hidden="true" />
+        Disponible
+      </span>
+      <span className="scheduleFeature__legendItem" data-status="RESERVED">
+        <span className="scheduleFeature__legendDot" aria-hidden="true" />
+        Reservado
+      </span>
+      <span className="scheduleFeature__legendItem" data-status="NOT_AVAILABLE">
+        <span className="scheduleFeature__legendDot" aria-hidden="true" />
+        No disponible
+      </span>
+    </div>
   )
 
   return (
@@ -250,38 +342,50 @@ export const schedulesPage = () => {
       {header}
 
       <section className="scheduleFeature__panel" aria-labelledby="schedule-owner-heading">
-        <div className="scheduleFeature__toolbar">
-          {isSupervisor ? (
-            <>
-              <label className="scheduleFeature__toolbarField">
-                <span>Buscar entrenador</span>
-                <componentComponents.searchInput
-                  id="schedule-trainer-search"
-                  aria-label="Buscar entrenador por nombre o especialidad"
-                  autoComplete="off"
-                  value={trainerSearch}
-                  onChange={(event) => setTrainerSearch(event.currentTarget.value)}
-                  placeholder="Nombre o especialidad"
-                />
-              </label>
-              <label className="scheduleFeature__toolbarField">
-                <span>Entrenador</span>
-                <componentComponents.select
-                  id="schedule-trainer"
-                  value={trainerId ?? ''}
-                  onChange={(event) => setTrainerId(Number(event.currentTarget.value) || null)}
-                >
-                  {trainers.map((trainer) => (
-                    <option key={trainer.id} value={trainer.id}>
-                      {trainerName(trainer)}
-                      {trainer.specialty ? ` · ${trainer.specialty}` : ''}
-                    </option>
-                  ))}
-                </componentComponents.select>
-              </label>
-            </>
-          ) : (
-            <div>
+        {isSupervisor ? (
+          <div className="scheduleFeature__toolbar">
+            <div className="scheduleFeature__toolbarIntro">
+              <p className="scheduleFeature__eyebrow">Entrenador</p>
+              <p className="scheduleFeature__toolbarHint">
+                Elige a quién pertenece la malla y edita su semana.
+              </p>
+            </div>
+            <label className="scheduleFeature__toolbarField">
+              <span>Buscar entrenador</span>
+              <componentComponents.searchInput
+                id="schedule-trainer-search"
+                aria-label="Buscar entrenador por nombre o especialidad"
+                autoComplete="off"
+                value={trainerSearch}
+                onChange={(event) => setTrainerSearch(event.currentTarget.value)}
+                placeholder="Nombre o especialidad"
+              />
+            </label>
+            <label className="scheduleFeature__toolbarField">
+              <span>Entrenador</span>
+              <componentComponents.select
+                id="schedule-trainer"
+                value={trainerId ?? ''}
+                onChange={(event) => setTrainerId(Number(event.currentTarget.value) || null)}
+              >
+                {trainers.map((trainer) => (
+                  <option key={trainer.id} value={trainer.id}>
+                    {trainerName(trainer)}
+                    {trainer.specialty ? ` · ${trainer.specialty}` : ''}
+                  </option>
+                ))}
+              </componentComponents.select>
+            </label>
+            <h2 id="schedule-owner-heading" className="sr-only">Malla semanal</h2>
+          </div>
+        ) : (
+          <div className="scheduleFeature__owner">
+            {selectedTrainer && (
+              <componentComponents.avatar size="lg" className="scheduleFeature__ownerAvatar">
+                {trainerInitials(selectedTrainer)}
+              </componentComponents.avatar>
+            )}
+            <div className="scheduleFeature__ownerBody">
               <div className="scheduleFeature__ownerTop">
                 <h2 id="schedule-owner-heading" className="scheduleFeature__ownerTitle">
                   Mi malla semanal
@@ -298,9 +402,8 @@ export const schedulesPage = () => {
                 </p>
               )}
             </div>
-          )}
-          {isSupervisor && <h2 id="schedule-owner-heading" className="sr-only">Malla semanal</h2>}
-        </div>
+          </div>
+        )}
       </section>
 
       {trainers.length === 0 ? (
@@ -330,10 +433,45 @@ export const schedulesPage = () => {
         </section>
       ) : (
         <>
-          <section className="scheduleFeature__panel mt-5" aria-labelledby="schedule-week-heading">
+          <div className="scheduleFeature__stats">
+            <article className="scheduleFeature__stat">
+              <span className="scheduleFeature__statIcon" aria-hidden="true">
+                <componentComponents.icon icon={luCalendarDays} size="md" />
+              </span>
+              <div>
+                <p className="scheduleFeature__statLabel">Bloques</p>
+                <p className="scheduleFeature__statValue">{draftSlots.length}</p>
+                <p className="scheduleFeature__statHint">en la semana</p>
+              </div>
+            </article>
+            <article className="scheduleFeature__stat">
+              <span className="scheduleFeature__statIcon" aria-hidden="true">
+                <componentComponents.icon icon={luClock3} size="md" />
+              </span>
+              <div>
+                <p className="scheduleFeature__statLabel">Horas</p>
+                <p className="scheduleFeature__statValue">{formatHours(weekSummary.totalMinutes)}</p>
+                <p className="scheduleFeature__statHint">programadas</p>
+              </div>
+            </article>
+            <article className="scheduleFeature__stat">
+              <span className="scheduleFeature__statIcon" aria-hidden="true">
+                <componentComponents.icon icon={luCheck} size="md" />
+              </span>
+              <div>
+                <p className="scheduleFeature__statLabel">Días</p>
+                <p className="scheduleFeature__statValue">{weekSummary.days} / 7</p>
+                <p className="scheduleFeature__statHint">con bloques</p>
+              </div>
+            </article>
+          </div>
+
+          <section className="scheduleFeature__panel mt-4" aria-labelledby="schedule-week-heading">
             <div className="scheduleFeature__panelHead">
               <div>
-                <h2 id="schedule-week-heading" className="scheduleFeature__panelTitle">Semana</h2>
+                <h2 id="schedule-week-heading" className="scheduleFeature__panelTitle">
+                  Vista semanal
+                </h2>
                 <p className="scheduleFeature__panelMeta">
                   {blockCountLabel(draftSlots.length)}
                   {isReadOnly
@@ -343,21 +481,25 @@ export const schedulesPage = () => {
                       : ' · Semana guardada'}
                 </p>
               </div>
-              {!isReadOnly && (
-                <componentComponents.button
-                  variant="primary"
-                  size="sm"
-                  icon={luCalendarDays}
-                  onClick={() => setConfirmSave(true)}
-                  disabled={!hasChanges || Boolean(validationError) || saveMutation.isPending}
-                >
-                  Guardar semana
-                </componentComponents.button>
-              )}
+              <div className="scheduleFeature__panelActions">
+                {legend}
+                {!isReadOnly && (
+                  <componentComponents.button
+                    variant="primary"
+                    size="sm"
+                    icon={luCalendarDays}
+                    onClick={() => setConfirmSave(true)}
+                    disabled={!hasChanges || Boolean(validationError) || saveMutation.isPending}
+                  >
+                    Guardar semana
+                  </componentComponents.button>
+                )}
+              </div>
             </div>
 
             {isReadOnly && (
               <p className="scheduleFeature__readOnlyNote">
+                <componentComponents.icon icon={luLock} size="sm" />
                 Los cambios de horario los realiza administración o tu entrenador manager.
               </p>
             )}
@@ -366,9 +508,41 @@ export const schedulesPage = () => {
               <p className="scheduleFeature__inlineError" role="alert">{validationError}</p>
             )}
 
-            <div className="scheduleFeature__week">
+            {draftSlots.length === 0 && (
+              <p className="scheduleFeature__emptyWeek">
+                {isReadOnly
+                  ? 'Aún no hay bloques registrados en tu semana. Administración o tu entrenador manager los publicará aquí.'
+                  : 'La semana está vacía. Usa el botón + de un día para crear el primer bloque.'}
+              </p>
+            )}
+
+            <div
+              className="scheduleFeature__week"
+              style={{ '--hour-step': `${(gridStep / timelineSpan) * 100}%` } as CSSProperties}
+            >
+              {!isCompact && (
+                <div className="scheduleFeature__axis" aria-hidden="true">
+                  <span className="scheduleFeature__axisRail">Hora</span>
+                  <div className="scheduleFeature__axisTrack">
+                    {ticks.map((tick) => (
+                      <span
+                        key={tick}
+                        className="scheduleFeature__tick"
+                        style={{ left: `${positionOf(tick)}%` }}
+                      >
+                        {fromMinutes(tick)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {scheduleDays.map((day) => {
                 const daySlots = sortedSlots.filter((slot) => slot.dayOfWeek === day.value)
+                const dayMinutes = daySlots.reduce(
+                  (total, slot) => total + (toMinutes(slot.endTime) - toMinutes(slot.startTime)),
+                  0,
+                )
                 const dayHeadingId = `schedule-day-${day.value}`
                 return (
                   <section
@@ -378,204 +552,239 @@ export const schedulesPage = () => {
                     aria-labelledby={dayHeadingId}
                   >
                     <div className="scheduleFeature__dayRail">
-                      <h3 id={dayHeadingId} className="scheduleFeature__dayName">{day.label}</h3>
-                      {daySlots.length > 0 && (
-                        <p className="scheduleFeature__dayCount">{blockCountLabel(daySlots.length)}</p>
+                      <div className="scheduleFeature__dayIdentity">
+                        <h3 id={dayHeadingId} className="scheduleFeature__dayName">{day.label}</h3>
+                        <p className="scheduleFeature__dayMeta">
+                          {daySlots.length > 0
+                            ? `${blockCountLabel(daySlots.length)} · ${formatHours(dayMinutes)}`
+                            : 'Sin bloques'}
+                        </p>
+                      </div>
+                      {!isReadOnly && (
+                        <componentComponents.iconButton
+                          icon={luPlus}
+                          label={`Añadir bloque el ${day.label}`}
+                          variant="outline"
+                          onClick={() => addSlot(day.value)}
+                        />
                       )}
                     </div>
 
-                    <div className="scheduleFeature__daySlots">
-                      {daySlots.length === 0 ? (
-                        <p className="scheduleFeature__emptyDay">
-                          <span>Sin bloques</span>
-                          {!isReadOnly && (
-                            <button
-                              type="button"
-                              className="scheduleFeature__dayAdd"
-                              onClick={() => startAddForDay(day.value)}
-                              aria-label={`Añadir bloque el ${day.label}`}
-                            >
-                              <componentComponents.icon icon={luPlus} size="sm" />
-                              Añadir
-                            </button>
-                          )}
-                        </p>
+                    <div className="scheduleFeature__track" data-compact={isCompact}>
+                      {!isCompact && daySlots.length === 0 && (
+                        <span className="scheduleFeature__trackEmpty">Sin bloques</span>
+                      )}
+                      {isCompact ? (
+                        <div className="scheduleFeature__blockList">
+                          {daySlots.map((slot) => {
+                            const label = `${day.label}, de ${slot.startTime} a ${slot.endTime}, ${scheduleStatusLabels[slot.status]}`
+                            return isReadOnly ? (
+                              <div
+                                key={slot.key}
+                                className="scheduleFeature__blockRow"
+                                data-status={slot.status}
+                                title={label}
+                              >
+                                {blockContent(slot)}
+                              </div>
+                            ) : (
+                              <button
+                                key={slot.key}
+                                type="button"
+                                className="scheduleFeature__blockRow"
+                                data-status={slot.status}
+                                data-selected={selectedKey === slot.key}
+                                onClick={() => setSelectedKey(slot.key)}
+                                aria-pressed={selectedKey === slot.key}
+                                aria-label={`${label}. Editar bloque`}
+                              >
+                                {blockContent(slot)}
+                              </button>
+                            )
+                          })}
+                        </div>
                       ) : (
-                        daySlots.map((slot, slotIndex) =>
-                          isReadOnly ? (
-                            <div key={slot.key} className="scheduleFeature__slotReadOnly">
-                              <span className="scheduleFeature__timeRangeStatic">
-                                <span className="sr-only">
-                                  Bloque {slotIndex + 1} del {day.label}, de{' '}
-                                </span>
-                                {slot.startTime}
-                                <span className="scheduleFeature__timeDash" aria-hidden="true">–</span>
-                                {slot.endTime}
-                              </span>
-                              <componentComponents.status tone={readOnlyStatusTone[slot.status]}>
-                                {scheduleStatusLabels[slot.status]}
-                              </componentComponents.status>
+                        daySlots.map((slot) => {
+                          const start = toMinutes(slot.startTime)
+                          const end = toMinutes(slot.endTime)
+                          const left = positionOf(start)
+                          const width = Math.max(positionOf(end) - left, 1)
+                          const label = `${day.label}, de ${slot.startTime} a ${slot.endTime}, ${scheduleStatusLabels[slot.status]}`
+                          return isReadOnly ? (
+                            <div
+                              key={slot.key}
+                              className="scheduleFeature__block"
+                              data-status={slot.status}
+                              style={{ left: `${left}%`, width: `${width}%` }}
+                              title={label}
+                            >
+                              {blockContent(slot)}
                             </div>
                           ) : (
-                            <div key={slot.key} className="scheduleFeature__slot">
-                            <div className="scheduleFeature__timeRange">
-                              <label className="scheduleFeature__timeField">
-                                <span className="sr-only">
-                                  Inicio del bloque {slotIndex + 1} del {day.label}
-                                </span>
-                                <componentComponents.input
-                                  type="time"
-                                  className="scheduleFeature__timeInput"
-                                  value={slot.startTime}
-                                  onChange={(event) => updateSlot(slot.key, { startTime: event.currentTarget.value })}
-                                />
-                              </label>
-                              <span className="scheduleFeature__timeDash" aria-hidden="true">–</span>
-                              <label className="scheduleFeature__timeField">
-                                <span className="sr-only">
-                                  Fin del bloque {slotIndex + 1} del {day.label}
-                                </span>
-                                <componentComponents.input
-                                  type="time"
-                                  className="scheduleFeature__timeInput"
-                                  value={slot.endTime}
-                                  onChange={(event) => updateSlot(slot.key, { endTime: event.currentTarget.value })}
-                                />
-                              </label>
-                            </div>
-
-                            <span className="scheduleFeature__status" data-tone={statusTone[slot.status]}>
-                              <span className="sr-only">Estado del bloque {slotIndex + 1} del {day.label}</span>
-                              <span className="scheduleFeature__statusDot" aria-hidden="true" />
-                              <componentComponents.select
-                                className="scheduleFeature__statusSelect"
-                                aria-label={`Estado del bloque ${slotIndex + 1} del ${day.label}`}
-                                value={slot.status}
-                                onChange={(event) =>
-                                  updateSlot(slot.key, {
-                                    status: scheduleStatusSchema.parse(event.currentTarget.value),
-                                  })
-                                }
-                              >
-                                {Object.entries(scheduleStatusLabels).map(([value, label]) => (
-                                  <option key={value} value={value}>{label}</option>
-                                ))}
-                              </componentComponents.select>
-                            </span>
-
-                            <componentComponents.iconButton
-                              icon={luTrash2}
-                              label={`Quitar bloque ${slotIndex + 1} del ${day.label}`}
-                              onClick={() => setDraftSlots((current) => current.filter((entry) => entry.key !== slot.key))}
-                            />
-                            </div>
-                          ),
-                        )
+                            <button
+                              key={slot.key}
+                              type="button"
+                              className="scheduleFeature__block"
+                              data-status={slot.status}
+                              data-selected={selectedKey === slot.key}
+                              style={{ left: `${left}%`, width: `${width}%` }}
+                              onClick={() => setSelectedKey(slot.key)}
+                              aria-pressed={selectedKey === slot.key}
+                              aria-label={`${label}. Editar bloque`}
+                              title={`${label}. Clic para editar`}
+                            >
+                              {blockContent(slot)}
+                            </button>
+                          )
+                        })
                       )}
                     </div>
+
+                    {!isReadOnly && selectedSlot?.dayOfWeek === day.value && (
+                      <div className="scheduleFeature__editor" role="group" aria-label={`Editar bloque del ${day.label}`}>
+                        <div className="scheduleFeature__editorHead">
+                          <div>
+                            <h3 className="scheduleFeature__editorTitle">Editar bloque</h3>
+                            <p className="scheduleFeature__editorMeta">
+                              {day.label} · {formatHours(toMinutes(selectedSlot.endTime) - toMinutes(selectedSlot.startTime))}
+                            </p>
+                          </div>
+                          <componentComponents.iconButton
+                            icon={luCheck}
+                            label="Cerrar edición del bloque"
+                            variant="outline"
+                            onClick={() => setSelectedKey(null)}
+                          />
+                        </div>
+                        <div className="scheduleFeature__editorFields">
+                          <componentComponents.field label="Día" htmlFor="schedule-edit-day">
+                            <componentComponents.select
+                              id="schedule-edit-day"
+                              value={selectedSlot.dayOfWeek}
+                              onChange={(event) =>
+                                updateSlot(selectedSlot.key, { dayOfWeek: Number(event.currentTarget.value) })
+                              }
+                            >
+                              {scheduleDays.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                              ))}
+                            </componentComponents.select>
+                          </componentComponents.field>
+                          <componentComponents.field label="Inicio" htmlFor="schedule-edit-start">
+                            <componentComponents.input
+                              id="schedule-edit-start"
+                              type="time"
+                              className="scheduleFeature__timeInput"
+                              value={selectedSlot.startTime}
+                              onChange={(event) =>
+                                updateSlot(selectedSlot.key, { startTime: event.currentTarget.value })
+                              }
+                            />
+                          </componentComponents.field>
+                          <componentComponents.field label="Fin" htmlFor="schedule-edit-end">
+                            <componentComponents.input
+                              id="schedule-edit-end"
+                              type="time"
+                              className="scheduleFeature__timeInput"
+                              value={selectedSlot.endTime}
+                              onChange={(event) =>
+                                updateSlot(selectedSlot.key, { endTime: event.currentTarget.value })
+                              }
+                            />
+                          </componentComponents.field>
+                          <componentComponents.field label="Estado" htmlFor="schedule-edit-status">
+                            <componentComponents.select
+                              id="schedule-edit-status"
+                              value={selectedSlot.status}
+                              onChange={(event) =>
+                                updateSlot(selectedSlot.key, {
+                                  status: scheduleStatusSchema.parse(event.currentTarget.value),
+                                })
+                              }
+                            >
+                              {Object.entries(scheduleStatusLabels).map(([value, text]) => (
+                                <option key={value} value={value}>{text}</option>
+                              ))}
+                            </componentComponents.select>
+                          </componentComponents.field>
+                        </div>
+                        <div className="scheduleFeature__editorActions">
+                          <componentComponents.button
+                            variant="quiet"
+                            size="sm"
+                            icon={luTrash2}
+                            onClick={() => removeSlot(selectedSlot.key)}
+                          >
+                            Quitar bloque
+                          </componentComponents.button>
+                          <componentComponents.button
+                            variant="default"
+                            size="sm"
+                            icon={luCheck}
+                            onClick={() => setSelectedKey(null)}
+                          >
+                            Listo
+                          </componentComponents.button>
+                        </div>
+                      </div>
+                    )}
                   </section>
                 )
               })}
             </div>
-          </section>
 
-          {!isReadOnly && (
-            <section className="scheduleFeature__panel mt-5" aria-labelledby="schedule-add-heading">
-            <div className="scheduleFeature__panelHead">
-              <div>
-                <h2 id="schedule-add-heading" className="scheduleFeature__panelTitle">Añadir bloque</h2>
-                <p className="scheduleFeature__panelMeta">
-                  Define un horario y un estado para un día de la semana.
-                </p>
+            {isReadOnly && (
+              <div className="scheduleFeature__readOnlyStatus" aria-label="Resumen de estados">
+                <componentComponents.status tone={readOnlyStatusTone.AVAILABLE}>
+                  {weekSummary.statusCounts.AVAILABLE} disponibles
+                </componentComponents.status>
+                <componentComponents.status tone={readOnlyStatusTone.RESERVED}>
+                  {weekSummary.statusCounts.RESERVED} reservados
+                </componentComponents.status>
+                <componentComponents.status tone={readOnlyStatusTone.NOT_AVAILABLE}>
+                  {weekSummary.statusCounts.NOT_AVAILABLE} no disponibles
+                </componentComponents.status>
               </div>
-            </div>
-            <form ref={addFormRef} className="scheduleFeature__addForm" onSubmit={addSlot}>
-              <componentComponents.field label="Día" htmlFor="schedule-day">
-                <componentComponents.select
-                  id="schedule-day"
-                  value={dayOfWeek}
-                  onChange={(event) => setDayOfWeek(Number(event.currentTarget.value))}
-                >
-                  {scheduleDays.map((day) => <option key={day.value} value={day.value}>{day.label}</option>)}
-                </componentComponents.select>
-              </componentComponents.field>
-              <componentComponents.field label="Inicio" htmlFor="schedule-start">
-                <componentComponents.input
-                  id="schedule-start"
-                  ref={startTimeRef}
-                  type="time"
-                  className="scheduleFeature__timeInput"
-                  value={startTime}
-                  onChange={(event) => setStartTime(event.currentTarget.value)}
-                />
-              </componentComponents.field>
-              <componentComponents.field label="Fin" htmlFor="schedule-end">
-                <componentComponents.input
-                  id="schedule-end"
-                  type="time"
-                  className="scheduleFeature__timeInput"
-                  value={endTime}
-                  onChange={(event) => setEndTime(event.currentTarget.value)}
-                />
-              </componentComponents.field>
-              <componentComponents.field label="Estado" htmlFor="schedule-status">
-                <componentComponents.select
-                  id="schedule-status"
-                  value={status}
-                  onChange={(event) => setStatus(scheduleStatusSchema.parse(event.currentTarget.value))}
-                >
-                  {Object.entries(scheduleStatusLabels).map(([value, label]) => (
-                    <option key={value} value={value}>{label}</option>
-                  ))}
-                </componentComponents.select>
-              </componentComponents.field>
-              <div className="scheduleFeature__addAction">
-                <componentComponents.button type="submit" variant="default" icon={luPlus}>
-                  Añadir bloque
-                </componentComponents.button>
-              </div>
-            </form>
-            {slotError && <p className="scheduleFeature__inlineError" role="alert">{slotError}</p>}
-            </section>
-          )}
+            )}
+          </section>
         </>
       )}
 
       {!isReadOnly && (
         <componentComponents.modal
-        open={confirmSave}
-        onClose={() => {
-          if (!saveMutation.isPending) setConfirmSave(false)
-        }}
-        title="Reemplazar la semana"
-        icon={luClock3}
-        footer={
-          <>
-            <componentComponents.button
-              variant="quiet"
-              size="sm"
-              onClick={() => setConfirmSave(false)}
-              disabled={saveMutation.isPending}
-            >
-              Revisar
-            </componentComponents.button>
-            <componentComponents.button
-              variant="primary"
-              size="sm"
-              onClick={() => saveMutation.mutate()}
-              disabled={saveMutation.isPending || Boolean(validationError)}
-            >
-              {saveMutation.isPending ? 'Guardando…' : 'Reemplazar semana'}
-            </componentComponents.button>
-          </>
-        }
-      >
-        <p className="text-[13px] leading-relaxed text-muted">
-          El backend reemplazará la malla semanal completa de <strong className="text-ink">
-            {selectedTrainer ? trainerName(selectedTrainer) : 'este entrenador'}
-          </strong> con los {draftSlots.length} bloques visibles. Revisa los días, horas y estados antes de continuar.
-        </p>
-      </componentComponents.modal>
+          open={confirmSave}
+          onClose={() => {
+            if (!saveMutation.isPending) setConfirmSave(false)
+          }}
+          title="Reemplazar la semana"
+          icon={luClock3}
+          footer={
+            <>
+              <componentComponents.button
+                variant="quiet"
+                size="sm"
+                onClick={() => setConfirmSave(false)}
+                disabled={saveMutation.isPending}
+              >
+                Revisar
+              </componentComponents.button>
+              <componentComponents.button
+                variant="primary"
+                size="sm"
+                onClick={() => saveMutation.mutate()}
+                disabled={saveMutation.isPending || Boolean(validationError)}
+              >
+                {saveMutation.isPending ? 'Guardando…' : 'Reemplazar semana'}
+              </componentComponents.button>
+            </>
+          }
+        >
+          <p className="text-[13px] leading-relaxed text-muted">
+            El backend reemplazará la malla semanal completa de <strong className="text-ink">
+              {selectedTrainer ? trainerName(selectedTrainer) : 'este entrenador'}
+            </strong> con los {draftSlots.length} bloques visibles. Revisa los días, horas y estados antes de continuar.
+          </p>
+        </componentComponents.modal>
       )}
     </>
   )
