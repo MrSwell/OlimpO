@@ -120,6 +120,8 @@ const notFoundPage = () => {
   )
 }
 
+const localPageComponents = { notFoundPage }
+
 const app = () => {
   return (
     <appProviderComponents.appProviders>
@@ -186,7 +188,7 @@ const app = () => {
               }
             />
           )}
-          <routerComponents.route path="*" element={<notFoundPage />} />
+          <routerComponents.route path="*" element={<localPageComponents.notFoundPage />} />
           {!import.meta.env.DEV && (
             <routerComponents.route
               path="/design"
