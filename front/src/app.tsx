@@ -1,6 +1,6 @@
 // The frontend naming contract requires lower camelCase for React components.
 /* oxlint-disable react/rules-of-hooks */
-import { lazy, Suspense as suspense } from 'react'
+import { lazy, Suspense as suspense, type ComponentType, type ReactNode } from 'react'
 import {
   BrowserRouter as browserRouter,
   Navigate as navigate,
@@ -13,23 +13,75 @@ import * as homePageComponents from '@/features/home/publicHomePage'
 import * as authPageComponents from '@/features/auth/components/loginPage'
 import * as authSessionComponents from '@/features/auth/components/authSessionManager'
 import * as protectedRouteComponents from '@/features/auth/components/protectedRoute'
-import * as clientsPageComponents from '@/features/clients/components/clientsPage'
-import * as clientCreatePageComponents from '@/features/clients/components/clientCreatePage'
-import * as clientDetailPageComponents from '@/features/clients/components/clientDetailPage'
-import * as paymentsPageComponents from '@/features/payments/components/paymentsPage'
-import * as inventoryPageComponents from '@/features/inventory/components/inventoryPage'
-import * as inventoryDetailPageComponents from '@/features/inventory/components/itemDetailPage'
-import * as machinesPageComponents from '@/features/machines/components/machinesPage'
-import * as schedulesPageComponents from '@/features/schedules/components/schedulesPage'
-import * as routinesPageComponents from '@/features/routines/components/routinesPage'
-import * as routineDetailPageComponents from '@/features/routines/components/routineDetailPage'
-import * as dashboardComponents from '@/features/dashboard/dashboardPage'
-import * as plannedFeatureComponents from '@/features/dashboard/plannedFeaturePage'
 import * as shellSessionComponents from '@/features/auth/hooks/useShellSession'
 import { roleGroups, type UserRole } from '@/features/auth/model/authTypes'
 
 const reactComponents = { lazy, suspense }
 const routerComponents = { browserRouter, navigate, route, routes }
+
+/**
+ * Each feature page is its own chunk: the landing and the login stay in the
+ * initial bundle, everything behind the session guard loads on demand.
+ */
+const lazyFeaturePage = <TModule extends Record<string, unknown>>(
+  loader: () => Promise<TModule>,
+  exportName: keyof TModule,
+) =>
+  reactComponents.lazy(async () => {
+    const module = await loader()
+    return { default: module[exportName] as ComponentType }
+  })
+
+const pageComponents = {
+  dashboardPage: lazyFeaturePage(
+    () => import('@/features/dashboard/dashboardPage'),
+    'dashboardPage',
+  ),
+  clientsPage: lazyFeaturePage(
+    () => import('@/features/clients/components/clientsPage'),
+    'clientsPage',
+  ),
+  clientCreatePage: lazyFeaturePage(
+    () => import('@/features/clients/components/clientCreatePage'),
+    'clientCreatePage',
+  ),
+  clientDetailPage: lazyFeaturePage(
+    () => import('@/features/clients/components/clientDetailPage'),
+    'clientDetailPage',
+  ),
+  paymentsPage: lazyFeaturePage(
+    () => import('@/features/payments/components/paymentsPage'),
+    'paymentsPage',
+  ),
+  inventoryPage: lazyFeaturePage(
+    () => import('@/features/inventory/components/inventoryPage'),
+    'inventoryPage',
+  ),
+  itemDetailPage: lazyFeaturePage(
+    () => import('@/features/inventory/components/itemDetailPage'),
+    'itemDetailPage',
+  ),
+  machinesPage: lazyFeaturePage(
+    () => import('@/features/machines/components/machinesPage'),
+    'machinesPage',
+  ),
+  schedulesPage: lazyFeaturePage(
+    () => import('@/features/schedules/components/schedulesPage'),
+    'schedulesPage',
+  ),
+  routinesPage: lazyFeaturePage(
+    () => import('@/features/routines/components/routinesPage'),
+    'routinesPage',
+  ),
+  routineDetailPage: lazyFeaturePage(
+    () => import('@/features/routines/components/routineDetailPage'),
+    'routineDetailPage',
+  ),
+  usersPage: lazyFeaturePage(
+    () => import('@/features/users/components/usersPage'),
+    'usersPage',
+  ),
+}
 
 const designPageComponents = import.meta.env.DEV
   ? {
@@ -40,22 +92,17 @@ const designPageComponents = import.meta.env.DEV
     }
   : null
 
-const plannedPage = (
-  title: string,
-  phase: string,
-  description: string,
-  roles: readonly UserRole[],
-) => {
-  return (
-    <protectedRouteComponents.protectedRoute allowedRoles={roles}>
-      <plannedFeatureComponents.plannedFeaturePage
-        title={title}
-        phase={phase}
-        description={description}
-      />
-    </protectedRouteComponents.protectedRoute>
-  )
-}
+const routeFallback = (
+  <div role="status" aria-live="polite" className="flex justify-center py-24">
+    <p className="text-[13px] text-muted">Cargando…</p>
+  </div>
+)
+
+const lazyPage = (allowedRoles: readonly UserRole[], children: ReactNode) => (
+  <protectedRouteComponents.protectedRoute allowedRoles={allowedRoles}>
+    <reactComponents.suspense fallback={routeFallback}>{children}</reactComponents.suspense>
+  </protectedRouteComponents.protectedRoute>
+)
 
 const notFoundPage = () => {
   const shellSession = shellSessionComponents.useShellSession()
@@ -73,8 +120,6 @@ const notFoundPage = () => {
   )
 }
 
-const pageComponents = { notFoundPage }
-
 const app = () => {
   return (
     <appProviderComponents.appProviders>
@@ -85,100 +130,51 @@ const app = () => {
           <routerComponents.route path="/login" element={<authPageComponents.loginPage />} />
           <routerComponents.route
             path="/dashboard"
-            element={
-              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.all}>
-                <dashboardComponents.dashboardPage />
-              </protectedRouteComponents.protectedRoute>
-            }
+            element={lazyPage(roleGroups.all, <pageComponents.dashboardPage />)}
           />
           <routerComponents.route
             path="/clients"
-            element={
-              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.clientManagement}>
-                <clientsPageComponents.clientsPage />
-              </protectedRouteComponents.protectedRoute>
-            }
+            element={lazyPage(roleGroups.clientManagement, <pageComponents.clientsPage />)}
           />
           <routerComponents.route
             path="/clients/new"
-            element={
-              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.clientManagement}>
-                <clientCreatePageComponents.clientCreatePage />
-              </protectedRouteComponents.protectedRoute>
-            }
+            element={lazyPage(roleGroups.clientManagement, <pageComponents.clientCreatePage />)}
           />
           <routerComponents.route
             path="/clients/:clientId"
-            element={
-              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.clientRecord}>
-                <clientDetailPageComponents.clientDetailPage />
-              </protectedRouteComponents.protectedRoute>
-            }
+            element={lazyPage(roleGroups.clientRecord, <pageComponents.clientDetailPage />)}
           />
           <routerComponents.route
             path="/payments"
-            element={
-              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.clientManagement}>
-                <paymentsPageComponents.paymentsPage />
-              </protectedRouteComponents.protectedRoute>
-            }
+            element={lazyPage(roleGroups.clientManagement, <pageComponents.paymentsPage />)}
           />
           <routerComponents.route
             path="/inventory"
-            element={
-              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.trainingStaff}>
-                <inventoryPageComponents.inventoryPage />
-              </protectedRouteComponents.protectedRoute>
-            }
+            element={lazyPage(roleGroups.trainingStaff, <pageComponents.inventoryPage />)}
           />
           <routerComponents.route
             path="/inventory/:itemId"
-            element={
-              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.trainingStaff}>
-                <inventoryDetailPageComponents.itemDetailPage />
-              </protectedRouteComponents.protectedRoute>
-            }
+            element={lazyPage(roleGroups.trainingStaff, <pageComponents.itemDetailPage />)}
           />
           <routerComponents.route
             path="/machines"
-            element={
-              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.trainingStaff}>
-                <machinesPageComponents.machinesPage />
-              </protectedRouteComponents.protectedRoute>
-            }
+            element={lazyPage(roleGroups.trainingStaff, <pageComponents.machinesPage />)}
           />
           <routerComponents.route
             path="/schedules"
-            element={
-              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.trainingStaff}>
-                <schedulesPageComponents.schedulesPage />
-              </protectedRouteComponents.protectedRoute>
-            }
+            element={lazyPage(roleGroups.trainingStaff, <pageComponents.schedulesPage />)}
           />
           <routerComponents.route
             path="/routines"
-            element={
-              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.all}>
-                <routinesPageComponents.routinesPage />
-              </protectedRouteComponents.protectedRoute>
-            }
+            element={lazyPage(roleGroups.all, <pageComponents.routinesPage />)}
           />
           <routerComponents.route
             path="/routines/:routineId"
-            element={
-              <protectedRouteComponents.protectedRoute allowedRoles={roleGroups.all}>
-                <routineDetailPageComponents.routineDetailPage />
-              </protectedRouteComponents.protectedRoute>
-            }
+            element={lazyPage(roleGroups.all, <pageComponents.routineDetailPage />)}
           />
           <routerComponents.route
             path="/users"
-            element={plannedPage(
-              'Usuarios',
-              'F7',
-              'La administración de usuarios estará disponible en la fase F7.',
-              ['ADMIN'],
-            )}
+            element={lazyPage(['ADMIN'], <pageComponents.usersPage />)}
           />
           {designPageComponents && (
             <routerComponents.route
@@ -190,7 +186,7 @@ const app = () => {
               }
             />
           )}
-          <routerComponents.route path="*" element={<pageComponents.notFoundPage />} />
+          <routerComponents.route path="*" element={<notFoundPage />} />
           {!import.meta.env.DEV && (
             <routerComponents.route
               path="/design"
