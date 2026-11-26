@@ -1,6 +1,7 @@
 package server.olimpo.dto.response;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public record RoutineResponse(
         Long id,
@@ -9,5 +10,6 @@ public record RoutineResponse(
         String name,
         String type,
         String description,
-        BigDecimal price) {
+        BigDecimal price,
+        List<RoutineExerciseResponse> exercises) {
 }

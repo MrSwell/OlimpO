@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public record CreateRoutineRequest(
         @NotBlank(message = "Name is required")
@@ -20,5 +21,8 @@ public record CreateRoutineRequest(
         BigDecimal price,
 
         /** Only used for CUSTOM routines created by ADMIN/TRAINER_MANAGER. */
-        Long trainerId) {
+        Long trainerId,
+
+        /** Ordered exercise plan. Optional: a routine can be created empty. */
+        List<RoutineExerciseRequest> exercises) {
 }
