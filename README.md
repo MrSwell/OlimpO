@@ -13,7 +13,7 @@ OlimpO/
 │   ├── FRONTEND_BASE.md   # Identidad visual y directivas de estilo del frontend
 │   ├── FRONTEND_PLAN.md   # Plan de implementación del frontend (fases, rutas)
 │   └── POSTMAN.md         # Plan de pruebas (~90 casos) para la IA de Postman
-└── front/     # Frontend React (SPA) — F1–F6 + panel por rol; estilo V1.0.0 consolidado
+└── front/     # Frontend React (SPA) — F1–F6 + F7 parcial (/dashboard por rol, /users, Vitest+MSW); estilo V1.0.0 consolidado
 ```
 
 > **Header de la API**: todas las rutas del backend responden JSON bajo `/api/v1/**`.
@@ -91,6 +91,9 @@ back/src/main/java/server.olimpo
    | `pnpm dev` | Servidor de desarrollo con HMR |
    | `pnpm build` | Verificación de tipos (`tsc -b`) + build de producción en `dist/` |
    | `pnpm lint` | Oxlint |
+   | `pnpm test` | Suite de pruebas unitarias e integración (`vitest run`) |
+   | `pnpm test:watch` | Vitest en modo observación |
+   | `pnpm check` | Ejecuta `lint`, `test` y `build` en secuencia |
    | `pnpm preview` | Sirve el build de producción |
 
 4. Conexión con la API:
@@ -101,17 +104,18 @@ back/src/main/java/server.olimpo
 
 ## Frontend — V1.0.0
 
-F1–F6 están implementadas, junto con el panel por rol de F7. F4.5 cierra la iteración visual y documental: se conserva como estilo de V1.0.0 el diseño oscuro que está actualmente en el código, sin rehacer los flujos anteriores.
+F1–F6 están implementadas, junto con avances de F7 (panel por rol, módulo `/users`, carga perezosa por ruta, enlace "Saltar al contenido" y pruebas Vitest + MSW). F4.5 cierra la iteración visual y documental: se conserva como estilo de V1.0.0 el diseño oscuro que está actualmente en el código, sin rehacer los flujos anteriores.
 
 - **Clientes:** directorio en filas con nombre, documento, celular, correo y estado. Cada fila abre la ficha independiente `/clients/:id`, con secciones de identidad, membresía, datos, rutinas asignadas, historial y pagos; el tiempo restante de la membresía se representa con una barra de progreso.
 - **Inventario:** directorio en tarjetas oscuras con categoría, existencia, mínimo y estado de stock; incluye búsqueda, filtro de stock bajo, resumen de atención, detalle e historial de movimientos.
 - **Máquinas:** directorio en tarjetas con marca/modelo, serie y estado; incluye búsqueda, filtro de estado y resumen.
 - **Horarios:** malla semanal por entrenador como ledger de una columna (lunes → domingo en pantalla; la API conserva 1 = domingo … 7 = sábado), con bloques editables de hora y estado, días vacíos compactos con alta directa y confirmación antes de reemplazar la semana. `ADMIN` y `TRAINER_MANAGER` editan cualquier malla; un `TRAINER` solo consulta la suya en modo lectura.
-- **Rutinas:** catálogo `GENERAL`/`CUSTOM` con filtro y búsqueda, ficha de rutina, alta con validación de tipo/precio/entrenador y asignación a clientes con estados `ACTIVE`, `COMPLETED` y `CANCELLED`.
+- **Rutinas:** catálogo `GENERAL`/`CUSTOM` con filtro y búsqueda, contadores reales por tipo, ficha de rutina, alta con validación de tipo/precio/entrenador, asignación a clientes con estados `ACTIVE`, `COMPLETED` y `CANCELLED`, y vista "Mis rutinas" para `CLIENT`.
+- **Usuarios:** `/users` (solo `ADMIN`) con directorio paginado, búsqueda, alta de personal bloqueando el rol `CLIENT`, y edición de roles.
 - **Panel:** `/dashboard` compone una vista distinta por rol (ADMIN, RECEPCIONIST, TRAINER_MANAGER, TRAINER y CLIENT) con tarjetas de indicadores, paneles de trabajo, acciones rápidas y atajos según permisos. Solo usa endpoints existentes; cuando un dato no está disponible lo indica con `—` en lugar de inventarlo.
 - **Acciones:** formularios de alta/edición y confirmación antes de eliminar. Eliminar un ítem de inventario también elimina su historial de movimientos.
 - **Sistema visual:** superficies oscuras de alto contraste, dorado discreto para marca/acciones, colores semánticos para estados, tarjetas con jerarquía clara y layouts responsive. La especificación vinculante está en **[docs/FRONTEND_BASE.md](docs/FRONTEND_BASE.md)**.
-- **Siguiente fase:** F7 (accesibilidad, pruebas de frontend, CI y módulo de usuarios) permanece pendiente; fases y criterios están en **[docs/FRONTEND_PLAN.md](docs/FRONTEND_PLAN.md)**.
+- **Siguiente fase:** cierre de F7 (ampliar pruebas MSW, E2E con Playwright, configurar CI y auditoría completa de accesibilidad/responsive); fases y criterios están en **[docs/FRONTEND_PLAN.md](docs/FRONTEND_PLAN.md)**.
 
 ## Cuentas sembradas (dev)
 

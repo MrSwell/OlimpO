@@ -1,6 +1,6 @@
 # FRONTEND_PLAN.md — Plan de implementación del frontend Olimpo
 
-Estado: F1–F5 implementadas; F4.5 consolida el estilo V1.0.0 · Última actualización: 2026-11-18
+Estado: F1–F6 implementadas + F7 parcial (panel por rol, `/users`, code splitting, Vitest + MSW, enlace saltar al contenido); F4.5 consolida el estilo V1.0.0 · Última actualización: 2026-11-25
 Alcance: `front/` (React SPA) consumiendo `/api/v1` **sin modificar el contrato**.
 
 Fuentes de verdad:
@@ -99,38 +99,44 @@ Convenciones:
 ```text
 front/
 ├─ mockup/                     # referencia visual, nunca se sube
-├─ index.html, vite.config.ts, package.json
+├─ index.html, vite.config.ts, vitest.config.ts, package.json
 └─ src/
    ├─ main.tsx
-   ├─ app.tsx                  # rutas, guards en línea y toastHost
+   ├─ app.tsx                  # rutas con lazy loading por página, guards y toastHost
    ├─ app/
    │  ├─ providers.tsx         # ThemeProvider, QueryClientProvider
    │  └─ designPage.tsx        # /design, solo desarrollo
    ├─ components/
-   │  ├─ layout/               # appShell, publicHeader, siteHeader, siteNav, siteFooter, pageHead, userMenu
+   │  ├─ layout/               # appShell (skip link), publicHeader, siteHeader, siteNav, siteFooter, pageHead, userMenu
    │  └─ ui/                   # primitivos del contrato visual (button, panel, modal, toastHost, fieldError…)
    ├─ features/
    │  ├─ home/                 # publicHomePage (home pública)
    │  ├─ auth/                 # loginPage (slider de rol→credenciales), protectedRoute, authSessionManager
    │  │   ├─ components/ · hooks/ (useLoginForm, useLoginRoleSlider, useShellSession)
    │  │   └─ api/ (authApi) · model/ (authTypes, loginFormSchema, loginRoleGuides, roleLabels)
-   │  ├─ dashboard/            # dashboardPage y plannedFeaturePage (marcadores de fases futuras)
+   │  ├─ dashboard/            # dashboardPage por rol (plannedFeaturePage.tsx sin rutas activas)
    │  ├─ clients/               # directorio, alta, ficha y renovación (F3, implementado)
    │  ├─ payments/              # registro e historial de pagos (F4, implementado)
    │  ├─ inventory/             # directorio, ficha y movimientos (F5, implementado)
-   │  └─ machines/              # directorio con filtro de estado (F5, implementado)
-   ├─ lib/                     # apiClient, queryClient, cn
+   │  ├─ machines/              # directorio con filtro de estado (F5, implementado)
+   │  ├─ schedules/             # malla semanal por entrenador (F6, implementado)
+   │  ├─ routines/              # catálogo, detalle, creación, asignación y Mis rutinas (F6, implementado)
+   │  ├─ trainers/              # directorio/selector de entrenadores (F6, implementado)
+   │  └─ users/                 # directorio, alta de personal y edición de roles (F7, implementado)
+   ├─ hooks/                   # useMediaQuery
+   ├─ lib/                     # apiClient, queryClient, cn, colorIdentity, viewTransition
    ├─ stores/                  # authStore, themeStore, toastStore
-   └─ styles/                  # tokens.css, globals.css
+   ├─ styles/                  # tokens.css, globals.css
+   └─ test/                    # setup, renderWithProviders y handlers/server de MSW
 ```
 
-> Las features de `schedules/` y `routines/` aún no existen; hoy sus enlaces llevan a `plannedFeaturePage`. `types/` vive dentro de cada feature (`model/`), no como carpeta raíz.
+> `types/` vive dentro de cada feature (`model/`), no como carpeta raíz. `plannedFeaturePage.tsx` permanece en `features/dashboard/` sin rutas apuntando a ella tras habilitar `/users`.
 
 ---
 
 ## 3. Rutas y permisos
 
-Rutas **implementadas hoy**: `/`, `/#anclas`, `/login`, `/dashboard` (panel por rol con indicadores, paneles y atajos sobre endpoints reales), `/clients`, `/clients/new`, `/clients/:id` con renovación como **modal** dentro de la ficha, `/payments`, `/inventory`, `/inventory/:itemId`, `/machines`, `/schedules`, `/routines`, `/routines/:id` y `/design` (solo desarrollo, accesible desde el menú de usuario). El resto son rutas planificadas: hoy sus enlaces del shell llevan a `plannedFeaturePage`.
+Rutinas, usuarios y el resto de rutas del plan ya están **implementadas hoy**: `/`, `/#anclas`, `/login`, `/dashboard` (panel por rol con indicadores, paneles y atajos sobre endpoints reales), `/clients`, `/clients/new`, `/clients/:id` con renovación como **modal** dentro de la ficha, `/payments`, `/inventory`, `/inventory/:itemId`, `/machines`, `/schedules`, `/routines`, `/routines/:routineId`, `/users` y `/design` (solo desarrollo, accesible desde el menú de usuario).
 
 | Ruta | Vista | Roles | Estado |
 |---|---|---|---|
@@ -152,7 +158,7 @@ Rutas **implementadas hoy**: `/`, `/#anclas`, `/login`, `/dashboard` (panel por 
 | `/schedules` | Malla semanal por entrenador: ledger lunes→domingo; `ADMIN`/`TRAINER_MANAGER` editan, `TRAINER` consulta la propia en solo lectura | `ADMIN`, `TRAINER_MANAGER`; `TRAINER` solo el propio | ✅ implementada |
 | `/routines` | Rutinas | catálogo: autenticados; crear/asignar: `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
 | `/routines/:routineId` | Ficha de la rutina con asignaciones | autenticados; asignar: `ADMIN`, `TRAINER_MANAGER`, `TRAINER` | ✅ implementada |
-| `/users` | Usuarios | `ADMIN` | ⏳ planificada |
+| `/users` | Usuarios (directorio, alta de personal y roles) | `ADMIN` | ✅ implementada |
 | `*` | 404 | — | ✅ implementada |
 
 Reglas de navegación:
@@ -383,18 +389,19 @@ Reglas de navegación:
 - La UI no permite `GENERAL` con precio ni `CUSTOM` sin trainer/precio.
 - Un trainer no puede abrir la malla de otro por URL.
 
-### F7 — Accesibilidad, pruebas y entrega
+### F7 — Accesibilidad, pruebas, usuarios y entrega (en curso)
 
 **Objetivo:** cerrar el producto con datos reales y calidad verificable.
 
 **Entregables**
 
-- ~~Panel en `/dashboard` con los 3 bloques del mockup **solo cuando existan endpoints que los sostengan**.~~ Implementado: panel por rol con tarjetas de indicadores, paneles de trabajo, acciones rápidas y atajos, alimentado solo por endpoints existentes.
-- Estados de carga con texto y hairlines (sin shimmer llamativo), vacío y error.
-- Responsive 1180 / 1020 / 820 / 560; header sin desbordes.
-- Pruebas: unitarias de primitivos, integración de features con MSW, E2E de login/cliente/renovación.
-- CI: lint + test + build en cada PR.
-- Documentación de rutas, roles y variables de entorno.
+- ✅ Panel en `/dashboard` por rol con tarjetas de indicadores, paneles de trabajo, acciones rápidas y atajos, alimentado solo por endpoints existentes.
+- ✅ Módulo `/users` (solo `ADMIN`): directorio paginado con búsqueda, alta de personal (bloqueando rol `CLIENT`) y edición de roles.
+- ✅ Carga perezosa por ruta (`lazyFeaturePage`) y enlace “Saltar al contenido” (`#contenido`) en `appShell`.
+- 🟡 Pruebas: base Vitest + Testing Library + MSW implementada (3 archivos, 8 pruebas en verde: `button`, `schedulesPage`, `routinesPage`); pendiente ampliar cobertura de features y añadir E2E con Playwright.
+- ⏳ Estados de carga, vacío y error + revisión integral de accesibilidad y responsive 1180 / 1020 / 820 / 560 en todas las pantallas.
+- ⏳ CI: workflow de `lint` + `test` + `build` en cada PR.
+- ✅ Documentación de rutas, roles y variables de entorno.
 
 **Aceptación**
 
@@ -488,11 +495,10 @@ Mientras esas brechas existan, las vistas afectadas muestran solo lo que el cont
 
 ## 9. Estado actual y próximos pasos
 
-Implementado: F1 (fundación visual), F1.5 (home pública), F2 (auth con login en slider), F3 (clientes: directorio y ficha independiente), F4 (pagos), F4.5 (consolidación visual/documental V1.0.0), F5 (inventario y máquinas), F6 (horarios y rutinas) y el panel por rol de F7. En este cierre pasaron `pnpm build`, `pnpm lint` (solo el aviso preexistente de React Compiler en `useMembershipAction`), la suite completa del backend (192/192) y la verificación visual del panel y de la malla en lectura para los cinco roles.
+Implementado: F1 (fundación visual), F1.5 (home pública), F2 (auth con login en slider), F3 (clientes: directorio y ficha independiente), F4 (pagos), F4.5 (consolidación visual/documental V1.0.0), F5 (inventario y máquinas), F6 (horarios y rutinas, incluyendo rediseño del catálogo y vista `Mis rutinas`), y F7 parcial: panel por rol en `/dashboard`, módulo `/users` para `ADMIN`, code splitting por ruta, enlace “Saltar al contenido” e infraestructura Vitest + MSW (`3` archivos, `8` pruebas en verde).
 
-Siguiente fase — **F7 (accesibilidad, pruebas y entrega)**, con el panel ya cerrado:
+Próximos pasos para cerrar **F7**:
 
 1. Revisión de accesibilidad (foco, teclado, contraste) y responsive 1180 / 1020 / 820 / 560 en todas las pantallas.
-2. Pruebas de integración con MSW y E2E de login, cliente y renovación; CI con lint + test + build.
-3. Documentación de rutas, roles y variables de entorno.
-4. Módulo de usuarios (hoy en `plannedFeaturePage`).
+2. Ampliar pruebas de integración con MSW (login, clientes, pagos, inventario, máquinas, usuarios) y añadir E2E con Playwright; configurar CI con `pnpm check`.
+3. Integrar `routine_exercises` en rutinas una vez completado el backend.
